@@ -32,6 +32,8 @@ CREATE TABLE clients (
   website text,
   status client_status NOT NULL DEFAULT 'prospecto',
   notes text,
+  closed_at date,
+  delivery_date date,
   created_at timestamptz DEFAULT now()
 );
 
@@ -116,9 +118,21 @@ CREATE TABLE leads (
 );
 
 -- ========================
+-- PROFILES (RBAC)
+-- ========================
+
+CREATE TABLE IF NOT EXISTS profiles (
+  id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  name text,
+  role text NOT NULL DEFAULT 'visualizador' CHECK (role IN ('admin', 'gerente', 'visualizador')),
+  created_at timestamptz DEFAULT now()
+);
+
+-- ========================
 -- ROW LEVEL SECURITY
 -- ========================
 
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contracts ENABLE ROW LEVEL SECURITY;
@@ -126,24 +140,53 @@ ALTER TABLE contract_installments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
 
--- Policy: only authenticated users can access all tables
-CREATE POLICY "Authenticated users full access" ON clients
-  FOR ALL USING (auth.role() = 'authenticated');
+-- Helper: returns the role of the current logged-in user
+CREATE OR REPLACE FUNCTION get_user_role()
+RETURNS text LANGUAGE sql SECURITY DEFINER STABLE AS $$
+  SELECT COALESCE((SELECT role FROM profiles WHERE id = auth.uid()), 'visualizador')
+$$;
 
-CREATE POLICY "Authenticated users full access" ON projects
-  FOR ALL USING (auth.role() = 'authenticated');
+-- Profiles
+CREATE POLICY "profiles_select" ON profiles FOR SELECT USING (auth.uid() IS NOT NULL);
+CREATE POLICY "profiles_insert" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "profiles_update" ON profiles FOR UPDATE USING (auth.uid() = id OR get_user_role() = 'admin');
+CREATE POLICY "profiles_delete" ON profiles FOR DELETE USING (get_user_role() = 'admin');
 
-CREATE POLICY "Authenticated users full access" ON contracts
-  FOR ALL USING (auth.role() = 'authenticated');
+-- Clients: admin + gerente write, all read
+CREATE POLICY "clients_select" ON clients FOR SELECT USING (auth.uid() IS NOT NULL);
+CREATE POLICY "clients_insert" ON clients FOR INSERT WITH CHECK (get_user_role() IN ('admin', 'gerente'));
+CREATE POLICY "clients_update" ON clients FOR UPDATE USING (get_user_role() IN ('admin', 'gerente'));
+CREATE POLICY "clients_delete" ON clients FOR DELETE USING (get_user_role() = 'admin');
 
-CREATE POLICY "Authenticated users full access" ON contract_installments
-  FOR ALL USING (auth.role() = 'authenticated');
+-- Projects: admin + gerente write, all read
+CREATE POLICY "projects_select" ON projects FOR SELECT USING (auth.uid() IS NOT NULL);
+CREATE POLICY "projects_insert" ON projects FOR INSERT WITH CHECK (get_user_role() IN ('admin', 'gerente'));
+CREATE POLICY "projects_update" ON projects FOR UPDATE USING (get_user_role() IN ('admin', 'gerente'));
+CREATE POLICY "projects_delete" ON projects FOR DELETE USING (get_user_role() = 'admin');
 
-CREATE POLICY "Authenticated users full access" ON transactions
-  FOR ALL USING (auth.role() = 'authenticated');
+-- Contracts: admin + gerente write, all read
+CREATE POLICY "contracts_select" ON contracts FOR SELECT USING (auth.uid() IS NOT NULL);
+CREATE POLICY "contracts_insert" ON contracts FOR INSERT WITH CHECK (get_user_role() IN ('admin', 'gerente'));
+CREATE POLICY "contracts_update" ON contracts FOR UPDATE USING (get_user_role() IN ('admin', 'gerente'));
+CREATE POLICY "contracts_delete" ON contracts FOR DELETE USING (get_user_role() = 'admin');
 
-CREATE POLICY "Authenticated users full access" ON leads
-  FOR ALL USING (auth.role() = 'authenticated');
+-- Installments: admin + gerente write, all read
+CREATE POLICY "installments_select" ON contract_installments FOR SELECT USING (auth.uid() IS NOT NULL);
+CREATE POLICY "installments_insert" ON contract_installments FOR INSERT WITH CHECK (get_user_role() IN ('admin', 'gerente'));
+CREATE POLICY "installments_update" ON contract_installments FOR UPDATE USING (get_user_role() IN ('admin', 'gerente'));
+CREATE POLICY "installments_delete" ON contract_installments FOR DELETE USING (get_user_role() = 'admin');
+
+-- Transactions: admin only (financeiro)
+CREATE POLICY "transactions_select" ON transactions FOR SELECT USING (get_user_role() = 'admin');
+CREATE POLICY "transactions_insert" ON transactions FOR INSERT WITH CHECK (get_user_role() = 'admin');
+CREATE POLICY "transactions_update" ON transactions FOR UPDATE USING (get_user_role() = 'admin');
+CREATE POLICY "transactions_delete" ON transactions FOR DELETE USING (get_user_role() = 'admin');
+
+-- Leads: admin + gerente write, all read
+CREATE POLICY "leads_select" ON leads FOR SELECT USING (auth.uid() IS NOT NULL);
+CREATE POLICY "leads_insert" ON leads FOR INSERT WITH CHECK (get_user_role() IN ('admin', 'gerente'));
+CREATE POLICY "leads_update" ON leads FOR UPDATE USING (get_user_role() IN ('admin', 'gerente'));
+CREATE POLICY "leads_delete" ON leads FOR DELETE USING (get_user_role() = 'admin');
 
 -- ========================
 -- INDEXES
@@ -187,3 +230,21 @@ CREATE TRIGGER on_installment_paid
   BEFORE UPDATE ON contract_installments
   FOR EACH ROW
   EXECUTE FUNCTION create_transaction_on_payment();
+
+-- ========================
+-- FUNCTION: auto-create profile on signup
+-- ========================
+
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  INSERT INTO profiles (id, name, role)
+  VALUES (NEW.id, NEW.raw_user_meta_data->>'name', 'visualizador')
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION handle_new_user();

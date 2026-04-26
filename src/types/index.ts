@@ -17,6 +17,8 @@ export interface Client {
   website?: string
   status: ClientStatus
   notes?: string
+  closed_at?: string
+  delivery_date?: string
   created_at: string
 }
 

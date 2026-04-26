@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Card } from '@/components/ui/Card'
-import { Search, Plus, Phone, Mail, Instagram, ExternalLink, ChevronRight, CheckCircle2 } from 'lucide-react'
+import { Search, Plus, Phone, Mail, Instagram, ExternalLink, ChevronRight, CheckCircle2, Pencil, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { clientStatusConfig, formatDate, specialties } from '@/lib/utils'
 import { Client, ClientStatus } from '@/types'
@@ -19,6 +19,7 @@ const statusOptions: { value: ClientStatus | 'todos'; label: string }[] = [
 const emptyForm = {
   name: '', specialty: '', email: '', whatsapp: '',
   instagram: '', website: '', status: 'prospecto' as ClientStatus, notes: '',
+  closed_at: '', delivery_date: '',
 }
 
 function SkeletonRow() {
@@ -49,10 +50,13 @@ export default function ClientesPage() {
   const [statusFilter, setStatusFilter] = useState<ClientStatus | 'todos'>('todos')
   const [specialtyFilter, setSpecialtyFilter] = useState('todas')
   const [showModal, setShowModal] = useState(false)
+  const [editingClient, setEditingClient] = useState<Client | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [toast, setToast] = useState('')
+  const [deleteModal, setDeleteModal] = useState<Client | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -91,34 +95,93 @@ export default function ClientesPage() {
     { todos: clients.length, prospecto: 0, ativo: 0, inativo: 0, churned: 0 } as Record<ClientStatus | 'todos', number>
   )
 
+  function handleOpenModal() {
+    setEditingClient(null)
+    setForm(emptyForm)
+    setSaveError('')
+    setShowModal(true)
+  }
+
+  function handleOpenEdit(client: Client) {
+    setEditingClient(client)
+    setForm({
+      name: client.name,
+      specialty: client.specialty,
+      email: client.email ?? '',
+      whatsapp: client.whatsapp,
+      instagram: client.instagram ?? '',
+      website: client.website ?? '',
+      status: client.status,
+      notes: client.notes ?? '',
+      closed_at: client.closed_at ?? '',
+      delivery_date: client.delivery_date ?? '',
+    })
+    setSaveError('')
+    setShowModal(true)
+  }
+
+  function handleCloseModal() {
+    setShowModal(false)
+    setEditingClient(null)
+  }
+
   const handleSave = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
     setSaveError('')
     try {
       const supabase = createClient()
-      const { data, error } = await supabase
-        .from('clients')
-        .insert([form])
-        .select()
-        .single()
-      if (error) throw error
-      setClients(prev => [data, ...prev])
+      const payload = {
+        ...form,
+        closed_at: form.closed_at || null,
+        delivery_date: form.delivery_date || null,
+      }
+      if (editingClient) {
+        const { data, error } = await supabase
+          .from('clients')
+          .update(payload)
+          .eq('id', editingClient.id)
+          .select()
+          .single()
+        if (error) throw error
+        setClients(prev => prev.map(c => c.id === editingClient.id ? data : c))
+        setToast(`${data.name} atualizado com sucesso!`)
+      } else {
+        const { data, error } = await supabase
+          .from('clients')
+          .insert([payload])
+          .select()
+          .single()
+        if (error) throw error
+        setClients(prev => [data, ...prev])
+        setToast(`${data.name} adicionado com sucesso!`)
+      }
       setForm(emptyForm)
+      setEditingClient(null)
       setShowModal(false)
-      setToast(`${data.name} adicionado com sucesso!`)
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erro ao salvar cliente:', err)
-      setSaveError('Erro ao salvar. Verifique as credenciais do Supabase.')
+      setSaveError(err?.message ?? 'Erro desconhecido ao salvar.')
     } finally {
       setSaving(false)
     }
-  }, [form])
+  }, [form, editingClient])
 
-  function handleOpenModal() {
-    setForm(emptyForm)
-    setSaveError('')
-    setShowModal(true)
+  async function handleDelete() {
+    if (!deleteModal) return
+    setDeleting(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.from('clients').delete().eq('id', deleteModal.id)
+      if (error) throw error
+      setClients(prev => prev.filter(c => c.id !== deleteModal.id))
+      setToast(`${deleteModal.name} removido.`)
+      setDeleteModal(null)
+    } catch (err) {
+      console.error('Erro ao deletar cliente:', err)
+    } finally {
+      setDeleting(false)
+    }
   }
 
   return (
@@ -191,7 +254,8 @@ export default function ClientesPage() {
                   <th>Especialidade</th>
                   <th>Contato</th>
                   <th>Status</th>
-                  <th>Desde</th>
+                  <th>Fechamento</th>
+                  <th>Entrega</th>
                   <th aria-label="Ações"></th>
                 </tr>
               </thead>
@@ -200,7 +264,7 @@ export default function ClientesPage() {
                   Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-12 text-gray-400">
+                    <td colSpan={7} className="text-center py-12 text-gray-400">
                       {clients.length === 0 ? 'Nenhum cliente cadastrado ainda' : 'Nenhum cliente encontrado'}
                     </td>
                   </tr>
@@ -252,12 +316,39 @@ export default function ClientesPage() {
                           {clientStatusConfig[client.status].label}
                         </Badge>
                       </td>
-                      <td><span className="text-[12px] text-gray-400">{formatDate(client.created_at)}</span></td>
                       <td>
-                        <Link href={`/dashboard/clientes/${client.id}`} aria-label="Ver perfil"
-                          className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors inline-flex cursor-pointer">
-                          <ChevronRight size={15} />
-                        </Link>
+                        <span className="text-[12px] text-gray-400">
+                          {client.closed_at ? formatDate(client.closed_at) : '—'}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="text-[12px] text-gray-400">
+                          {client.delivery_date ? formatDate(client.delivery_date) : '—'}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-0.5">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEdit(client)}
+                            aria-label="Editar"
+                            className="p-1.5 rounded-md hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-colors"
+                          >
+                            <Pencil size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeleteModal(client)}
+                            aria-label="Remover"
+                            className="p-1.5 rounded-md hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                          <Link href={`/dashboard/clientes/${client.id}`} aria-label="Ver perfil"
+                            className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors inline-flex cursor-pointer">
+                            <ChevronRight size={15} />
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -268,8 +359,8 @@ export default function ClientesPage() {
         </Card>
       </div>
 
-      {/* New client modal */}
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Novo Cliente" size="lg">
+      {/* New / Edit client modal */}
+      <Modal isOpen={showModal} onClose={handleCloseModal} title={editingClient ? 'Editar Cliente' : 'Novo Cliente'} size="lg">
         <form onSubmit={handleSave} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
@@ -307,6 +398,14 @@ export default function ClientesPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Site</label>
               <input className="input-field" placeholder="seusite.com.br" value={form.website} onChange={e => setForm(f => ({ ...f, website: e.target.value }))} />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Data de fechamento</label>
+              <input type="date" className="input-field" aria-label="Data de fechamento" value={form.closed_at} onChange={e => setForm(f => ({ ...f, closed_at: e.target.value }))} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Data de entrega</label>
+              <input type="date" className="input-field" aria-label="Data de entrega" value={form.delivery_date} onChange={e => setForm(f => ({ ...f, delivery_date: e.target.value }))} />
+            </div>
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Observações internas</label>
               <textarea className="input-field resize-none" rows={3} placeholder="Notas privadas sobre o cliente..." value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
@@ -318,10 +417,31 @@ export default function ClientesPage() {
           )}
 
           <div className="flex justify-end gap-3 pt-2">
-            <Button variant="outline" type="button" onClick={() => setShowModal(false)}>Cancelar</Button>
-            <Button type="submit" loading={saving}>Salvar cliente</Button>
+            <Button variant="outline" type="button" onClick={handleCloseModal}>Cancelar</Button>
+            <Button type="submit" loading={saving}>{editingClient ? 'Salvar alterações' : 'Salvar cliente'}</Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Delete confirmation modal */}
+      <Modal isOpen={!!deleteModal} onClose={() => setDeleteModal(null)} title="Remover Cliente" size="sm">
+        {deleteModal && (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Tem certeza que deseja remover <strong>{deleteModal.name}</strong>? Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setDeleteModal(null)}>Cancelar</Button>
+              <Button
+                onClick={handleDelete}
+                loading={deleting}
+                className="bg-red-500 hover:bg-red-600 text-white border-red-500"
+              >
+                <Trash2 size={13} /> Remover
+              </Button>
+            </div>
+          </div>
+        )}
       </Modal>
 
       {/* Success toast */}
