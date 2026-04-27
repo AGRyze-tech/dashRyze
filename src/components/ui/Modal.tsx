@@ -36,14 +36,14 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ animation: 'fadeIn 0.15s ease-out' }}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className={cn('relative w-full bg-white rounded-xl shadow-2xl', sizeMap[size])} style={{ animation: 'slideUp 0.2s ease-out' }}>
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
+      <div className={cn('relative w-full bg-white rounded-xl shadow-2xl flex flex-col', sizeMap[size])} style={{ animation: 'slideUp 0.2s ease-out', maxHeight: '90vh' }}>
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 flex-shrink-0">
           <h2 className="text-base font-semibold text-gray-900">{title}</h2>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
             <X size={18} />
           </button>
         </div>
-        <div className="p-5">{children}</div>
+        <div className="p-5 overflow-y-auto">{children}</div>
       </div>
     </div>
   )
