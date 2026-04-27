@@ -123,6 +123,12 @@ body {
   border-radius: inherit;
 }
 
+/* Ensure select options are always readable on white backgrounds */
+select option {
+  color: #111827;
+  background-color: #ffffff;
+}
+
 /* Input styles for light backgrounds */
 .input-field {
   background: #ffffff;
