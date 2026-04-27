@@ -1,6 +1,8 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
+
+const supabase = createClient()
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
@@ -41,7 +43,7 @@ export default function ConfiguracoesPage() {
   const [inviteRole, setInviteRole] = useState<Role>('visualizador')
   const [inviting, setInviting] = useState(false)
   const [inviteError, setInviteError] = useState('')
-  const [inviteSuccess, setInviteSuccess] = useState(false)
+  const [inviteSuccess, setInviteSuccess] = useState('')
 
   const [profileName, setProfileName] = useState('')
   const [profileSaving, setProfileSaving] = useState(false)
@@ -49,26 +51,21 @@ export default function ConfiguracoesPage() {
 
   const [deleteTarget, setDeleteTarget] = useState<Profile | null>(null)
 
-  const supabase = createClient()
-
   const load = useCallback(async () => {
     setLoading(true)
-    const { data: { user } } = await supabase.auth.getUser()
+    const [{ data: { user } }, { data: profs }] = await Promise.all([
+      supabase.auth.getUser(),
+      supabase.from('profiles').select('*').order('created_at'),
+    ])
     if (!user) return
 
     setCurrentUser({ id: user.id, email: user.email ?? '' })
-
-    const { data: profs } = await supabase
-      .from('profiles')
-      .select('*')
-      .order('created_at')
-
     setProfiles(profs ?? [])
     const mine = profs?.find(p => p.id === user.id) ?? null
     setCurrentProfile(mine)
     setProfileName(mine?.name ?? '')
     setLoading(false)
-  }, [supabase])
+  }, [])
 
   useEffect(() => { load() }, [load])
 
@@ -87,15 +84,15 @@ export default function ConfiguracoesPage() {
     setInviting(true)
     setInviteError('')
     try {
-      await inviteUser(inviteEmail, inviteName)
-      // set role after user is created
-      setInviteSuccess(true)
+      await inviteUser(inviteEmail, inviteName, inviteRole)
+      const sentTo = inviteEmail
       setInviteEmail('')
       setInviteName('')
       setInviteRole('visualizador')
+      setInviteSuccess(sentTo)
       setTimeout(() => {
         setInviteOpen(false)
-        setInviteSuccess(false)
+        setInviteSuccess('')
       }, 2000)
     } catch (e: unknown) {
       setInviteError(e instanceof Error ? e.message : 'Erro ao convidar usuário')
@@ -136,7 +133,7 @@ export default function ConfiguracoesPage() {
       <Header title="Configurações" subtitle="Gerencie equipe e preferências" />
 
       <div className="p-6">
-        {/* Tabs */}
+
         <div className="flex gap-1 bg-gray-100 p-1 rounded-lg w-fit mb-6">
           {(['equipe', 'perfil'] as const).map(t => (
             <button
@@ -151,7 +148,7 @@ export default function ConfiguracoesPage() {
           ))}
         </div>
 
-        {/* EQUIPE TAB */}
+
         {tab === 'equipe' && (
           <div className="space-y-4 max-w-2xl">
             <div className="flex items-center justify-between">
@@ -233,7 +230,7 @@ export default function ConfiguracoesPage() {
           </div>
         )}
 
-        {/* PERFIL TAB */}
+
         {tab === 'perfil' && (
           <div className="max-w-md space-y-4">
             <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
@@ -289,14 +286,14 @@ export default function ConfiguracoesPage() {
       </div>
 
       {/* INVITE MODAL */}
-      <Modal isOpen={inviteOpen} onClose={() => { setInviteOpen(false); setInviteError(''); setInviteSuccess(false) }} title="Convidar membro">
+      <Modal isOpen={inviteOpen} onClose={() => { setInviteOpen(false); setInviteError(''); setInviteSuccess('') }} title="Convidar membro">
         {inviteSuccess ? (
           <div className="py-6 text-center">
             <div className="w-12 h-12 rounded-full bg-[#F0FBF5] flex items-center justify-center mx-auto mb-3">
               <Mail size={20} className="text-[#40916C]" />
             </div>
             <p className="text-[14px] font-medium text-gray-900">Convite enviado!</p>
-            <p className="text-[12px] text-gray-500 mt-1">{inviteEmail}</p>
+            <p className="text-[12px] text-gray-500 mt-1">{inviteSuccess}</p>
           </div>
         ) : (
           <div className="space-y-4">

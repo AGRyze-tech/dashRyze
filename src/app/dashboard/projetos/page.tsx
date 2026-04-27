@@ -1,6 +1,8 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
+
+const supabase = createClient()
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
@@ -20,13 +22,7 @@ const columns: { status: ProjectStatus; label: string; color: string }[] = [
   { status: 'pausado',        label: 'Pausado',        color: '#EF4444' },
 ]
 
-const typeOptions = [
-  { value: 'site',      label: 'Site' },
-  { value: 'landing',   label: 'Landing Page' },
-  { value: 'smartpage', label: 'SmartPage' },
-  { value: 'sistema',   label: 'Sistema' },
-  { value: 'outro',     label: 'Outro' },
-]
+const typeOptions = Object.entries(projectTypeLabels).map(([value, label]) => ({ value, label }))
 
 const emptyForm = {
   client_id: '',
@@ -131,20 +127,21 @@ export default function ProjetosPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  const supabase = createClient()
-
   const load = useCallback(async () => {
     setLoading(true)
-    const [{ data: proj }, { data: cli }] = await Promise.all([
-      supabase.from('projects').select('*, client:clients(id, name)').order('created_at', { ascending: false }),
-      supabase.from('clients').select('id, name, specialty').order('name'),
-    ])
+    const { data: proj } = await supabase
+      .from('projects')
+      .select('*, client:clients(id, name)')
+      .order('created_at', { ascending: false })
     setProjects((proj as Project[]) ?? [])
-    setClients((cli as Client[]) ?? [])
     setLoading(false)
-  }, [supabase])
+  }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    supabase.from('clients').select('id, name, specialty').order('name')
+      .then(({ data }) => setClients((data as Client[]) ?? []))
+    load()
+  }, [load])
 
   function openCreate() {
     setEditTarget(null)
@@ -213,10 +210,13 @@ export default function ProjetosPage() {
 
   async function handleDrop(status: ProjectStatus) {
     if (!dragging) return
-    setProjects(prev => prev.map(p => p.id === dragging ? { ...p, status } : p))
-    await supabase.from('projects').update({ status }).eq('id', dragging)
+    const id = dragging
+    const prev = projects.find(p => p.id === id)?.status
+    setProjects(ps => ps.map(p => p.id === id ? { ...p, status } : p))
     setDragging(null)
     setDragOver(null)
+    const { error } = await supabase.from('projects').update({ status }).eq('id', id)
+    if (error && prev) setProjects(ps => ps.map(p => p.id === id ? { ...p, status: prev } : p))
   }
 
   const set = (field: keyof typeof emptyForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
@@ -251,7 +251,6 @@ export default function ProjetosPage() {
           </Button>
         </div>
 
-        {/* Kanban */}
         <div className="flex gap-4 overflow-x-auto pb-4" style={{ minHeight: '70vh' }}>
           {columns.map(col => {
             const colProjects = projects.filter(p => p.status === col.status)
@@ -304,7 +303,6 @@ export default function ProjetosPage() {
         </div>
       </div>
 
-      {/* CREATE / EDIT MODAL */}
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -312,7 +310,6 @@ export default function ProjetosPage() {
         size="lg"
       >
         <div className="grid grid-cols-2 gap-4">
-          {/* Cliente */}
           <div className="col-span-2">
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Cliente *</label>
             <select value={form.client_id} onChange={set('client_id')} title="Cliente"
@@ -324,14 +321,12 @@ export default function ProjetosPage() {
             </select>
           </div>
 
-          {/* Nome */}
           <div className="col-span-2">
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Nome do projeto *</label>
             <input type="text" value={form.name} onChange={set('name')} placeholder="Ex: Site institucional"
               className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#40916C] focus:ring-2 focus:ring-[#40916C]/10" />
           </div>
 
-          {/* Tipo */}
           <div>
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Tipo</label>
             <select value={form.type} onChange={set('type')} title="Tipo"
@@ -340,7 +335,6 @@ export default function ProjetosPage() {
             </select>
           </div>
 
-          {/* Status */}
           <div>
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Status</label>
             <select value={form.status} onChange={set('status')} title="Status"
@@ -349,7 +343,6 @@ export default function ProjetosPage() {
             </select>
           </div>
 
-          {/* Responsável */}
           <div>
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Responsável</label>
             <select value={form.responsible} onChange={set('responsible')} title="Responsável"
@@ -359,35 +352,30 @@ export default function ProjetosPage() {
             </select>
           </div>
 
-          {/* Valor */}
           <div>
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Valor (R$)</label>
             <input type="number" value={form.value} onChange={set('value')} placeholder="0,00" min="0" step="0.01"
               className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#40916C] focus:ring-2 focus:ring-[#40916C]/10" />
           </div>
 
-          {/* Início */}
           <div>
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Data de início *</label>
             <input type="date" value={form.start_date} onChange={set('start_date')} title="Data de início"
               className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#40916C] focus:ring-2 focus:ring-[#40916C]/10" />
           </div>
 
-          {/* Prazo */}
           <div>
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Prazo de entrega *</label>
             <input type="date" value={form.deadline} onChange={set('deadline')} title="Prazo de entrega"
               className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#40916C] focus:ring-2 focus:ring-[#40916C]/10" />
           </div>
 
-          {/* URL */}
           <div className="col-span-2">
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">URL do projeto</label>
             <input type="text" value={form.url} onChange={set('url')} placeholder="exemplo.com.br"
               className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#40916C] focus:ring-2 focus:ring-[#40916C]/10" />
           </div>
 
-          {/* Notas */}
           <div className="col-span-2">
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Observações</label>
             <textarea value={form.notes} onChange={set('notes')} rows={3} placeholder="Detalhes adicionais..."
@@ -407,7 +395,6 @@ export default function ProjetosPage() {
         </div>
       </Modal>
 
-      {/* DELETE CONFIRM */}
       <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Excluir projeto" size="sm">
         <div className="space-y-4">
           <p className="text-[14px] text-gray-600">
