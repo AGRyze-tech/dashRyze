@@ -1,8 +1,6 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase'
-
-const supabase = createClient()
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
@@ -51,21 +49,23 @@ export default function ConfiguracoesPage() {
 
   const [deleteTarget, setDeleteTarget] = useState<Profile | null>(null)
 
+  const supabase = useMemo(() => createClient(), [])
+
   const load = useCallback(async () => {
     setLoading(true)
     const [{ data: { user } }, { data: profs }] = await Promise.all([
       supabase.auth.getUser(),
       supabase.from('profiles').select('*').order('created_at'),
     ])
-    if (!user) return
+    if (!user) { setLoading(false); return }
 
     setCurrentUser({ id: user.id, email: user.email ?? '' })
     setProfiles(profs ?? [])
-    const mine = profs?.find(p => p.id === user.id) ?? null
+    const mine = (profs as Profile[])?.find(p => p.id === user.id) ?? null
     setCurrentProfile(mine)
     setProfileName(mine?.name ?? '')
     setLoading(false)
-  }, [])
+  }, [supabase])
 
   useEffect(() => { load() }, [load])
 

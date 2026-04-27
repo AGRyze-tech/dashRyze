@@ -1,8 +1,6 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase'
-
-const supabase = createClient()
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
@@ -127,6 +125,8 @@ export default function ProjetosPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
+  const supabase = useMemo(() => createClient(), [])
+
   const load = useCallback(async () => {
     setLoading(true)
     const { data: proj } = await supabase
@@ -135,13 +135,13 @@ export default function ProjetosPage() {
       .order('created_at', { ascending: false })
     setProjects((proj as Project[]) ?? [])
     setLoading(false)
-  }, [])
+  }, [supabase])
 
   useEffect(() => {
     supabase.from('clients').select('id, name, specialty').order('name')
       .then(({ data }) => setClients((data as Client[]) ?? []))
     load()
-  }, [load])
+  }, [load, supabase])
 
   function openCreate() {
     setEditTarget(null)
