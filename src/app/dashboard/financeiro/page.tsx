@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Header } from '@/components/layout/Header'
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -64,11 +64,11 @@ export default function FinanceiroPage() {
   const [deleteModal, setDeleteModal] = useState<Transaction | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [toast, setToast] = useState('')
+  const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
     async function load() {
       try {
-        const supabase = createClient()
         const { data } = await supabase
           .from('transactions')
           .select('*')
@@ -99,8 +99,8 @@ export default function FinanceiroPage() {
 
   const filtered = transactions.filter(t => typeFilter === 'todos' || t.type === typeFilter)
 
-  const monthlyData = buildMonthlyData(transactions)
-  const categoryData = buildCategoryData(transactions)
+  const monthlyData = useMemo(() => buildMonthlyData(transactions), [transactions])
+  const categoryData = useMemo(() => buildCategoryData(transactions), [transactions])
 
   function handleOpenModal() {
     setForm(emptyForm)
@@ -108,7 +108,7 @@ export default function FinanceiroPage() {
     setShowModal(true)
   }
 
-  const handleSave = useCallback(async (e: React.FormEvent) => {
+  async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     const amount = parseFloat(form.amount)
     if (!form.description.trim()) { setSaveError('Descrição é obrigatória.'); return }
@@ -117,7 +117,6 @@ export default function FinanceiroPage() {
     setSaving(true)
     setSaveError('')
     try {
-      const supabase = createClient()
       const { data, error } = await supabase
         .from('transactions')
         .insert([{
@@ -138,13 +137,12 @@ export default function FinanceiroPage() {
     } finally {
       setSaving(false)
     }
-  }, [form])
+  }
 
   async function handleDelete() {
     if (!deleteModal) return
     setDeleting(true)
     try {
-      const supabase = createClient()
       const { error } = await supabase.from('transactions').delete().eq('id', deleteModal.id)
       if (error) throw error
       setTransactions(prev => prev.filter(t => t.id !== deleteModal.id))

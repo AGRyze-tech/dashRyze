@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Header } from '@/components/layout/Header'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -54,11 +54,11 @@ export default function LeadsPage() {
   const [deleting, setDeleting] = useState(false)
   const [convertModal, setConvertModal] = useState<Lead | null>(null)
   const [toast, setToast] = useState('')
+  const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
     async function load() {
       try {
-        const supabase = createClient()
         const { data } = await supabase.from('leads').select('*').order('created_at', { ascending: false })
         if (data) setLeads(data)
       } finally {
@@ -88,13 +88,12 @@ export default function LeadsPage() {
     setShowModal(true)
   }
 
-  const handleSave = useCallback(async (e: React.FormEvent) => {
+  async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     if (!form.name.trim() || !form.whatsapp.trim()) { setSaveError('Nome e WhatsApp são obrigatórios.'); return }
     setSaving(true)
     setSaveError('')
     try {
-      const supabase = createClient()
       const { data, error } = await supabase
         .from('leads')
         .insert([{
@@ -116,16 +115,22 @@ export default function LeadsPage() {
     } finally {
       setSaving(false)
     }
-  }, [form])
+  }
 
-  async function handleUpdateStatus(id: string, status: LeadStatus) {
-    setLeads(prev => prev.map(l => l.id === id ? { ...l, status } : l))
-    const supabase = createClient()
-    await supabase.from('leads').update({ status }).eq('id', id)
+  async function handleUpdateStatus(id: string, status: LeadStatus): Promise<boolean> {
+    const prev = leads.find(l => l.id === id)?.status
+    setLeads(ls => ls.map(l => l.id === id ? { ...l, status } : l))
+    const { error } = await supabase.from('leads').update({ status }).eq('id', id)
+    if (error) {
+      if (prev) setLeads(ls => ls.map(l => l.id === id ? { ...l, status: prev } : l))
+      return false
+    }
+    return true
   }
 
   async function handleConvert(lead: Lead) {
-    await handleUpdateStatus(lead.id, 'convertido')
+    const ok = await handleUpdateStatus(lead.id, 'convertido')
+    if (!ok) return
     setConvertModal(null)
     setToast(`${lead.name} convertido em cliente!`)
   }
@@ -134,7 +139,6 @@ export default function LeadsPage() {
     if (!deleteModal) return
     setDeleting(true)
     try {
-      const supabase = createClient()
       const { error } = await supabase.from('leads').delete().eq('id', deleteModal.id)
       if (error) throw error
       setLeads(prev => prev.filter(l => l.id !== deleteModal.id))

@@ -1,5 +1,5 @@
 'use client'
-import { Fragment, useState, useEffect, useCallback } from 'react'
+import { Fragment, useState, useEffect, useMemo } from 'react'
 import { Header } from '@/components/layout/Header'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -62,11 +62,11 @@ export default function ContratosPage() {
   const [deleteModal, setDeleteModal] = useState<Contract | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [toast, setToast] = useState('')
+  const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
     async function load() {
       try {
-        const supabase = createClient()
         const [contractsRes, clientsRes] = await Promise.all([
           supabase
             .from('contracts')
@@ -91,10 +91,9 @@ export default function ContratosPage() {
 
   useEffect(() => {
     if (!form.client_id) { setProjects([]); return }
-    const supabase = createClient()
     supabase.from('projects').select('*').eq('client_id', form.client_id).order('name')
       .then(({ data }) => setProjects(data ?? []))
-  }, [form.client_id])
+  }, [form.client_id, supabase])
 
   useEffect(() => {
     const count = form.payment_method === 'avista' ? 1 : form.installments_count
@@ -127,14 +126,13 @@ export default function ContratosPage() {
     setShowModal(true)
   }
 
-  const handleSave = useCallback(async (e: React.FormEvent) => {
+  async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     if (!form.client_id) { setSaveError('Selecione um cliente.'); return }
     if (!totalValue || totalValue <= 0) { setSaveError('Informe um valor total válido.'); return }
     setSaving(true)
     setSaveError('')
     try {
-      const supabase = createClient()
       const number = await generateContractNumber(supabase)
       const count = form.payment_method === 'avista' ? 1 : form.installments_count
 
@@ -176,13 +174,12 @@ export default function ContratosPage() {
     } finally {
       setSaving(false)
     }
-  }, [form, totalValue, dueDates])
+  }
 
   async function handleDelete() {
     if (!deleteModal) return
     setDeleting(true)
     try {
-      const supabase = createClient()
       const { error } = await supabase.from('contracts').delete().eq('id', deleteModal.id)
       if (error) throw error
       setContracts(prev => prev.filter(c => c.id !== deleteModal.id))

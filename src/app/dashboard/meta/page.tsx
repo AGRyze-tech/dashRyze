@@ -29,6 +29,7 @@ const emptyForm = {
 
 export default function MetaPage() {
   const [campaigns, setCampaigns] = useState<MetaCampaign[]>([])
+  const [hydrated, setHydrated] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [editTarget, setEditTarget] = useState<MetaCampaign | null>(null)
   const [form, setForm] = useState(emptyForm)
@@ -39,12 +40,13 @@ export default function MetaPage() {
 
   useEffect(() => {
     setCampaigns(loadCampaigns())
+    setHydrated(true)
   }, [])
 
   useEffect(() => {
-    if (campaigns.length === 0 && typeof window !== 'undefined' && !localStorage.getItem(STORAGE_KEY)) return
+    if (!hydrated) return
     localStorage.setItem(STORAGE_KEY, JSON.stringify(campaigns))
-  }, [campaigns])
+  }, [campaigns, hydrated])
 
   useEffect(() => {
     if (!toast) return
