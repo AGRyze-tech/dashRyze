@@ -1,6 +1,7 @@
 'use client'
-import { Search, Bell } from 'lucide-react'
+import { Search, Bell, Menu } from 'lucide-react'
 import { useState } from 'react'
+import { useMobileNav } from './DashboardShell'
 
 interface HeaderProps {
   title: string
@@ -9,26 +10,37 @@ interface HeaderProps {
 
 export function Header({ title, subtitle }: HeaderProps) {
   const [search, setSearch] = useState('')
+  const { toggle } = useMobileNav()
 
   return (
-    <header className="sticky top-0 z-20 bg-[#F8FBF9]/90 backdrop-blur-md border-b border-gray-200/80">
-      <div className="flex items-center justify-between px-6 h-14">
-        <div>
-          <h1 className="text-[15px] font-semibold text-gray-900 leading-none">{title}</h1>
-          {subtitle && <p className="text-[12px] text-gray-500 mt-0.5">{subtitle}</p>}
+    <header className="sticky top-0 z-20 bg-[#F8FBF9]/90 dark:bg-[#0D1F18]/90 backdrop-blur-md border-b border-gray-200/80 dark:border-[#1E3020]">
+      <div className="flex items-center gap-3 px-4 sm:px-6 h-14">
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label="Abrir menu"
+          className="lg:hidden p-2 -ml-1 rounded-lg text-gray-500 dark:text-[#4A6B52] hover:bg-gray-100 dark:hover:bg-[#1E3020] transition-colors"
+        >
+          <Menu size={20} />
+        </button>
+
+        <div className="flex-1 min-w-0">
+          <h1 className="text-[15px] font-semibold text-gray-900 dark:text-[#F8FBF9] leading-none truncate">{title}</h1>
+          {subtitle && <p className="text-[12px] text-gray-500 dark:text-[#8BA891] mt-0.5 truncate">{subtitle}</p>}
         </div>
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          <div className="relative hidden sm:block">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#4A6B52]" />
             <input
               type="text"
               placeholder="Buscar..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="pl-8 pr-4 py-1.5 text-sm bg-white border border-gray-200 rounded-lg w-48 focus:outline-none focus:border-[#40916C] focus:ring-2 focus:ring-[#40916C]/10 transition-all placeholder:text-gray-400"
+              className="pl-8 pr-4 py-1.5 text-sm bg-white dark:bg-[#111A14] border border-gray-200 dark:border-[#2A4030] rounded-lg w-48 focus:outline-none focus:border-[#40916C] focus:ring-2 focus:ring-[#40916C]/10 transition-all placeholder:text-gray-400 dark:placeholder:text-[#4A6B52] text-gray-900 dark:text-[#F8FBF9]"
             />
           </div>
-          <button className="relative p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors">
+          <button type="button" aria-label="Notificações" className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#1E3020] text-gray-500 dark:text-[#4A6B52] hover:text-gray-700 dark:hover:text-[#8BA891] transition-colors">
             <Bell size={16} />
             <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#40916C]" />
           </button>

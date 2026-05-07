@@ -35,9 +35,9 @@ export default function DashboardPage() {
     <div>
       <Header title="Dashboard" subtitle={`Bem-vindo, Isaac${today ? ` · ${today}` : ''}`} />
 
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-6">
         {/* Stat cards */}
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 stagger-children">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 stagger-children">
           {stats.map(({ label, value, total, icon: Icon, iconCls }) => (
             <div key={label} className="stat-card p-5">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${iconCls}`}>
@@ -51,7 +51,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Bottom row */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card padding="none">
             <CardHeader className="px-5 pt-5 pb-3 border-b border-gray-100">
               <CardTitle>Prazos Próximos</CardTitle>

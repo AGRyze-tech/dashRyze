@@ -197,8 +197,8 @@ export default function ContratosPage() {
         subtitle={loading ? 'Carregando...' : `${contracts.length} contrato${contracts.length !== 1 ? 's' : ''}`}
       />
 
-      <div className="p-6 space-y-5">
-        <div className="grid grid-cols-3 gap-4">
+      <div className="p-4 sm:p-6 space-y-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="stat-card p-4">
             <p className="text-xs text-gray-500 mb-1">Total Recebido</p>
             <p className="text-xl font-bold text-emerald-600 tabular">{formatCurrency(totalReceived)}</p>
@@ -218,6 +218,7 @@ export default function ContratosPage() {
         </div>
 
         <Card padding="none">
+          <div className="overflow-x-auto">
           <table className="data-table">
             <thead>
               <tr>
@@ -325,6 +326,7 @@ export default function ContratosPage() {
               })}
             </tbody>
           </table>
+          </div>
         </Card>
       </div>
 

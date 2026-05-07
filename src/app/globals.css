@@ -259,3 +259,60 @@ select option {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+/* Dark mode overrides for custom CSS classes */
+.dark .page-content {
+  background-color: #0D1F18;
+}
+
+.dark .card-light,
+.dark .stat-card {
+  background: #152218;
+  border-color: var(--ryze-border);
+}
+
+.dark .card-light {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.dark .card-light:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.25);
+}
+
+.dark .stat-card:hover {
+  border-color: #40916C40;
+}
+
+.dark .input-field {
+  background: var(--ryze-surface);
+  border-color: var(--ryze-border-light);
+  color: var(--ryze-text);
+}
+
+.dark .input-field:focus {
+  border-color: var(--ryze-green);
+  box-shadow: 0 0 0 3px rgba(64, 145, 108, 0.18);
+}
+
+.dark .input-field::placeholder {
+  color: var(--ryze-text-dim);
+}
+
+.dark .data-table th {
+  color: var(--ryze-text-muted);
+  border-bottom-color: var(--ryze-border);
+  background: #152218;
+}
+
+.dark .data-table td {
+  color: #D1FAE5;
+  border-bottom-color: var(--ryze-surface);
+}
+
+.dark .data-table tr:hover td {
+  background: #1A2C1F;
+}
+
+.dark .kanban-column {
+  background: #152218;
+}

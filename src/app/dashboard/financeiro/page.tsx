@@ -157,8 +157,8 @@ export default function FinanceiroPage() {
     <div>
       <Header title="Financeiro" subtitle="Controle de entradas, saídas e saldo" />
 
-      <div className="p-6 space-y-5">
-        <div className="grid grid-cols-3 gap-4">
+      <div className="p-4 sm:p-6 space-y-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="stat-card p-5">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
@@ -192,8 +192,8 @@ export default function FinanceiroPage() {
         </div>
 
         {transactions.length > 0 && (
-          <div className="grid grid-cols-3 gap-4">
-            <div className="col-span-2">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2">
               <Card padding="none">
                 <CardHeader className="px-5 pt-5 pb-2">
                   <CardTitle>Evolução Mensal</CardTitle>

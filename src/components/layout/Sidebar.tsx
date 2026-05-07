@@ -4,10 +4,11 @@ import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, Users, FolderKanban, FileText,
-  TrendingUp, UserPlus, BarChart2, Settings, LogOut,
+  TrendingUp, UserPlus, BarChart2, Settings, LogOut, Sun, Moon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
+import { useTheme } from './ThemeProvider'
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', exact: true },
@@ -21,11 +22,13 @@ const navItems = [
 
 interface SidebarProps {
   userRole?: 'admin' | 'editor'
+  mobileOpen?: boolean
 }
 
-export function Sidebar({ userRole = 'admin' }: SidebarProps) {
+export function Sidebar({ userRole = 'admin', mobileOpen = false }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const { theme, toggleTheme } = useTheme()
 
   async function handleSignOut() {
     const supabase = createClient()
@@ -37,7 +40,12 @@ export function Sidebar({ userRole = 'admin' }: SidebarProps) {
     exact ? pathname === href : pathname.startsWith(href)
 
   return (
-    <aside className="sidebar fixed left-0 top-0 h-screen w-60 flex flex-col z-30 select-none">
+    <aside className={cn(
+      'sidebar fixed left-0 top-0 h-screen w-60 flex flex-col z-30 select-none',
+      'transition-transform duration-300 ease-in-out',
+      '-translate-x-full lg:translate-x-0',
+      mobileOpen && 'translate-x-0',
+    )}>
       {/* Logo */}
       <div className="px-5 py-5 border-b border-[#1E3020]">
         <div className="flex items-center gap-2.5">
@@ -89,14 +97,22 @@ export function Sidebar({ userRole = 'admin' }: SidebarProps) {
           <div className="w-7 h-7 rounded-full bg-[#40916C] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
             {userRole === 'admin' ? 'I' : 'V'}
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="text-[13px] font-medium text-[#F8FBF9] truncate">
               {userRole === 'admin' ? 'Isaac' : 'Vinícius'}
             </div>
             <div className="text-[11px] text-[#4A6B52] capitalize">{userRole}</div>
           </div>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
+            className="p-1.5 rounded-md text-[#4A6B52] hover:text-[#8BA891] hover:bg-[#1E3020] transition-colors flex-shrink-0"
+          >
+            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
         </div>
-        <button onClick={handleSignOut} className="nav-item w-full text-[#4A6B52] hover:text-red-400 hover:bg-red-400/5">
+        <button type="button" onClick={handleSignOut} className="nav-item w-full text-[#4A6B52] hover:text-red-400 hover:bg-red-400/5">
           <LogOut size={15} strokeWidth={1.75} />
           <span className="text-[13px]">Sair</span>
         </button>

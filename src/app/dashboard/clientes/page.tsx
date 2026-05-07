@@ -191,7 +191,7 @@ export default function ClientesPage() {
         subtitle={loading ? 'Carregando...' : `${filtered.length} cliente${filtered.length !== 1 ? 's' : ''} encontrado${filtered.length !== 1 ? 's' : ''}`}
       />
 
-      <div className="p-6 space-y-5">
+      <div className="p-4 sm:p-6 space-y-5">
         {/* Filters bar */}
         <div className="flex items-center gap-3 flex-wrap">
           <div className="relative flex-1 min-w-[240px] max-w-sm">
@@ -224,6 +224,7 @@ export default function ClientesPage() {
         </div>
 
         {/* Status tabs */}
+        <div className="overflow-x-auto pb-1">
         <div className="flex gap-1.5 bg-gray-100 rounded-lg p-1 w-fit">
           {statusOptions.map(({ value, label }) => (
             <button
@@ -242,6 +243,7 @@ export default function ClientesPage() {
               </span>
             </button>
           ))}
+        </div>
         </div>
 
         {/* Table */}

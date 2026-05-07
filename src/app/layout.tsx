@@ -25,6 +25,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" className={`${jakarta.variable} ${jetbrainsMono.variable}`}>
+      <head>
+        {/* Sync dark class before first paint to prevent flash */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{if(localStorage.getItem('ryze_theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}})()` }} />
+      </head>
       <body>{children}</body>
     </html>
   )

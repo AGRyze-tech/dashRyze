@@ -231,7 +231,7 @@ export default function ProjetosPage() {
         subtitle={loading ? 'Carregando...' : `${projects.length} projetos · ${formatCurrency(totalValue)} em aberto`}
       />
 
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <div className="flex items-center justify-between mb-5">
           <div className="flex flex-wrap gap-4">
             {columns.map(col => {

@@ -1,12 +1,12 @@
-import { Sidebar } from '@/components/layout/Sidebar'
+import { ThemeProvider } from '@/components/layout/ThemeProvider'
+import { DashboardShell } from '@/components/layout/DashboardShell'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-[#F8FBF9]">
-      <Sidebar userRole="admin" />
-      <main className="ml-60 flex-1 min-w-0">
+    <ThemeProvider>
+      <DashboardShell userRole="admin">
         {children}
-      </main>
-    </div>
+      </DashboardShell>
+    </ThemeProvider>
   )
 }

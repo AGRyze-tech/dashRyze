@@ -127,7 +127,7 @@ export default function MetaPage() {
     <div>
       <Header title="Meta Ads" subtitle="Campanhas Facebook / Instagram" />
 
-      <div className="p-6 space-y-5">
+      <div className="p-4 sm:p-6 space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Badge color="purple" dot={false}>Modo Manual</Badge>
@@ -136,7 +136,7 @@ export default function MetaPage() {
           <Button onClick={handleOpenCreate}><Plus size={14} /> Nova campanha</Button>
         </div>
 
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {[
             { label: 'Gasto Total', value: formatCurrency(totalSpend), icon: DollarSign, iconClass: 'text-red-500', bgClass: 'bg-red-50' },
             { label: 'Impressões', value: totalImpressions.toLocaleString('pt-BR'), icon: Eye, iconClass: 'text-violet-700', bgClass: 'bg-violet-50' },
@@ -154,8 +154,8 @@ export default function MetaPage() {
           ))}
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
-          <div className="col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2">
             <Card padding="none">
               <CardHeader className="px-5 pt-5 pb-2">
                 <CardTitle>Gasto por Campanha</CardTitle>
