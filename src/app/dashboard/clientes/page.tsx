@@ -396,14 +396,6 @@ export default function ClientesPage() {
               <input className="input-field" placeholder="11999990000" value={form.whatsapp} onChange={set('whatsapp')} required />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Instagram</label>
-              <input className="input-field" placeholder="@perfil" value={form.instagram} onChange={set('instagram')} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Site</label>
-              <input className="input-field" placeholder="seusite.com.br" value={form.website} onChange={set('website')} />
-            </div>
-            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Data de fechamento</label>
               <input type="date" className="input-field" aria-label="Data de fechamento" value={form.closed_at} onChange={set('closed_at')} />
             </div>
