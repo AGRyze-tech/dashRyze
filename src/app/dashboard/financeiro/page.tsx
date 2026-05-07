@@ -102,6 +102,9 @@ export default function FinanceiroPage() {
   const monthlyData = useMemo(() => buildMonthlyData(transactions), [transactions])
   const categoryData = useMemo(() => buildCategoryData(transactions), [transactions])
 
+  const set = (field: keyof typeof emptyForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setForm(f => ({ ...f, [field]: e.target.value }))
+
   function handleOpenModal() {
     setForm(emptyForm)
     setSaveError('')
@@ -323,31 +326,27 @@ export default function FinanceiroPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Categoria *</label>
-              <select className="input-field cursor-pointer" value={form.category}
-                onChange={e => setForm(f => ({ ...f, category: e.target.value as TransactionCategory }))} aria-label="Categoria">
+              <select className="input-field cursor-pointer" value={form.category} onChange={set('category')} aria-label="Categoria">
                 {categoryOptions.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
               </select>
             </div>
 
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Descrição *</label>
-              <input className="input-field" placeholder="Ex: Mensalidade Notion, Pagamento cliente..." value={form.description}
-                onChange={e => setForm(f => ({ ...f, description: e.target.value }))} required />
+              <input className="input-field" placeholder="Ex: Mensalidade Notion, Pagamento cliente..." value={form.description} onChange={set('description')} required />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Valor *</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm select-none">R$</span>
-                <input type="number" className="input-field pl-9" placeholder="0,00" min="0" step="0.01"
-                  value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} required />
+                <input type="number" className="input-field pl-9" placeholder="0,00" min="0" step="0.01" value={form.amount} onChange={set('amount')} required />
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Data *</label>
-              <input type="date" className="input-field" value={form.date}
-                onChange={e => setForm(f => ({ ...f, date: e.target.value }))} required aria-label="Data" />
+              <input type="date" className="input-field" value={form.date} onChange={set('date')} required aria-label="Data" />
             </div>
           </div>
 

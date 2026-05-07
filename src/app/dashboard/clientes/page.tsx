@@ -125,6 +125,9 @@ export default function ClientesPage() {
     setEditingClient(null)
   }
 
+  const set = (field: keyof typeof emptyForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+    setForm(f => ({ ...f, [field]: e.target.value }))
+
   const handleSave = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
@@ -367,18 +370,18 @@ export default function ClientesPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Nome completo / Razão social *</label>
-              <input className="input-field" placeholder="Dr. Nome Sobrenome" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
+              <input className="input-field" placeholder="Dr. Nome Sobrenome" value={form.name} onChange={set('name')} required />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Especialidade *</label>
-              <select className="input-field cursor-pointer" value={form.specialty} onChange={e => setForm(f => ({ ...f, specialty: e.target.value }))} required aria-label="Especialidade">
+              <select className="input-field cursor-pointer" value={form.specialty} onChange={set('specialty')} required aria-label="Especialidade">
                 <option value="">Selecione...</option>
                 {specialties.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
-              <select className="input-field cursor-pointer" value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as ClientStatus }))} aria-label="Status">
+              <select className="input-field cursor-pointer" value={form.status} onChange={set('status')} aria-label="Status">
                 {Object.entries(clientStatusConfig).map(([value, { label }]) => (
                   <option key={value} value={value}>{label}</option>
                 ))}
@@ -386,31 +389,31 @@ export default function ClientesPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Email *</label>
-              <input type="email" className="input-field" placeholder="email@exemplo.com" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required />
+              <input type="email" className="input-field" placeholder="email@exemplo.com" value={form.email} onChange={set('email')} required />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">WhatsApp *</label>
-              <input className="input-field" placeholder="11999990000" value={form.whatsapp} onChange={e => setForm(f => ({ ...f, whatsapp: e.target.value }))} required />
+              <input className="input-field" placeholder="11999990000" value={form.whatsapp} onChange={set('whatsapp')} required />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Instagram</label>
-              <input className="input-field" placeholder="@perfil" value={form.instagram} onChange={e => setForm(f => ({ ...f, instagram: e.target.value }))} />
+              <input className="input-field" placeholder="@perfil" value={form.instagram} onChange={set('instagram')} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Site</label>
-              <input className="input-field" placeholder="seusite.com.br" value={form.website} onChange={e => setForm(f => ({ ...f, website: e.target.value }))} />
+              <input className="input-field" placeholder="seusite.com.br" value={form.website} onChange={set('website')} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Data de fechamento</label>
-              <input type="date" className="input-field" aria-label="Data de fechamento" value={form.closed_at} onChange={e => setForm(f => ({ ...f, closed_at: e.target.value }))} />
+              <input type="date" className="input-field" aria-label="Data de fechamento" value={form.closed_at} onChange={set('closed_at')} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Data de entrega</label>
-              <input type="date" className="input-field" aria-label="Data de entrega" value={form.delivery_date} onChange={e => setForm(f => ({ ...f, delivery_date: e.target.value }))} />
+              <input type="date" className="input-field" aria-label="Data de entrega" value={form.delivery_date} onChange={set('delivery_date')} />
             </div>
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Observações internas</label>
-              <textarea className="input-field resize-none" rows={3} placeholder="Notas privadas sobre o cliente..." value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
+              <textarea className="input-field resize-none" rows={3} placeholder="Notas privadas sobre o cliente..." value={form.notes} onChange={set('notes')} />
             </div>
           </div>
 

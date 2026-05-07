@@ -88,6 +88,9 @@ export default function LeadsPage() {
     setShowModal(true)
   }
 
+  const set = (field: keyof typeof emptyForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setForm(f => ({ ...f, [field]: e.target.value }))
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     if (!form.name.trim() || !form.whatsapp.trim()) { setSaveError('Nome e WhatsApp são obrigatórios.'); return }
@@ -309,28 +312,23 @@ export default function LeadsPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Nome completo *</label>
-              <input className="input-field" placeholder="Dr. Nome Sobrenome" value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
+              <input className="input-field" placeholder="Dr. Nome Sobrenome" value={form.name} onChange={set('name')} required />
             </div>
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1.5">WhatsApp *</label>
-              <input className="input-field" placeholder="11999990000" value={form.whatsapp}
-                onChange={e => setForm(f => ({ ...f, whatsapp: e.target.value }))} required />
+              <input className="input-field" placeholder="11999990000" value={form.whatsapp} onChange={set('whatsapp')} required />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Faturamento mensal</label>
-              <input className="input-field" placeholder="Ex: R$ 30k–50k" value={form.revenue}
-                onChange={e => setForm(f => ({ ...f, revenue: e.target.value }))} />
+              <input className="input-field" placeholder="Ex: R$ 30k–50k" value={form.revenue} onChange={set('revenue')} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Pacientes/mês</label>
-              <input className="input-field" placeholder="Ex: 80–120" value={form.patients_per_month}
-                onChange={e => setForm(f => ({ ...f, patients_per_month: e.target.value }))} />
+              <input className="input-field" placeholder="Ex: 80–120" value={form.patients_per_month} onChange={set('patients_per_month')} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Tem site?</label>
-              <select className="input-field cursor-pointer" value={form.has_site}
-                onChange={e => setForm(f => ({ ...f, has_site: e.target.value }))} aria-label="Tem site?">
+              <select className="input-field cursor-pointer" value={form.has_site} onChange={set('has_site')} aria-label="Tem site?">
                 <option value="Não">Não</option>
                 <option value="Sim">Sim</option>
                 <option value="Precisa renovar">Precisa renovar</option>
@@ -338,8 +336,7 @@ export default function LeadsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
-              <select className="input-field cursor-pointer" value={form.status}
-                onChange={e => setForm(f => ({ ...f, status: e.target.value as LeadStatus }))} aria-label="Status">
+              <select className="input-field cursor-pointer" value={form.status} onChange={set('status')} aria-label="Status">
                 {(['novo', 'contatado', 'qualificado', 'descartado', 'convertido'] as LeadStatus[]).map(s => (
                   <option key={s} value={s}>{leadStatusConfig[s].label}</option>
                 ))}

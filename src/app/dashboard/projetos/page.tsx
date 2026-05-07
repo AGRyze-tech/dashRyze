@@ -312,41 +312,34 @@ export default function ProjetosPage() {
         <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2">
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Cliente *</label>
-            <select value={form.client_id} onChange={set('client_id')} title="Cliente"
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#40916C] bg-white">
+            <select value={form.client_id} onChange={set('client_id')} className="input-field cursor-pointer" aria-label="Cliente">
               <option value="">Selecione um cliente</option>
-              {clients.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
+              {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
 
           <div className="col-span-2">
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Nome do projeto *</label>
-            <input type="text" value={form.name} onChange={set('name')} placeholder="Ex: Site institucional"
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#40916C] focus:ring-2 focus:ring-[#40916C]/10" />
+            <input type="text" value={form.name} onChange={set('name')} placeholder="Ex: Site institucional" className="input-field" />
           </div>
 
           <div>
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Tipo</label>
-            <select value={form.type} onChange={set('type')} title="Tipo"
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#40916C] bg-white">
+            <select value={form.type} onChange={set('type')} className="input-field cursor-pointer" aria-label="Tipo">
               {typeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
 
           <div>
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Status</label>
-            <select value={form.status} onChange={set('status')} title="Status"
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#40916C] bg-white">
+            <select value={form.status} onChange={set('status')} className="input-field cursor-pointer" aria-label="Status">
               {columns.map(c => <option key={c.status} value={c.status}>{c.label}</option>)}
             </select>
           </div>
 
           <div>
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Responsável</label>
-            <select value={form.responsible} onChange={set('responsible')} title="Responsável"
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#40916C] bg-white">
+            <select value={form.responsible} onChange={set('responsible')} className="input-field cursor-pointer" aria-label="Responsável">
               <option value="isaac">Isaac</option>
               <option value="vinicius">Vinicius</option>
             </select>
@@ -354,32 +347,27 @@ export default function ProjetosPage() {
 
           <div>
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Valor (R$)</label>
-            <input type="number" value={form.value} onChange={set('value')} placeholder="0,00" min="0" step="0.01"
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#40916C] focus:ring-2 focus:ring-[#40916C]/10" />
+            <input type="number" value={form.value} onChange={set('value')} placeholder="0,00" min="0" step="0.01" className="input-field" />
           </div>
 
           <div>
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Data de início *</label>
-            <input type="date" value={form.start_date} onChange={set('start_date')} title="Data de início"
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#40916C] focus:ring-2 focus:ring-[#40916C]/10" />
+            <input type="date" value={form.start_date} onChange={set('start_date')} className="input-field" aria-label="Data de início" />
           </div>
 
           <div>
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Prazo de entrega *</label>
-            <input type="date" value={form.deadline} onChange={set('deadline')} title="Prazo de entrega"
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#40916C] focus:ring-2 focus:ring-[#40916C]/10" />
+            <input type="date" value={form.deadline} onChange={set('deadline')} className="input-field" aria-label="Prazo de entrega" />
           </div>
 
           <div className="col-span-2">
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">URL do projeto</label>
-            <input type="text" value={form.url} onChange={set('url')} placeholder="exemplo.com.br"
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#40916C] focus:ring-2 focus:ring-[#40916C]/10" />
+            <input type="text" value={form.url} onChange={set('url')} placeholder="exemplo.com.br" className="input-field" />
           </div>
 
           <div className="col-span-2">
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Observações</label>
-            <textarea value={form.notes} onChange={set('notes')} rows={3} placeholder="Detalhes adicionais..."
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#40916C] focus:ring-2 focus:ring-[#40916C]/10 resize-none" />
+            <textarea value={form.notes} onChange={set('notes')} rows={3} placeholder="Detalhes adicionais..." className="input-field resize-none" />
           </div>
 
           {error && (
