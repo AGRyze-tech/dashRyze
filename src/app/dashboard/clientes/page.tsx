@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Card } from '@/components/ui/Card'
-import { Search, Plus, Phone, Mail, Instagram, ExternalLink, ChevronRight, CheckCircle2, Pencil, Trash2 } from 'lucide-react'
+import { Search, Plus, Phone, Mail, Instagram, ExternalLink, ChevronRight, CheckCircle2, Pencil, Trash2, Paperclip, X, FileCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { clientStatusConfig, formatDate, specialties } from '@/lib/utils'
 import { Client, ClientStatus } from '@/types'
@@ -57,6 +57,7 @@ export default function ClientesPage() {
   const [toast, setToast] = useState('')
   const [deleteModal, setDeleteModal] = useState<Client | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [contractFile, setContractFile] = useState<File | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -99,6 +100,7 @@ export default function ClientesPage() {
     setEditingClient(null)
     setForm(emptyForm)
     setSaveError('')
+    setContractFile(null)
     setShowModal(true)
   }
 
@@ -117,12 +119,14 @@ export default function ClientesPage() {
       delivery_date: client.delivery_date ?? '',
     })
     setSaveError('')
+    setContractFile(null)
     setShowModal(true)
   }
 
   function handleCloseModal() {
     setShowModal(false)
     setEditingClient(null)
+    setContractFile(null)
   }
 
   const set = (field: keyof typeof emptyForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
@@ -139,10 +143,23 @@ export default function ClientesPage() {
         closed_at: form.closed_at || null,
         delivery_date: form.delivery_date || null,
       }
+      let contractUrl: string | null = null
+      if (contractFile) {
+        const ext = contractFile.name.split('.').pop()
+        const path = `contratos/${Date.now()}-${contractFile.name.replace(/\s+/g, '_')}`
+        const { error: uploadError } = await supabase.storage.from('clientes').upload(path, contractFile, { upsert: true })
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage.from('clientes').getPublicUrl(path)
+          contractUrl = urlData.publicUrl
+        }
+      }
+
+      const fullPayload = contractUrl ? { ...payload, contract_url: contractUrl } : payload
+
       if (editingClient) {
         const { data, error } = await supabase
           .from('clients')
-          .update(payload)
+          .update(fullPayload)
           .eq('id', editingClient.id)
           .select()
           .single()
@@ -152,7 +169,7 @@ export default function ClientesPage() {
       } else {
         const { data, error } = await supabase
           .from('clients')
-          .insert([payload])
+          .insert([fullPayload])
           .select()
           .single()
         if (error) throw error
@@ -160,6 +177,7 @@ export default function ClientesPage() {
         setToast(`${data.name} adicionado com sucesso!`)
       }
       setForm(emptyForm)
+      setContractFile(null)
       setEditingClient(null)
       setShowModal(false)
     } catch (err: any) {
@@ -402,6 +420,37 @@ export default function ClientesPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Data de entrega</label>
               <input type="date" className="input-field" aria-label="Data de entrega" value={form.delivery_date} onChange={set('delivery_date')} />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Contrato (anexo)</label>
+              {contractFile ? (
+                <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-[#40916C]/40 bg-[#40916C]/5">
+                  <FileCheck size={16} className="text-[#40916C] flex-shrink-0" />
+                  <span className="text-[13px] text-gray-700 flex-1 truncate">{contractFile.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => setContractFile(null)}
+                    className="p-0.5 rounded text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
+                    aria-label="Remover arquivo"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center gap-2 px-4 py-5 rounded-lg border-2 border-dashed border-gray-200 hover:border-[#40916C]/50 hover:bg-[#40916C]/5 transition-colors cursor-pointer">
+                  <Paperclip size={18} className="text-gray-400" />
+                  <div className="text-center">
+                    <span className="text-[13px] font-medium text-[#40916C]">Clique para anexar</span>
+                    <p className="text-[11px] text-gray-400 mt-0.5">PDF, DOC, DOCX — até 10MB</p>
+                  </div>
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    className="hidden"
+                    onChange={e => setContractFile(e.target.files?.[0] ?? null)}
+                  />
+                </label>
+              )}
             </div>
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Observações internas</label>

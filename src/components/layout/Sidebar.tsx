@@ -3,8 +3,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import {
-  LayoutDashboard, Users, FolderKanban, FileText,
-  TrendingUp, UserPlus, BarChart2, Settings, LogOut, Sun, Moon,
+  LayoutDashboard, Users, FolderKanban,
+  TrendingUp, BarChart2, Settings, LogOut, Sun, Moon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
@@ -14,9 +14,7 @@ const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', exact: true },
   { href: '/dashboard/clientes', icon: Users, label: 'Clientes' },
   { href: '/dashboard/projetos', icon: FolderKanban, label: 'Projetos' },
-  { href: '/dashboard/contratos', icon: FileText, label: 'Contratos' },
   { href: '/dashboard/financeiro', icon: TrendingUp, label: 'Financeiro' },
-  { href: '/dashboard/leads', icon: UserPlus, label: 'Leads' },
   { href: '/dashboard/meta', icon: BarChart2, label: 'Meta Ads' },
 ]
 
