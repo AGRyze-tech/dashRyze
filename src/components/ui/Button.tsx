@@ -10,7 +10,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantMap = {
-  primary: 'bg-[#40916C] hover:bg-[#2D6A4F] text-white shadow-sm hover:shadow-green-md active:scale-[0.98]',
+  primary: 'bg-gradient-to-b from-[#4DA37A] to-[#40916C] hover:from-[#40916C] hover:to-[#2D6A4F] text-white shadow-sm shadow-[#40916C]/20 active:scale-[0.98]',
   secondary: 'bg-[#1B4332] hover:bg-[#2D6A4F] text-[#95D5B2] hover:text-white',
   ghost: 'bg-transparent hover:bg-gray-100 text-gray-600 hover:text-gray-900',
   danger: 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200',

@@ -37,7 +37,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ animation: 'fadeIn 0.15s ease-out' }}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className={cn('relative w-full bg-white dark:bg-[#152218] text-gray-900 dark:text-[#F8FBF9] rounded-xl shadow-2xl flex flex-col', sizeMap[size])} style={{ animation: 'slideUp 0.2s ease-out', maxHeight: '90vh' }}>
-        <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-[#1E3020] flex-shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#1E3020] flex-shrink-0 bg-gradient-to-r from-gray-50/70 to-white dark:from-[#1A2C20] dark:to-[#152218] rounded-t-xl">
           <h2 className="text-base font-semibold text-gray-900 dark:text-[#F8FBF9]">{title}</h2>
           <button type="button" onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#1E3020] text-gray-400 dark:text-[#4A6B52] hover:text-gray-600 dark:hover:text-[#8BA891] transition-colors">
             <X size={18} />

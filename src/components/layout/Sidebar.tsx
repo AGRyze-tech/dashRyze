@@ -47,7 +47,7 @@ export function Sidebar({ userRole = 'admin', mobileOpen = false }: SidebarProps
       {/* Logo */}
       <div className="px-5 py-5 border-b border-[#1E3020]">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center flex-shrink-0 p-1">
+          <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center flex-shrink-0 p-1 ring-1 ring-[#40916C]/30 shadow-[0_0_14px_rgba(64,145,108,0.28)]">
             <Image
               src="/logotipo-removebg-preview.png"
               alt="RyzeSystems"

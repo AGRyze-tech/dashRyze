@@ -65,41 +65,56 @@ body {
 /* Page content area */
 .page-content {
   background-color: #F8FBF9;
+  background-image: radial-gradient(rgba(64, 145, 108, 0.07) 1px, transparent 1px);
+  background-size: 24px 24px;
   min-height: 100vh;
 }
 
 /* Sidebar */
 .sidebar {
-  background: linear-gradient(180deg, #0A1A0F 0%, #0D1E12 100%);
+  background: linear-gradient(180deg, #0C1F13 0%, #0A1A0F 55%, #0D1E12 100%);
   border-right: 1px solid var(--ryze-border);
+}
+
+.sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 200px;
+  background: radial-gradient(ellipse at 50% -10%, rgba(64, 145, 108, 0.20) 0%, transparent 68%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* Card on light background */
 .card-light {
   background: #ffffff;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #E8ECEB;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 14px rgba(0,0,0,0.05);
+  transition: box-shadow 0.22s ease, transform 0.22s ease, border-color 0.22s ease;
 }
 
 .card-light:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.10), 0 8px 32px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.09), 0 8px 32px rgba(0,0,0,0.05);
+  border-color: rgba(64, 145, 108, 0.22);
 }
 
 /* Stat card */
 .stat-card {
   background: #ffffff;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #E8ECEB;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 14px rgba(0,0,0,0.05);
+  transition: all 0.22s ease;
 }
 
 .stat-card:hover {
-  border-color: #40916C30;
-  box-shadow: 0 4px 16px rgba(64,145,108,0.10);
-  transform: translateY(-1px);
+  border-color: rgba(64, 145, 108, 0.28);
+  box-shadow: 0 4px 20px rgba(64,145,108,0.10), -3px 0 0 #40916C;
+  transform: translateY(-2px);
 }
 
 /* Green glow effect */
@@ -165,20 +180,20 @@ select option {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #6B7280;
-  border-bottom: 1px solid #F3F4F6;
-  background: #FAFAFA;
+  border-bottom: 1px solid #F0F2F1;
+  background: linear-gradient(to bottom, #FAFAFA, #F6F8F7);
 }
 
 .data-table td {
   padding: 14px 16px;
   font-size: 14px;
   color: #374151;
-  border-bottom: 1px solid #F9FAFB;
-  transition: background 0.1s;
+  border-bottom: 1px solid #F5F7F6;
+  transition: background 0.15s ease;
 }
 
 .data-table tr:hover td {
-  background: #F9FAFB;
+  background: linear-gradient(90deg, rgba(64, 145, 108, 0.03) 0%, #F9FBFA 100%);
 }
 
 .data-table tr:last-child td {
@@ -225,13 +240,14 @@ select option {
 }
 
 .nav-item.active {
-  background: rgba(64, 145, 108, 0.18);
+  background: linear-gradient(90deg, rgba(64, 145, 108, 0.22) 0%, rgba(64, 145, 108, 0.07) 100%);
   color: #52B788;
-  box-shadow: inset 2px 0 0 #40916C;
+  box-shadow: inset 3px 0 0 #52B788, 0 1px 6px rgba(64, 145, 108, 0.10);
 }
 
 .nav-item.active svg {
-  color: #40916C;
+  color: #52B788;
+  filter: drop-shadow(0 0 4px rgba(82, 183, 136, 0.4));
 }
 
 /* Animate stagger children */
@@ -263,6 +279,8 @@ select option {
 /* Dark mode overrides for custom CSS classes */
 .dark .page-content {
   background-color: #0D1F18;
+  background-image: radial-gradient(rgba(64, 145, 108, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 .dark .card-light,
@@ -280,7 +298,8 @@ select option {
 }
 
 .dark .stat-card:hover {
-  border-color: #40916C40;
+  border-color: rgba(64, 145, 108, 0.35);
+  box-shadow: 0 4px 20px rgba(64,145,108,0.12), -3px 0 0 #40916C;
 }
 
 .dark .input-field {
