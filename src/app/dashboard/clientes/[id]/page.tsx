@@ -1,29 +1,47 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { Header } from '@/components/layout/Header'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Modal } from '@/components/ui/Modal'
 import {
   ArrowLeft, Phone, Mail, Instagram, ExternalLink,
   FolderKanban, FileText, Edit2, Trash2, MessageCircle, Plus, Loader2,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
-import { clientStatusConfig, projectStatusConfig, formatDate, formatCurrency, projectTypeLabels } from '@/lib/utils'
-import { Client, Project } from '@/types'
+import { clientStatusConfig, projectStatusConfig, formatDate, formatCurrency, projectTypeLabels, projectTypeOptions, projectStatusOptions } from '@/lib/utils'
+import { Client, Project, ProjectStatus } from '@/types'
+
+const emptyProjectForm = {
+  name: '',
+  type: 'site' as Project['type'],
+  status: 'briefing' as ProjectStatus,
+  responsible: 'isaac' as 'isaac' | 'vinicius',
+  value: '',
+  start_date: '',
+  deadline: '',
+  url: '',
+  notes: '',
+}
 
 export default function ClientePage({ params }: { params: { id: string } }) {
   const { id } = params
   const [client, setClient] = useState<Client | null>(null)
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [form, setForm] = useState(emptyProjectForm)
+  const [saving, setSaving] = useState(false)
+  const [formError, setFormError] = useState('')
+
+  const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
     let cancelled = false
     async function load() {
       try {
-        const supabase = createClient()
         const [{ data: clientData }, { data: projectData }] = await Promise.all([
           supabase.from('clients').select('*').eq('id', id).single(),
           supabase.from('projects').select('*').eq('client_id', id).order('created_at', { ascending: false }),
@@ -37,7 +55,45 @@ export default function ClientePage({ params }: { params: { id: string } }) {
     }
     load()
     return () => { cancelled = true }
-  }, [id])
+  }, [id, supabase])
+
+  function openNewProject() {
+    setForm(emptyProjectForm)
+    setFormError('')
+    setModalOpen(true)
+  }
+
+  async function handleSaveProject() {
+    if (!form.name || !form.start_date || !form.deadline) {
+      setFormError('Preencha os campos obrigatórios.')
+      return
+    }
+    setSaving(true)
+    setFormError('')
+    try {
+      const { data: newProject, error } = await supabase.from('projects').insert({
+        client_id: id,
+        name: form.name,
+        type: form.type,
+        status: form.status,
+        responsible: form.responsible,
+        value: parseFloat(form.value) || 0,
+        start_date: form.start_date,
+        deadline: form.deadline,
+        url: form.url || null,
+        notes: form.notes || null,
+      }).select().single()
+      if (error) { setFormError('Erro ao salvar.'); return }
+      setProjects(prev => [newProject as Project, ...prev])
+      setModalOpen(false)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const setField = (field: keyof typeof emptyProjectForm) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+      setForm(prev => ({ ...prev, [field]: e.target.value }))
 
   if (loading) {
     return (
@@ -164,7 +220,7 @@ export default function ClientePage({ params }: { params: { id: string } }) {
                   <FolderKanban size={15} className="text-gray-400" />
                   <CardTitle>Projetos ({projects.length})</CardTitle>
                 </div>
-                <Button size="sm"><Plus size={13} />Novo projeto</Button>
+                <Button size="sm" onClick={openNewProject}><Plus size={13} />Novo projeto</Button>
               </CardHeader>
               {projects.length === 0 ? (
                 <div className="text-center py-10 text-gray-400 text-sm">Nenhum projeto ainda</div>
@@ -208,6 +264,71 @@ export default function ClientePage({ params }: { params: { id: string } }) {
           </div>
         </div>
       </div>
+
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Novo projeto" size="lg">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="col-span-2">
+            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Nome do projeto *</label>
+            <input type="text" value={form.name} onChange={setField('name')} placeholder="Ex: Site institucional" className="input-field" />
+          </div>
+
+          <div>
+            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Tipo</label>
+            <select value={form.type} onChange={setField('type')} className="input-field cursor-pointer" aria-label="Tipo">
+              {projectTypeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Status</label>
+            <select value={form.status} onChange={setField('status')} className="input-field cursor-pointer" aria-label="Status">
+              {projectStatusOptions.map(o => <option key={o.status} value={o.status}>{o.label}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Responsável</label>
+            <select value={form.responsible} onChange={setField('responsible')} className="input-field cursor-pointer" aria-label="Responsável">
+              <option value="isaac">Isaac</option>
+              <option value="vinicius">Vinicius</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Valor (R$)</label>
+            <input type="number" value={form.value} onChange={setField('value')} placeholder="0,00" min="0" step="0.01" className="input-field" />
+          </div>
+
+          <div>
+            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Data de início *</label>
+            <input type="date" value={form.start_date} onChange={setField('start_date')} className="input-field" aria-label="Data de início" />
+          </div>
+
+          <div>
+            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Prazo de entrega *</label>
+            <input type="date" value={form.deadline} onChange={setField('deadline')} className="input-field" aria-label="Prazo de entrega" />
+          </div>
+
+          <div className="col-span-2">
+            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">URL do projeto</label>
+            <input type="text" value={form.url} onChange={setField('url')} placeholder="exemplo.com.br" className="input-field" />
+          </div>
+
+          <div className="col-span-2">
+            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Observações</label>
+            <textarea value={form.notes} onChange={setField('notes')} rows={3} placeholder="Detalhes adicionais..." className="input-field resize-none" />
+          </div>
+
+          {formError && (
+            <p className="col-span-2 text-[12px] text-red-500 bg-red-50 px-3 py-2 rounded-lg">{formError}</p>
+          )}
+
+          <div className="col-span-2 flex gap-2 justify-end pt-1">
+            <Button variant="outline" onClick={() => setModalOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSaveProject} loading={saving}>Criar projeto</Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

@@ -81,6 +81,11 @@ export const projectTypeLabels: Record<string, string> = {
   outro: 'Outro',
 }
 
+export const projectTypeOptions = Object.entries(projectTypeLabels).map(([value, label]) => ({ value, label }))
+
+export const projectStatusOptions = (Object.entries(projectStatusConfig) as [ProjectStatus, { label: string; color: string }][])
+  .map(([status, { label }]) => ({ status, label }))
+
 export const specialties = [
   'Nutricionista',
   'Psicólogo',

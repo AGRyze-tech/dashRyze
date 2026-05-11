@@ -17,16 +17,16 @@ function DeadlineRow({ project }: { project: typeof mockProjects[number] }) {
   const cfg = projectStatusConfig[project.status]
 
   return (
-    <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50/60 transition-colors">
+    <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-50 dark:border-[#1E3020] last:border-0 hover:bg-gray-50/60 dark:hover:bg-[#1A2C1F] transition-colors">
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-medium text-gray-800 truncate">{project.name}</p>
-        <p className="text-[11px] text-gray-400 truncate">{client?.name}</p>
+        <p className="text-[13px] font-medium text-gray-800 dark:text-[#E2F5EC] truncate">{project.name}</p>
+        <p className="text-[11px] text-gray-400 dark:text-[#8BA891] truncate">{client?.name}</p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <Badge color={cfg.color as 'green' | 'yellow' | 'red' | 'gray' | 'blue' | 'purple'} dot={false}>
           {cfg.label}
         </Badge>
-        <span className={`flex items-center gap-1 text-[11px] font-medium ${isOverdue ? 'text-red-500' : isWarning ? 'text-amber-500' : 'text-gray-400'}`}>
+        <span className={`flex items-center gap-1 text-[11px] font-medium ${isOverdue ? 'text-red-500 dark:text-red-400' : isWarning ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#8BA891]'}`}>
           {(isOverdue || isWarning) && <AlertTriangle size={10} />}
           {formatDateShort(project.deadline)}
         </span>
@@ -38,15 +38,15 @@ function DeadlineRow({ project }: { project: typeof mockProjects[number] }) {
 function LeadRow({ lead }: { lead: typeof mockLeads[number] }) {
   const cfg = leadStatusConfig[lead.status]
   return (
-    <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50/60 transition-colors">
-      <div className="w-8 h-8 rounded-full bg-[#F0FBF5] flex items-center justify-center shrink-0">
-        <span className="text-[11px] font-bold text-[#40916C]">
+    <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-50 dark:border-[#1E3020] last:border-0 hover:bg-gray-50/60 dark:hover:bg-[#1A2C1F] transition-colors">
+      <div className="w-8 h-8 rounded-full bg-[#F0FBF5] dark:bg-[#1B4332] flex items-center justify-center shrink-0">
+        <span className="text-[11px] font-bold text-[#40916C] dark:text-[#52B788]">
           {lead.name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()}
         </span>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-medium text-gray-800 truncate">{lead.name}</p>
-        <p className="text-[11px] text-gray-400">{lead.revenue}</p>
+        <p className="text-[13px] font-medium text-gray-800 dark:text-[#E2F5EC] truncate">{lead.name}</p>
+        <p className="text-[11px] text-gray-400 dark:text-[#8BA891]">{lead.revenue}</p>
       </div>
       <Badge color={cfg.color as 'green' | 'yellow' | 'red' | 'gray' | 'blue' | 'purple'} dot={false}>
         {cfg.label}
@@ -74,28 +74,28 @@ export default function DashboardPage() {
         value: activeClients,
         total: `${mockClients.length} total`,
         icon: Users,
-        iconCls: 'bg-[#F0FBF5] text-[#40916C]',
+        iconCls: 'bg-[#F0FBF5] text-[#40916C] dark:bg-[#1B4332] dark:text-[#52B788]',
       },
       {
         label: 'Projetos em Andamento',
         value: activeProjects,
         total: `${mockProjects.length} projetos`,
         icon: FolderKanban,
-        iconCls: 'bg-[#F5F3FF] text-[#7C3AED]',
+        iconCls: 'bg-[#F5F3FF] text-[#7C3AED] dark:bg-purple-900/40 dark:text-purple-400',
       },
       {
         label: 'Receita do Mês',
         value: formatCurrency(monthlyRevenue),
         total: `${formatCurrency(monthlyExpenses)} em despesas`,
         icon: DollarSign,
-        iconCls: 'bg-[#F0FBF5] text-[#40916C]',
+        iconCls: 'bg-[#F0FBF5] text-[#40916C] dark:bg-[#1B4332] dark:text-[#52B788]',
       },
       {
         label: 'Leads Novos',
         value: newLeads,
         total: `${mockLeads.length} total`,
         icon: UserPlus,
-        iconCls: 'bg-[#FFFBEB] text-[#F59E0B]',
+        iconCls: 'bg-[#FFFBEB] text-[#F59E0B] dark:bg-amber-900/40 dark:text-amber-400',
       },
     ]
   }, [])
@@ -126,16 +126,16 @@ export default function DashboardPage() {
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${iconCls}`}>
                 <Icon size={18} />
               </div>
-              <div className="tabular text-2xl font-bold text-gray-900 mb-0.5">{value}</div>
-              <div className="text-[13px] font-medium text-gray-700 mb-1">{label}</div>
-              <div className="text-[11px] text-gray-400">{total}</div>
+              <div className="tabular text-2xl font-bold text-gray-900 dark:text-[#F0FDF4] mb-0.5">{value}</div>
+              <div className="text-[13px] font-medium text-gray-700 dark:text-[#D1FAE5] mb-1">{label}</div>
+              <div className="text-[11px] text-gray-400 dark:text-[#8BA891]">{total}</div>
             </div>
           ))}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card padding="none">
-            <CardHeader className="px-5 pt-5 pb-3 border-b border-gray-100">
+            <CardHeader className="px-5 pt-5 pb-3 border-b border-gray-100 dark:border-[#1E3020]">
               <CardTitle>Prazos Próximos</CardTitle>
               <Link href="/dashboard/projetos">
                 <Button variant="ghost" size="sm" className="text-[#40916C] hover:text-[#40916C] hover:bg-[#40916C]/8 gap-1 -mr-2">
@@ -145,10 +145,10 @@ export default function DashboardPage() {
             </CardHeader>
             {upcomingProjects.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-center">
-                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                  <Clock size={16} className="text-gray-400" />
+                <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-[#1B4332] flex items-center justify-center mb-3">
+                  <Clock size={16} className="text-gray-400 dark:text-[#52B788]" />
                 </div>
-                <p className="text-[13px] text-gray-400">Nenhum projeto cadastrado ainda</p>
+                <p className="text-[13px] text-gray-400 dark:text-[#8BA891]">Nenhum projeto cadastrado ainda</p>
               </div>
             ) : (
               <div>
@@ -158,7 +158,7 @@ export default function DashboardPage() {
           </Card>
 
           <Card padding="none">
-            <CardHeader className="px-5 pt-5 pb-3 border-b border-gray-100">
+            <CardHeader className="px-5 pt-5 pb-3 border-b border-gray-100 dark:border-[#1E3020]">
               <CardTitle>Leads Recentes</CardTitle>
               <Link href="/dashboard/leads">
                 <Button variant="ghost" size="sm" className="text-[#40916C] hover:text-[#40916C] hover:bg-[#40916C]/8 gap-1 -mr-2">

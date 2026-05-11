@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, memo } from 'react'
 import { createClient } from '@/lib/supabase'
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/Button'
@@ -7,7 +7,7 @@ import { Modal } from '@/components/ui/Modal'
 import { AlertTriangle, Clock, Plus, ExternalLink, User, Pencil, Trash2 } from 'lucide-react'
 import {
   formatDate, formatCurrency, daysUntil, isDeadlineWarning, isOverdue,
-  projectTypeLabels, deadlineLabel,
+  projectTypeLabels, projectTypeOptions, deadlineLabel,
 } from '@/lib/utils'
 import { Project, ProjectStatus, Client } from '@/types'
 
@@ -20,7 +20,6 @@ const columns: { status: ProjectStatus; label: string; color: string }[] = [
   { status: 'pausado',        label: 'Pausado',        color: '#EF4444' },
 ]
 
-const typeOptions = Object.entries(projectTypeLabels).map(([value, label]) => ({ value, label }))
 
 const emptyForm = {
   client_id: '',
@@ -35,7 +34,7 @@ const emptyForm = {
   notes: '',
 }
 
-function ProjectCard({
+const ProjectCard = memo(function ProjectCard({
   project,
   onEdit,
   onDelete,
@@ -109,7 +108,7 @@ function ProjectCard({
       )}
     </div>
   )
-}
+})
 
 export default function ProjetosPage() {
   const [projects, setProjects] = useState<Project[]>([])
@@ -150,7 +149,7 @@ export default function ProjetosPage() {
     setModalOpen(true)
   }
 
-  function openEdit(project: Project) {
+  const openEdit = useCallback((project: Project) => {
     setEditTarget(project)
     setForm({
       client_id: project.client_id,
@@ -166,7 +165,7 @@ export default function ProjetosPage() {
     })
     setError('')
     setModalOpen(true)
-  }
+  }, [])
 
   async function handleSave() {
     if (!form.client_id || !form.name || !form.start_date || !form.deadline) {
@@ -222,7 +221,15 @@ export default function ProjetosPage() {
   const set = (field: keyof typeof emptyForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm(prev => ({ ...prev, [field]: e.target.value }))
 
-  const totalValue = projects.filter(p => !['concluido', 'entregue'].includes(p.status)).reduce((s, p) => s + p.value, 0)
+  const { projectsByStatus, totalValue } = useMemo(() => {
+    const byStatus: Partial<Record<ProjectStatus, Project[]>> = {}
+    let total = 0
+    for (const p of projects) {
+      ;(byStatus[p.status] ??= []).push(p)
+      if (p.status !== 'concluido' && p.status !== 'entregue') total += p.value
+    }
+    return { projectsByStatus: byStatus, totalValue: total }
+  }, [projects])
 
   return (
     <div>
@@ -235,7 +242,7 @@ export default function ProjetosPage() {
         <div className="flex items-center justify-between mb-5">
           <div className="flex flex-wrap gap-4">
             {columns.map(col => {
-              const count = projects.filter(p => p.status === col.status).length
+              const count = projectsByStatus[col.status]?.length ?? 0
               return (
                 <div key={col.status} className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full" style={{ background: col.color }} />
@@ -253,7 +260,7 @@ export default function ProjetosPage() {
 
         <div className="flex gap-4 overflow-x-auto pb-4" style={{ minHeight: '70vh' }}>
           {columns.map(col => {
-            const colProjects = projects.filter(p => p.status === col.status)
+            const colProjects = projectsByStatus[col.status] ?? []
             const isOver = dragOver === col.status
 
             return (
@@ -326,7 +333,7 @@ export default function ProjetosPage() {
           <div>
             <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Tipo</label>
             <select value={form.type} onChange={set('type')} className="input-field cursor-pointer" aria-label="Tipo">
-              {typeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              {projectTypeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
 

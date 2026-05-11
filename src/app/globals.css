@@ -335,3 +335,14 @@ select option {
 .dark .kanban-column {
   background: #152218;
 }
+
+/* Select options in dark mode */
+.dark select option {
+  color: #E2F5EC;
+  background-color: #152218;
+}
+
+/* Empty state icon circles in dark mode */
+.dark .w-10.h-10.rounded-full.bg-gray-100 {
+  background-color: #1B4332;
+}
