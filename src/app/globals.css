@@ -356,6 +356,23 @@ select option {
   background-color: #1B4332;
 }
 
+/* Chart color classes — used by Recharts tooltip and pie legend */
+.chart-border-entry       { border-left-color: #40916C; }
+.chart-border-exit-light  { border-left-color: #FCA5A5; }
+.chart-border-exit-dark   { border-left-color: #7F1D1D; }
+.chart-border-1           { border-left-color: #52B788; }
+.chart-border-2           { border-left-color: #74C69D; }
+.chart-border-3           { border-left-color: #95D5B2; }
+.chart-border-4           { border-left-color: #2D6A4F; }
+.chart-border-5           { border-left-color: #1B4332; }
+
+.pie-dot-0 { background-color: #40916C; }
+.pie-dot-1 { background-color: #52B788; }
+.pie-dot-2 { background-color: #74C69D; }
+.pie-dot-3 { background-color: #95D5B2; }
+.pie-dot-4 { background-color: #2D6A4F; }
+.pie-dot-5 { background-color: #1B4332; }
+
 @media (prefers-reduced-motion: reduce) {
   .stagger-children > *,
   .animate-slide-up,
