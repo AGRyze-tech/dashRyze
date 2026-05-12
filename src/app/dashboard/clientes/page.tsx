@@ -391,39 +391,39 @@ export default function ClientesPage() {
         <form onSubmit={handleSave} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Nome completo / Razão social *</label>
-              <input className="input-field" placeholder="Dr. Nome Sobrenome" value={form.name} onChange={set('name')} required />
+              <label htmlFor="cli-name" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Nome completo / Razão social *</label>
+              <input id="cli-name" className="input-field" placeholder="Dr. Nome Sobrenome" value={form.name} onChange={set('name')} required />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Especialidade *</label>
-              <select className="input-field cursor-pointer" value={form.specialty} onChange={set('specialty')} required aria-label="Especialidade">
+              <label htmlFor="cli-specialty" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Especialidade *</label>
+              <select id="cli-specialty" className="input-field cursor-pointer" value={form.specialty} onChange={set('specialty')} required>
                 <option value="">Selecione...</option>
                 {specialties.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Status</label>
-              <select className="input-field cursor-pointer" value={form.status} onChange={set('status')} aria-label="Status">
+              <label htmlFor="cli-status" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Status</label>
+              <select id="cli-status" className="input-field cursor-pointer" value={form.status} onChange={set('status')}>
                 {Object.entries(clientStatusConfig).map(([value, { label }]) => (
                   <option key={value} value={value}>{label}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Email *</label>
-              <input type="email" className="input-field" placeholder="email@exemplo.com" value={form.email} onChange={set('email')} required />
+              <label htmlFor="cli-email" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Email *</label>
+              <input id="cli-email" type="email" className="input-field" placeholder="email@exemplo.com" value={form.email} onChange={set('email')} required />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">WhatsApp *</label>
-              <input className="input-field" placeholder="11999990000" value={form.whatsapp} onChange={set('whatsapp')} required />
+              <label htmlFor="cli-whatsapp" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">WhatsApp *</label>
+              <input id="cli-whatsapp" className="input-field" placeholder="11999990000" value={form.whatsapp} onChange={set('whatsapp')} required />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Data de fechamento</label>
-              <input type="date" className="input-field" aria-label="Data de fechamento" value={form.closed_at} onChange={set('closed_at')} />
+              <label htmlFor="cli-closed-at" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Data de fechamento</label>
+              <input id="cli-closed-at" type="date" className="input-field" value={form.closed_at} onChange={set('closed_at')} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Data de entrega</label>
-              <input type="date" className="input-field" aria-label="Data de entrega" value={form.delivery_date} onChange={set('delivery_date')} />
+              <label htmlFor="cli-delivery" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Data de entrega</label>
+              <input id="cli-delivery" type="date" className="input-field" value={form.delivery_date} onChange={set('delivery_date')} />
             </div>
             <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Contrato (anexo)</label>
@@ -457,8 +457,8 @@ export default function ClientesPage() {
               )}
             </div>
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Observações internas</label>
-              <textarea className="input-field resize-none" rows={3} placeholder="Notas privadas sobre o cliente..." value={form.notes} onChange={set('notes')} />
+              <label htmlFor="cli-notes" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Observações internas</label>
+              <textarea id="cli-notes" className="input-field resize-none" rows={3} placeholder="Notas privadas sobre o cliente..." value={form.notes} onChange={set('notes')} />
             </div>
           </div>
 

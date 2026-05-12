@@ -312,55 +312,55 @@ export default function ClientePage({ params }: { params: { id: string } }) {
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Novo projeto" size="lg">
         <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2">
-            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Nome do projeto *</label>
-            <input type="text" value={form.name} onChange={setField('name')} placeholder="Ex: Site institucional" className="input-field" />
+            <label htmlFor="proj-name" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Nome do projeto *</label>
+            <input id="proj-name" type="text" value={form.name} onChange={setField('name')} placeholder="Ex: Site institucional" className="input-field" />
           </div>
 
           <div>
-            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Tipo</label>
-            <select value={form.type} onChange={setField('type')} className="input-field cursor-pointer" aria-label="Tipo">
+            <label htmlFor="proj-type" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Tipo</label>
+            <select id="proj-type" value={form.type} onChange={setField('type')} className="input-field cursor-pointer">
               {projectTypeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Status</label>
-            <select value={form.status} onChange={setField('status')} className="input-field cursor-pointer" aria-label="Status">
+            <label htmlFor="proj-status" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Status</label>
+            <select id="proj-status" value={form.status} onChange={setField('status')} className="input-field cursor-pointer">
               {projectStatusOptions.map(o => <option key={o.status} value={o.status}>{o.label}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Responsável</label>
-            <select value={form.responsible} onChange={setField('responsible')} className="input-field cursor-pointer" aria-label="Responsável">
+            <label htmlFor="proj-responsible" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Responsável</label>
+            <select id="proj-responsible" value={form.responsible} onChange={setField('responsible')} className="input-field cursor-pointer">
               <option value="isaac">Isaac</option>
               <option value="vinicius">Vinicius</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Valor (R$)</label>
-            <input type="number" value={form.value} onChange={setField('value')} placeholder="0,00" min="0" step="0.01" className="input-field" />
+            <label htmlFor="proj-value" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Valor (R$)</label>
+            <input id="proj-value" type="number" value={form.value} onChange={setField('value')} placeholder="0,00" min="0" step="0.01" className="input-field" />
           </div>
 
           <div>
-            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Data de início *</label>
-            <input type="date" value={form.start_date} onChange={setField('start_date')} className="input-field" aria-label="Data de início" />
+            <label htmlFor="proj-start-date" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Data de início *</label>
+            <input id="proj-start-date" type="date" value={form.start_date} onChange={setField('start_date')} className="input-field" />
           </div>
 
           <div>
-            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Prazo de entrega *</label>
-            <input type="date" value={form.deadline} onChange={setField('deadline')} className="input-field" aria-label="Prazo de entrega" />
+            <label htmlFor="proj-deadline" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Prazo de entrega *</label>
+            <input id="proj-deadline" type="date" value={form.deadline} onChange={setField('deadline')} className="input-field" />
           </div>
 
           <div className="col-span-2">
-            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">URL do projeto</label>
-            <input type="text" value={form.url} onChange={setField('url')} placeholder="exemplo.com.br" className="input-field" />
+            <label htmlFor="proj-url" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">URL do projeto</label>
+            <input id="proj-url" type="text" value={form.url} onChange={setField('url')} placeholder="exemplo.com.br" className="input-field" />
           </div>
 
           <div className="col-span-2">
-            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Observações</label>
-            <textarea value={form.notes} onChange={setField('notes')} rows={3} placeholder="Detalhes adicionais..." className="input-field resize-none" />
+            <label htmlFor="proj-notes" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Observações</label>
+            <textarea id="proj-notes" value={form.notes} onChange={setField('notes')} rows={3} placeholder="Detalhes adicionais..." className="input-field resize-none" />
           </div>
 
           {formError && (

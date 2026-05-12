@@ -494,31 +494,32 @@ export default function FinanceiroPage() {
             </div>
 
             <div>
-              <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Categoria *</label>
-              <select className="input-field cursor-pointer" value={form.category} onChange={handleCategoryChange} aria-label="Categoria">
+              <label htmlFor="fin-category" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Categoria *</label>
+              <select id="fin-category" className="input-field cursor-pointer" value={form.category} onChange={handleCategoryChange}>
                 {categoryOptions.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
               </select>
             </div>
 
             <div>
-              <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Data *</label>
-              <input type="date" className="input-field" value={form.date} onChange={set('date')} required aria-label="Data" />
+              <label htmlFor="fin-date" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Data *</label>
+              <input id="fin-date" type="date" className="input-field" value={form.date} onChange={set('date')} required />
             </div>
 
             {/* ── Detalhamento ───────────────────────────────────────────── */}
             {form.type === 'entrada' ? (
               <>
                 <div>
-                  <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Serviço</label>
-                  <select className="input-field cursor-pointer" value={form.service} onChange={handleServiceChange} aria-label="Serviço">
+                  <label htmlFor="fin-service" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Serviço</label>
+                  <select id="fin-service" className="input-field cursor-pointer" value={form.service} onChange={handleServiceChange}>
                     <option value="">Selecione...</option>
                     {serviceOptions.map(s => <option key={s} value={s}>{s}</option>)}
                     <option value="Outros">Outros</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Cliente</label>
+                  <label htmlFor="fin-client" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Cliente</label>
                   <input
+                    id="fin-client"
                     type="text"
                     className="input-field"
                     placeholder="Ex: Anderson, Paulo, Dr. João..."
@@ -529,8 +530,9 @@ export default function FinanceiroPage() {
               </>
             ) : (
               <div className="col-span-2">
-                <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Fornecedor / Referência</label>
+                <label htmlFor="fin-reference" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Fornecedor / Referência</label>
                 <input
+                  id="fin-reference"
                   type="text"
                   className="input-field"
                   placeholder="Ex: Notion, Hostinger, Freelancer João..."
@@ -543,12 +545,13 @@ export default function FinanceiroPage() {
             {/* Description — auto-filled, still editable */}
             <div className="col-span-2">
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF]">Descrição *</label>
+                <label htmlFor="fin-description" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF]">Descrição *</label>
                 {form.description && (form.service || form.reference) && (
                   <span className="text-[10px] text-[#40916C] dark:text-[#52B788] font-medium">Auto-preenchida — editável</span>
                 )}
               </div>
               <input
+                id="fin-description"
                 className="input-field"
                 placeholder={form.type === 'entrada' ? 'Ex: Landing Page - Anderson' : 'Ex: Assinatura Notion, Hostinger...'}
                 value={form.description}
@@ -558,10 +561,10 @@ export default function FinanceiroPage() {
             </div>
 
             <div className="col-span-2">
-              <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Valor *</label>
+              <label htmlFor="fin-amount" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Valor *</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#4A6B52] text-sm font-medium select-none">R$</span>
-                <input type="number" className="input-field pl-10" placeholder="0,00" min="0" step="0.01" value={form.amount} onChange={set('amount')} required />
+                <input id="fin-amount" type="number" className="input-field pl-10" placeholder="0,00" min="0" step="0.01" value={form.amount} onChange={set('amount')} required />
               </div>
             </div>
           </div>
