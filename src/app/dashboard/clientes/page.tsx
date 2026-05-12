@@ -246,19 +246,23 @@ export default function ClientesPage() {
 
         {/* Status tabs */}
         <div className="overflow-x-auto pb-1">
-        <div className="flex gap-1.5 bg-gray-100 rounded-lg p-1 w-fit">
+        <div className="flex gap-1.5 bg-gray-100 dark:bg-[#152218] rounded-lg p-1 w-fit">
           {statusOptions.map(({ value, label }) => (
             <button
               type="button"
               key={value}
               onClick={() => setStatusFilter(value)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all cursor-pointer ${
-                statusFilter === value ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                statusFilter === value
+                  ? 'bg-white dark:bg-[#1A2C1F] text-gray-900 dark:text-[#F8FBF9] shadow-sm'
+                  : 'text-gray-500 dark:text-[#4A6B52] hover:text-gray-700 dark:hover:text-[#8BA891]'
               }`}
             >
               {label}
               <span className={`text-[11px] px-1.5 py-0.5 rounded-full font-semibold ${
-                statusFilter === value ? 'bg-[#40916C]/10 text-[#40916C]' : 'bg-gray-200 text-gray-500'
+                statusFilter === value
+                  ? 'bg-[#40916C]/10 text-[#40916C] dark:text-[#52B788]'
+                  : 'bg-gray-200 dark:bg-[#1E3020] text-gray-500 dark:text-[#4A6B52]'
               }`}>
                 {statusCounts[value]}
               </span>
@@ -300,35 +304,35 @@ export default function ClientesPage() {
                             <span className="text-[13px] font-semibold text-[#40916C]">{client.name.charAt(0)}</span>
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900 text-[13px]">{client.name}</p>
-                            {client.email && <p className="text-[11px] text-gray-400">{client.email}</p>}
+                            <p className="font-medium text-gray-900 dark:text-[#F8FBF9] text-[13px]">{client.name}</p>
+                            {client.email && <p className="text-[11px] text-gray-400 dark:text-[#4A6B52]">{client.email}</p>}
                           </div>
                         </div>
                       </td>
-                      <td><span className="text-[13px] text-gray-600">{client.specialty}</span></td>
+                      <td><span className="text-[13px] text-gray-600 dark:text-[#8BA891]">{client.specialty}</span></td>
                       <td>
                         <div className="flex items-center gap-2">
                           {client.whatsapp && (
                             <a href={`https://wa.me/55${client.whatsapp}`} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"
-                              className="p-1.5 rounded-md hover:bg-emerald-50 text-gray-400 hover:text-emerald-600 transition-colors">
+                              className="p-1.5 rounded-md hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-gray-400 dark:text-[#4A6B52] hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
                               <Phone size={13} />
                             </a>
                           )}
                           {client.email && (
                             <a href={`mailto:${client.email}`} aria-label="Email"
-                              className="p-1.5 rounded-md hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-colors">
+                              className="p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-400 dark:text-[#4A6B52] hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                               <Mail size={13} />
                             </a>
                           )}
                           {client.instagram && (
                             <a href={`https://instagram.com/${client.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" aria-label="Instagram"
-                              className="p-1.5 rounded-md hover:bg-purple-50 text-gray-400 hover:text-purple-600 transition-colors">
+                              className="p-1.5 rounded-md hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-400 dark:text-[#4A6B52] hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
                               <Instagram size={13} />
                             </a>
                           )}
                           {client.website && (
                             <a href={`https://${client.website}`} target="_blank" rel="noopener noreferrer" aria-label="Site"
-                              className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+                              className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#1E3020] text-gray-400 dark:text-[#4A6B52] hover:text-gray-600 dark:hover:text-[#8BA891] transition-colors">
                               <ExternalLink size={13} />
                             </a>
                           )}
@@ -340,12 +344,12 @@ export default function ClientesPage() {
                         </Badge>
                       </td>
                       <td>
-                        <span className="text-[12px] text-gray-400">
+                        <span className="text-[12px] text-gray-400 dark:text-[#4A6B52]">
                           {client.closed_at ? formatDate(client.closed_at) : '—'}
                         </span>
                       </td>
                       <td>
-                        <span className="text-[12px] text-gray-400">
+                        <span className="text-[12px] text-gray-400 dark:text-[#4A6B52]">
                           {client.delivery_date ? formatDate(client.delivery_date) : '—'}
                         </span>
                       </td>
@@ -355,7 +359,7 @@ export default function ClientesPage() {
                             type="button"
                             onClick={() => handleOpenEdit(client)}
                             aria-label="Editar"
-                            className="p-1.5 rounded-md hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-colors"
+                            className="p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-400 dark:text-[#4A6B52] hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                           >
                             <Pencil size={13} />
                           </button>
@@ -363,12 +367,12 @@ export default function ClientesPage() {
                             type="button"
                             onClick={() => setDeleteModal(client)}
                             aria-label="Remover"
-                            className="p-1.5 rounded-md hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                            className="p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 dark:text-[#4A6B52] hover:text-red-500 dark:hover:text-red-400 transition-colors"
                           >
                             <Trash2 size={13} />
                           </button>
                           <Link href={`/dashboard/clientes/${client.id}`} aria-label="Ver perfil"
-                            className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors inline-flex cursor-pointer">
+                            className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#1E3020] text-gray-400 dark:text-[#4A6B52] hover:text-gray-600 dark:hover:text-[#8BA891] transition-colors inline-flex cursor-pointer">
                             <ChevronRight size={15} />
                           </Link>
                         </div>
@@ -387,18 +391,18 @@ export default function ClientesPage() {
         <form onSubmit={handleSave} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Nome completo / Razão social *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Nome completo / Razão social *</label>
               <input className="input-field" placeholder="Dr. Nome Sobrenome" value={form.name} onChange={set('name')} required />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Especialidade *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Especialidade *</label>
               <select className="input-field cursor-pointer" value={form.specialty} onChange={set('specialty')} required aria-label="Especialidade">
                 <option value="">Selecione...</option>
                 {specialties.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Status</label>
               <select className="input-field cursor-pointer" value={form.status} onChange={set('status')} aria-label="Status">
                 {Object.entries(clientStatusConfig).map(([value, { label }]) => (
                   <option key={value} value={value}>{label}</option>
@@ -406,27 +410,27 @@ export default function ClientesPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Email *</label>
               <input type="email" className="input-field" placeholder="email@exemplo.com" value={form.email} onChange={set('email')} required />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">WhatsApp *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">WhatsApp *</label>
               <input className="input-field" placeholder="11999990000" value={form.whatsapp} onChange={set('whatsapp')} required />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Data de fechamento</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Data de fechamento</label>
               <input type="date" className="input-field" aria-label="Data de fechamento" value={form.closed_at} onChange={set('closed_at')} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Data de entrega</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Data de entrega</label>
               <input type="date" className="input-field" aria-label="Data de entrega" value={form.delivery_date} onChange={set('delivery_date')} />
             </div>
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Contrato (anexo)</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Contrato (anexo)</label>
               {contractFile ? (
                 <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-[#40916C]/40 bg-[#40916C]/5">
                   <FileCheck size={16} className="text-[#40916C] flex-shrink-0" />
-                  <span className="text-[13px] text-gray-700 flex-1 truncate">{contractFile.name}</span>
+                  <span className="text-[13px] text-gray-700 dark:text-[#A7C4AF] flex-1 truncate">{contractFile.name}</span>
                   <button
                     type="button"
                     onClick={() => setContractFile(null)}
@@ -437,11 +441,11 @@ export default function ClientesPage() {
                   </button>
                 </div>
               ) : (
-                <label className="flex flex-col items-center justify-center gap-2 px-4 py-5 rounded-lg border-2 border-dashed border-gray-200 hover:border-[#40916C]/50 hover:bg-[#40916C]/5 transition-colors cursor-pointer">
+                <label className="flex flex-col items-center justify-center gap-2 px-4 py-5 rounded-lg border-2 border-dashed border-gray-200 dark:border-[#2A4030] hover:border-[#40916C]/50 hover:bg-[#40916C]/5 transition-colors cursor-pointer">
                   <Paperclip size={18} className="text-gray-400" />
                   <div className="text-center">
-                    <span className="text-[13px] font-medium text-[#40916C]">Clique para anexar</span>
-                    <p className="text-[11px] text-gray-400 mt-0.5">PDF, DOC, DOCX — até 10MB</p>
+                    <span className="text-[13px] font-medium text-[#40916C] dark:text-[#52B788]">Clique para anexar</span>
+                    <p className="text-[11px] text-gray-400 dark:text-[#4A6B52] mt-0.5">PDF, DOC, DOCX — até 10MB</p>
                   </div>
                   <input
                     type="file"
@@ -453,13 +457,13 @@ export default function ClientesPage() {
               )}
             </div>
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Observações internas</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Observações internas</label>
               <textarea className="input-field resize-none" rows={3} placeholder="Notas privadas sobre o cliente..." value={form.notes} onChange={set('notes')} />
             </div>
           </div>
 
           {saveError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-600">{saveError}</div>
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3 text-sm text-red-600 dark:text-red-400">{saveError}</div>
           )}
 
           <div className="flex justify-end gap-3 pt-2">
@@ -473,8 +477,8 @@ export default function ClientesPage() {
       <Modal isOpen={!!deleteModal} onClose={() => setDeleteModal(null)} title="Remover Cliente" size="sm">
         {deleteModal && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-600">
-              Tem certeza que deseja remover <strong>{deleteModal.name}</strong>? Esta ação não pode ser desfeita.
+            <p className="text-sm text-gray-600 dark:text-[#A7C4AF]">
+              Tem certeza que deseja remover <strong className="text-gray-900 dark:text-[#F8FBF9]">{deleteModal.name}</strong>? Esta ação não pode ser desfeita.
             </p>
             <div className="flex gap-3 justify-end">
               <Button variant="outline" onClick={() => setDeleteModal(null)}>Cancelar</Button>
