@@ -49,14 +49,14 @@ const ProjectCard = memo(function ProjectCard({
   const active = !['concluido', 'entregue'].includes(project.status)
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 group">
+    <div className="bg-white dark:bg-[#152218] border border-gray-200 dark:border-[#1E3020] rounded-xl p-4 shadow-sm dark:shadow-black/30 hover:shadow-md transition-all duration-200 group">
       <div className="flex items-start justify-between mb-2.5">
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-gray-900 text-[13px] leading-tight mb-1">{project.name}</p>
           <p className="text-[11px] text-gray-400 truncate">{project.client?.name ?? '—'}</p>
         </div>
         <div className="flex items-center gap-1 ml-2 flex-shrink-0">
-          <span className="text-[10px] font-medium text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+          <span className="text-[10px] font-medium text-gray-400 dark:text-[#8BA891] bg-gray-100 dark:bg-[#1A2C1F] px-1.5 py-0.5 rounded">
             {projectTypeLabels[project.type]}
           </span>
           <button
@@ -81,13 +81,13 @@ const ProjectCard = memo(function ProjectCard({
       <div className="flex items-center justify-between mt-3">
         <div className="flex items-center gap-1.5">
           <User size={11} className="text-gray-400" />
-          <span className="text-[11px] text-gray-500 capitalize">{project.responsible}</span>
+          <span className="text-[11px] text-gray-500 dark:text-[#8BA891] capitalize">{project.responsible}</span>
         </div>
         <span className="tabular text-[12px] font-semibold text-[#40916C]">{formatCurrency(project.value)}</span>
       </div>
 
       {active && (
-        <div className={`flex items-center gap-1.5 mt-3 pt-3 border-t border-gray-100 ${over ? 'text-red-500' : warn ? 'text-amber-500' : 'text-gray-400'}`}>
+        <div className={`flex items-center gap-1.5 mt-3 pt-3 border-t border-gray-100 dark:border-[#1E3020] ${over ? 'text-red-500 dark:text-red-400' : warn ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#4A6B52]'}`}>
           {(over || warn) ? <AlertTriangle size={11} /> : <Clock size={11} />}
           <span className="text-[11px] font-medium">{deadlineLabel(days)}</span>
           <span className="ml-auto text-[10px]">{formatDate(project.deadline)}</span>

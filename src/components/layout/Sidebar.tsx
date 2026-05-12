@@ -70,6 +70,7 @@ export function Sidebar({ userRole = 'admin', mobileOpen = false }: SidebarProps
           <Link
             key={href}
             href={href}
+            aria-current={isActive(href, exact) ? 'page' : undefined}
             className={cn('nav-item', isActive(href, exact) && 'active')}
           >
             <Icon size={16} strokeWidth={isActive(href, exact) ? 2 : 1.75} />

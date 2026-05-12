@@ -54,6 +54,7 @@ export default function LeadsPage() {
   const [deleting, setDeleting] = useState(false)
   const [convertModal, setConvertModal] = useState<Lead | null>(null)
   const [toast, setToast] = useState('')
+  const [openStatusId, setOpenStatusId] = useState<string | null>(null)
   const supabase = useMemo(() => createClient(), [])
 
   useEffect(() => {
@@ -73,6 +74,15 @@ export default function LeadsPage() {
     const t = setTimeout(() => setToast(''), 3500)
     return () => clearTimeout(t)
   }, [toast])
+
+  useEffect(() => {
+    if (!openStatusId) return
+    function handleClickOutside(e: MouseEvent) {
+      if (!(e.target as Element).closest('[data-status-dropdown]')) setOpenStatusId(null)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [openStatusId])
 
   const filtered = leads
     .filter(l => statusFilter === 'todos' || l.status === statusFilter)
@@ -247,23 +257,40 @@ export default function LeadsPage() {
                         </div>
                       </td>
                       <td>
-                        <div className="relative group">
-                          <button type="button" className="flex items-center gap-1 cursor-pointer">
+                        <div className="relative" data-status-dropdown>
+                          <button
+                            type="button"
+                            aria-haspopup="listbox"
+                            aria-expanded={openStatusId === lead.id ? 'true' : 'false'}
+                            aria-label={`Status: ${cfg.label}. Clique para alterar`}
+                            onClick={() => setOpenStatusId(prev => prev === lead.id ? null : lead.id)}
+                            onKeyDown={e => { if (e.key === 'Escape') setOpenStatusId(null) }}
+                            className="flex items-center gap-1 cursor-pointer"
+                          >
                             <Badge color={cfg.color as never}>{cfg.label}</Badge>
-                            <ChevronDown size={10} className="text-gray-400" />
+                            <ChevronDown size={10} className={`text-gray-400 transition-transform ${openStatusId === lead.id ? 'rotate-180' : ''}`} aria-hidden="true" />
                           </button>
-                          <div className="absolute z-10 left-0 top-7 hidden group-hover:block bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[140px]">
-                            {(['novo', 'contatado', 'qualificado', 'descartado', 'convertido'] as LeadStatus[]).map(s => (
-                              <button
-                                key={s}
-                                type="button"
-                                onClick={() => handleUpdateStatus(lead.id, s)}
-                                className={`w-full text-left px-3 py-1.5 text-[12px] hover:bg-gray-50 cursor-pointer ${lead.status === s ? 'font-semibold text-[#40916C]' : 'text-gray-700'}`}
-                              >
-                                {leadStatusConfig[s].label}
-                              </button>
-                            ))}
-                          </div>
+                          {openStatusId === lead.id && (
+                            <div
+                              role="listbox"
+                              aria-label="Alterar status do lead"
+                              className="absolute z-20 left-0 top-8 bg-white dark:bg-[#152218] border border-gray-200 dark:border-[#1E3020] rounded-lg shadow-lg dark:shadow-black/40 py-1 min-w-[150px]"
+                            >
+                              {(['novo', 'contatado', 'qualificado', 'descartado', 'convertido'] as LeadStatus[]).map(s => (
+                                <button
+                                  key={s}
+                                  type="button"
+                                  role="option"
+                                  aria-selected={lead.status === s ? 'true' : 'false'}
+                                  onClick={() => { handleUpdateStatus(lead.id, s); setOpenStatusId(null) }}
+                                  onKeyDown={e => { if (e.key === 'Escape') setOpenStatusId(null) }}
+                                  className={`w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 dark:hover:bg-[#1A2C1F] cursor-pointer transition-colors ${lead.status === s ? 'font-semibold text-[#40916C] dark:text-[#52B788]' : 'text-gray-700 dark:text-[#D1FAE5]'}`}
+                                >
+                                  {leadStatusConfig[s].label}
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </td>
                       <td>

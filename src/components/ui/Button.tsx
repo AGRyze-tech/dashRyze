@@ -12,9 +12,9 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 const variantMap = {
   primary: 'bg-gradient-to-b from-[#4DA37A] to-[#40916C] hover:from-[#40916C] hover:to-[#2D6A4F] text-white shadow-sm shadow-[#40916C]/20 active:scale-[0.98]',
   secondary: 'bg-[#1B4332] hover:bg-[#2D6A4F] text-[#95D5B2] hover:text-white',
-  ghost: 'bg-transparent hover:bg-gray-100 text-gray-600 hover:text-gray-900',
-  danger: 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200',
-  outline: 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 shadow-sm',
+  ghost: 'bg-transparent hover:bg-gray-100 dark:hover:bg-[#1E3020] text-gray-600 dark:text-[#8BA891] hover:text-gray-900 dark:hover:text-[#F8FBF9]',
+  danger: 'bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800',
+  outline: 'bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-[#1E3020] text-gray-700 dark:text-[#A7C4AF] border border-gray-200 dark:border-[#2A4030] shadow-sm',
 }
 
 const sizeMap = {
