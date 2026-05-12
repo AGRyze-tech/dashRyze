@@ -23,12 +23,14 @@ const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select
 export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
+  const onCloseRef = useRef(onClose)
+  useEffect(() => { onCloseRef.current = onClose })
 
   useEffect(() => {
     if (!isOpen) return
 
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { onClose(); return }
+      if (e.key === 'Escape') { onCloseRef.current(); return }
       if (e.key !== 'Tab') return
 
       const dialog = dialogRef.current
@@ -58,7 +60,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
       document.removeEventListener('keydown', handleKey)
       document.body.style.overflow = ''
     }
-  }, [isOpen, onClose])
+  }, [isOpen])
 
   if (!isOpen) return null
 
