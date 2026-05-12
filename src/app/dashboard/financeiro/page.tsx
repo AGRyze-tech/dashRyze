@@ -40,9 +40,26 @@ const COLOR_CLASS_MAP: Record<string, string> = {
   '#1B4332': 'chart-border-5',
 }
 
+const serviceOptions = [
+  'Landing Page', 'Site', 'Smartpage',
+  'Gerenciamento de Tráfego', 'Consultoria',
+  'Produção de Conteúdo', 'Manutenção',
+]
+
+function composeDesc(service: string, reference: string, type: TransactionType, category: TransactionCategory): string {
+  if (type === 'entrada') {
+    if (service && reference) return `${service} - ${reference}`
+    return service || reference
+  }
+  if (reference) return `${categoryLabels[category]} - ${reference}`
+  return ''
+}
+
 const emptyForm = {
   type: 'entrada' as TransactionType,
   category: 'outros' as TransactionCategory,
+  service: '',
+  reference: '',
   description: '',
   amount: '',
   date: new Date().toISOString().split('T')[0],
@@ -150,6 +167,25 @@ export default function FinanceiroPage() {
 
   const set = (field: keyof typeof emptyForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm(f => ({ ...f, [field]: e.target.value }))
+
+  function handleServiceChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const service = e.target.value
+    setForm(f => ({ ...f, service, description: composeDesc(service, f.reference, f.type, f.category) }))
+  }
+
+  function handleReferenceChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const reference = e.target.value
+    setForm(f => ({ ...f, reference, description: composeDesc(f.service, reference, f.type, f.category) }))
+  }
+
+  function handleCategoryChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const category = e.target.value as TransactionCategory
+    setForm(f => ({ ...f, category, description: composeDesc(f.service, f.reference, f.type, category) }))
+  }
+
+  function setType(t: TransactionType) {
+    setForm(f => ({ ...f, type: t, service: '', reference: '', description: '' }))
+  }
 
   function handleOpenModal() {
     setForm(emptyForm)
@@ -427,9 +463,10 @@ export default function FinanceiroPage() {
       </div>
 
       {/* ── New Transaction Modal ─────────────────────────────────────── */}
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Novo Lançamento" size="md">
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Novo Lançamento" size="lg">
         <form onSubmit={handleSave} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
+
             {/* Type toggle */}
             <div className="col-span-2">
               <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Tipo *</label>
@@ -438,7 +475,7 @@ export default function FinanceiroPage() {
                   <button
                     key={t}
                     type="button"
-                    onClick={() => setForm(f => ({ ...f, type: t }))}
+                    onClick={() => setType(t)}
                     className={`flex-1 py-2.5 text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-2 ${
                       form.type === t
                         ? t === 'entrada'
@@ -458,7 +495,7 @@ export default function FinanceiroPage() {
 
             <div>
               <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Categoria *</label>
-              <select className="input-field cursor-pointer" value={form.category} onChange={set('category')} aria-label="Categoria">
+              <select className="input-field cursor-pointer" value={form.category} onChange={handleCategoryChange} aria-label="Categoria">
                 {categoryOptions.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
               </select>
             </div>
@@ -468,9 +505,56 @@ export default function FinanceiroPage() {
               <input type="date" className="input-field" value={form.date} onChange={set('date')} required aria-label="Data" />
             </div>
 
+            {/* ── Detalhamento ───────────────────────────────────────────── */}
+            {form.type === 'entrada' ? (
+              <>
+                <div>
+                  <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Serviço</label>
+                  <select className="input-field cursor-pointer" value={form.service} onChange={handleServiceChange} aria-label="Serviço">
+                    <option value="">Selecione...</option>
+                    {serviceOptions.map(s => <option key={s} value={s}>{s}</option>)}
+                    <option value="Outros">Outros</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Cliente</label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder="Ex: Anderson, Paulo, Dr. João..."
+                    value={form.reference}
+                    onChange={handleReferenceChange}
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="col-span-2">
+                <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Fornecedor / Referência</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Ex: Notion, Hostinger, Freelancer João..."
+                  value={form.reference}
+                  onChange={handleReferenceChange}
+                />
+              </div>
+            )}
+
+            {/* Description — auto-filled, still editable */}
             <div className="col-span-2">
-              <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Descrição *</label>
-              <input className="input-field" placeholder="Ex: Mensalidade Notion, Pagamento cliente..." value={form.description} onChange={set('description')} required />
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF]">Descrição *</label>
+                {form.description && (form.service || form.reference) && (
+                  <span className="text-[10px] text-[#40916C] dark:text-[#52B788] font-medium">Auto-preenchida — editável</span>
+                )}
+              </div>
+              <input
+                className="input-field"
+                placeholder={form.type === 'entrada' ? 'Ex: Landing Page - Anderson' : 'Ex: Assinatura Notion, Hostinger...'}
+                value={form.description}
+                onChange={set('description')}
+                required
+              />
             </div>
 
             <div className="col-span-2">
