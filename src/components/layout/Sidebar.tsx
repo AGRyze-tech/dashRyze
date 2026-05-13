@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, Users, FolderKanban,
-  TrendingUp, BarChart2, Settings, LogOut, Sun, Moon,
+  TrendingUp, BarChart2, Target, Settings, LogOut, Sun, Moon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
@@ -16,6 +16,7 @@ const navItems = [
   { href: '/dashboard/projetos', icon: FolderKanban, label: 'Projetos' },
   { href: '/dashboard/financeiro', icon: TrendingUp, label: 'Financeiro' },
   { href: '/dashboard/meta', icon: BarChart2, label: 'Meta Ads' },
+  { href: '/dashboard/metas', icon: Target, label: 'Metas' },
 ]
 
 interface SidebarProps {
