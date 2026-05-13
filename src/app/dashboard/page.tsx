@@ -1,11 +1,12 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { Header } from '@/components/layout/Header'
 import { Badge } from '@/components/ui/Badge'
 import {
   Users, FolderKanban, TrendingUp, TrendingDown, Wallet,
   ArrowRight, AlertTriangle, Target, MousePointer, Eye,
   Zap, CheckCircle2, Clock, BarChart2, ArrowUpRight, ArrowDownLeft,
+  Pencil, Check, X as XIcon,
 } from 'lucide-react'
 import { formatCurrency, formatDateShort, daysUntil, projectStatusConfig, leadStatusConfig } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
@@ -14,18 +15,313 @@ import Link from 'next/link'
 import { Transaction, Lead, MetaCampaign } from '@/types'
 import type { ClientStatus, ProjectStatus } from '@/types'
 
+// ─── Types ────────────────────────────────────────────────────────────────────
 type DashClient  = { id: string; name: string; status: ClientStatus }
 type DashProject = { id: string; name: string; status: ProjectStatus; deadline: string; client_id: string; client?: { name: string } }
+
+type Goals = { revenue: number; sales: number }
+const GOALS_KEY = 'ryze_dashboard_goals'
+const DEFAULT_GOALS: Goals = { revenue: 10000, sales: 10 }
+
+function loadGoals(): Goals {
+  if (typeof window === 'undefined') return DEFAULT_GOALS
+  try { return { ...DEFAULT_GOALS, ...JSON.parse(localStorage.getItem(GOALS_KEY) ?? 'null') } } catch { return DEFAULT_GOALS }
+}
 
 function monthStart() {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function Skeleton({ className }: { className?: string }) {
   return <div className={`animate-pulse rounded-lg bg-gray-100 dark:bg-[#1A2C1F] ${className}`} />
 }
 
+function pct(value: number, goal: number) {
+  if (goal <= 0) return 0
+  return Math.min((value / goal) * 100, 100)
+}
+
+function barColor(p: number) {
+  if (p >= 100) return 'bg-[#40916C]'
+  if (p >= 70)  return 'bg-emerald-500'
+  if (p >= 40)  return 'bg-amber-500'
+  return 'bg-red-500'
+}
+
+function textColor(p: number) {
+  if (p >= 100) return 'text-[#40916C] dark:text-[#52B788]'
+  if (p >= 70)  return 'text-emerald-600 dark:text-emerald-400'
+  if (p >= 40)  return 'text-amber-600 dark:text-amber-400'
+  return 'text-red-500 dark:text-red-400'
+}
+
+// ─── Progress row ─────────────────────────────────────────────────────────────
+interface ProgressRowProps {
+  label: string
+  icon: React.ElementType
+  current: number
+  goal: number
+  formatValue: (v: number) => string
+  loading?: boolean
+  onEditGoal: () => void
+}
+function ProgressRow({ label, icon: Icon, current, goal, formatValue, loading, onEditGoal }: ProgressRowProps) {
+  const p = pct(current, goal)
+  const done = p >= 100
+  const remaining = goal - current
+  const barRef = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => { barRef.current?.style.setProperty('--bar-w', `${p}%`) }, [p])
+
+  return (
+    <div className="space-y-2.5">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${done ? 'bg-[#40916C]/15 dark:bg-[#40916C]/25' : 'bg-gray-100 dark:bg-[#1A2C1F]'}`}>
+            <Icon size={13} className={done ? 'text-[#40916C] dark:text-[#52B788]' : 'text-gray-400 dark:text-[#4A6B52]'} />
+          </div>
+          <span className="text-[12px] font-semibold text-gray-700 dark:text-[#D1FAE5] truncate">{label}</span>
+          {done && (
+            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#40916C]/10 dark:bg-[#40916C]/20 text-[#40916C] dark:text-[#52B788] flex-shrink-0">
+              <CheckCircle2 size={9} /> Meta atingida!
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {loading ? (
+            <Skeleton className="h-4 w-24" />
+          ) : (
+            <span className="text-[12px] tabular text-gray-500 dark:text-[#8BA891]">
+              <span className={`font-bold ${textColor(p)}`}>{formatValue(current)}</span>
+              <span className="text-gray-300 dark:text-[#2A4030] mx-1">/</span>
+              <span>{formatValue(goal)}</span>
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={onEditGoal}
+            aria-label={`Editar meta de ${label}`}
+            className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-[#1A2C1F] text-gray-300 dark:text-[#2A4030] hover:text-gray-500 dark:hover:text-[#8BA891] transition-colors"
+          >
+            <Pencil size={11} />
+          </button>
+        </div>
+      </div>
+
+      {/* Bar */}
+      <div className="relative h-2.5 bg-gray-100 dark:bg-[#1A2C1F] rounded-full overflow-hidden">
+        <div
+          ref={barRef}
+          className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out w-[var(--bar-w,0%)] ${barColor(p)}`}
+        />
+        {/* shine */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-full pointer-events-none" />
+      </div>
+
+      {/* Footer */}
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] text-gray-400 dark:text-[#4A6B52]">
+          {loading ? '' : done
+            ? `🎉 Parabéns! Meta superada`
+            : `Faltam ${formatValue(remaining)} para a meta`}
+        </p>
+        <span className={`text-[12px] font-bold tabular ${textColor(p)}`}>{p.toFixed(1)}%</span>
+      </div>
+    </div>
+  )
+}
+
+// ─── Goals section ────────────────────────────────────────────────────────────
+interface GoalsSectionProps {
+  monthRevenue: number
+  salesCount: number
+  loading: boolean
+}
+function GoalsSection({ monthRevenue, salesCount, loading }: GoalsSectionProps) {
+  const [goals, setGoals] = useState<Goals>(loadGoals)
+  const [editing, setEditing] = useState<keyof Goals | null>(null)
+  const [inputVal, setInputVal] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const monthLabel = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+
+  useEffect(() => {
+    if (editing) {
+      inputRef.current?.focus()
+      inputRef.current?.select()
+    }
+  }, [editing])
+
+  function startEdit(key: keyof Goals) {
+    setInputVal(String(goals[key]))
+    setEditing(key)
+  }
+
+  function commitEdit() {
+    if (!editing) return
+    const val = parseFloat(inputVal.replace(',', '.'))
+    if (val > 0) {
+      const next = { ...goals, [editing]: val }
+      setGoals(next)
+      localStorage.setItem(GOALS_KEY, JSON.stringify(next))
+    }
+    setEditing(null)
+  }
+
+  function cancelEdit() {
+    setEditing(null)
+  }
+
+  return (
+    <div className="card-light p-5">
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52]">Metas do Mês</p>
+          <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5 capitalize">{monthLabel}</p>
+        </div>
+        <div className="w-9 h-9 rounded-xl bg-[#40916C]/10 dark:bg-[#40916C]/20 flex items-center justify-center">
+          <Target size={16} className="text-[#40916C] dark:text-[#52B788]" />
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        {/* Revenue goal */}
+        {editing === 'revenue' ? (
+          <EditGoalRow
+            label="Meta de Faturamento (R$)"
+            inputRef={inputRef}
+            value={inputVal}
+            onChange={setInputVal}
+            onCommit={commitEdit}
+            onCancel={cancelEdit}
+            placeholder="Ex: 30000"
+          />
+        ) : (
+          <ProgressRow
+            label="Faturamento"
+            icon={TrendingUp}
+            current={monthRevenue}
+            goal={goals.revenue}
+            formatValue={formatCurrency}
+            loading={loading}
+            onEditGoal={() => startEdit('revenue')}
+          />
+        )}
+
+        <div className="h-px bg-gray-100 dark:bg-[#1E3020]" />
+
+        {/* Sales goal */}
+        {editing === 'sales' ? (
+          <EditGoalRow
+            label="Meta de Vendas (nº)"
+            inputRef={inputRef}
+            value={inputVal}
+            onChange={setInputVal}
+            onCommit={commitEdit}
+            onCancel={cancelEdit}
+            placeholder="Ex: 20"
+          />
+        ) : (
+          <ProgressRow
+            label="Número de Vendas"
+            icon={Zap}
+            current={salesCount}
+            goal={goals.sales}
+            formatValue={v => `${Math.round(v)} venda${Math.round(v) !== 1 ? 's' : ''}`}
+            loading={loading}
+            onEditGoal={() => startEdit('sales')}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
+interface EditGoalRowProps {
+  label: string
+  inputRef: React.RefObject<HTMLInputElement>
+  value: string
+  onChange: (v: string) => void
+  onCommit: () => void
+  onCancel: () => void
+  placeholder: string
+}
+function EditGoalRow({ label, inputRef, value, onChange, onCommit, onCancel, placeholder }: EditGoalRowProps) {
+  return (
+    <div className="space-y-2">
+      <p className="text-[12px] font-semibold text-gray-700 dark:text-[#D1FAE5]">{label}</p>
+      <div className="flex items-center gap-2">
+        <input
+          ref={inputRef}
+          type="number"
+          className="input-field h-9 text-[13px]"
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          placeholder={placeholder}
+          min="1"
+          step="any"
+          onKeyDown={e => { if (e.key === 'Enter') onCommit(); if (e.key === 'Escape') onCancel() }}
+        />
+        <button type="button" onClick={onCommit} className="h-9 px-3 rounded-lg bg-[#40916C] hover:bg-[#2D6A4F] text-white text-[12px] font-medium flex items-center gap-1.5 transition-colors flex-shrink-0">
+          <Check size={12} /> Salvar
+        </button>
+        <button type="button" onClick={onCancel} aria-label="Cancelar edição" className="h-9 px-2.5 rounded-lg border border-gray-200 dark:border-[#2A4030] hover:bg-gray-50 dark:hover:bg-[#1A2C1F] text-gray-500 dark:text-[#8BA891] transition-colors flex-shrink-0">
+          <XIcon size={12} aria-hidden="true" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ─── Deadline row ─────────────────────────────────────────────────────────────
+function DeadlineRow({ project }: { project: DashProject }) {
+  const days = daysUntil(project.deadline)
+  const isOverdue = days < 0
+  const isWarning = days >= 0 && days <= 5
+  const cfg = projectStatusConfig[project.status]
+
+  return (
+    <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-50 dark:border-[#1E3020] last:border-0 hover:bg-gray-50/60 dark:hover:bg-[#1A2C1F] transition-colors">
+      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isOverdue ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-[#40916C]'}`} />
+      <div className="flex-1 min-w-0">
+        <p className="text-[13px] font-medium text-gray-800 dark:text-[#E2F5EC] truncate">{project.name}</p>
+        <p className="text-[11px] text-gray-400 dark:text-[#4A6B52] truncate">{project.client?.name ?? '—'}</p>
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <Badge color={cfg.color as 'green' | 'yellow' | 'red' | 'gray' | 'blue' | 'purple'} dot={false}>
+          {cfg.label}
+        </Badge>
+        <span className={`flex items-center gap-1 text-[11px] font-medium tabular ${isOverdue ? 'text-red-500 dark:text-red-400' : isWarning ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#4A6B52]'}`}>
+          {(isOverdue || isWarning) && <AlertTriangle size={9} />}
+          {formatDateShort(project.deadline)}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+// ─── Lead row ─────────────────────────────────────────────────────────────────
+function LeadRow({ lead }: { lead: Lead }) {
+  const cfg = leadStatusConfig[lead.status]
+  const initials = lead.name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
+  return (
+    <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-50 dark:border-[#1E3020] last:border-0 hover:bg-gray-50/60 dark:hover:bg-[#1A2C1F] transition-colors">
+      <div className="w-8 h-8 rounded-full bg-[#F0FBF5] dark:bg-[#1B4332] flex items-center justify-center shrink-0">
+        <span className="text-[11px] font-bold text-[#40916C] dark:text-[#52B788]">{initials}</span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[13px] font-medium text-gray-800 dark:text-[#E2F5EC] truncate">{lead.name}</p>
+        <p className="text-[11px] text-gray-400 dark:text-[#4A6B52]">{lead.revenue}</p>
+      </div>
+      <Badge color={cfg.color as 'green' | 'yellow' | 'red' | 'gray' | 'blue' | 'purple'} dot={false}>
+        {cfg.label}
+      </Badge>
+    </div>
+  )
+}
+
+// ─── KPI Card ─────────────────────────────────────────────────────────────────
 interface KpiCardProps {
   label: string
   value: string | number
@@ -65,51 +361,7 @@ function KpiCard({ label, value, sub, icon: Icon, iconCls, accent = 'from-gray-5
   return href ? <Link href={href}>{inner}</Link> : inner
 }
 
-function DeadlineRow({ project }: { project: DashProject }) {
-  const days = daysUntil(project.deadline)
-  const isOverdue = days < 0
-  const isWarning = days >= 0 && days <= 5
-  const cfg = projectStatusConfig[project.status]
-
-  return (
-    <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-50 dark:border-[#1E3020] last:border-0 hover:bg-gray-50/60 dark:hover:bg-[#1A2C1F] transition-colors">
-      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isOverdue ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-[#40916C]'}`} />
-      <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-medium text-gray-800 dark:text-[#E2F5EC] truncate">{project.name}</p>
-        <p className="text-[11px] text-gray-400 dark:text-[#4A6B52] truncate">{project.client?.name ?? '—'}</p>
-      </div>
-      <div className="flex items-center gap-2 shrink-0">
-        <Badge color={cfg.color as 'green' | 'yellow' | 'red' | 'gray' | 'blue' | 'purple'} dot={false}>
-          {cfg.label}
-        </Badge>
-        <span className={`flex items-center gap-1 text-[11px] font-medium tabular ${isOverdue ? 'text-red-500 dark:text-red-400' : isWarning ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#4A6B52]'}`}>
-          {(isOverdue || isWarning) && <AlertTriangle size={9} />}
-          {formatDateShort(project.deadline)}
-        </span>
-      </div>
-    </div>
-  )
-}
-
-function LeadRow({ lead }: { lead: Lead }) {
-  const cfg = leadStatusConfig[lead.status]
-  const initials = lead.name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
-  return (
-    <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-50 dark:border-[#1E3020] last:border-0 hover:bg-gray-50/60 dark:hover:bg-[#1A2C1F] transition-colors">
-      <div className="w-8 h-8 rounded-full bg-[#F0FBF5] dark:bg-[#1B4332] flex items-center justify-center shrink-0">
-        <span className="text-[11px] font-bold text-[#40916C] dark:text-[#52B788]">{initials}</span>
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-medium text-gray-800 dark:text-[#E2F5EC] truncate">{lead.name}</p>
-        <p className="text-[11px] text-gray-400 dark:text-[#4A6B52]">{lead.revenue}</p>
-      </div>
-      <Badge color={cfg.color as 'green' | 'yellow' | 'red' | 'gray' | 'blue' | 'purple'} dot={false}>
-        {cfg.label}
-      </Badge>
-    </div>
-  )
-}
-
+// ─── Page ──────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const [greeting, setGreeting] = useState('')
   const [loading, setLoading] = useState(true)
@@ -148,7 +400,7 @@ export default function DashboardPage() {
     load()
   }, [])
 
-  // ── Derived stats — single pass each ──────────────────────────────────────
+  // ── Derived stats ─────────────────────────────────────────────────────────
   const activeClients  = useMemo(() => clients.filter(c => c.status === 'ativo').length, [clients])
   const activeProjects = useMemo(() => projects.filter(p => !['entregue', 'concluido'].includes(p.status)), [projects])
   const deliveredCount = useMemo(() => projects.filter(p => p.status === 'entregue' || p.status === 'concluido').length, [projects])
@@ -192,6 +444,7 @@ export default function DashboardPage() {
 
       <div className="p-4 sm:p-6 space-y-5">
 
+        {/* ── KPI row ───────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 stagger-children">
           <KpiCard
             label="Receita do Mês"
@@ -235,6 +488,10 @@ export default function DashboardPage() {
           />
         </div>
 
+        {/* ── Metas do Mês ──────────────────────────────────────────────── */}
+        <GoalsSection monthRevenue={monthRevenue} salesCount={salesCount} loading={loading} />
+
+        {/* ── Saldo + Meta Ads ──────────────────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
           <div className="lg:col-span-2 card-light p-5 flex flex-col gap-4">
             <div className="flex items-center justify-between">
@@ -321,6 +578,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* ── Prazos + Leads ────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="card-light overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#1E3020]">
