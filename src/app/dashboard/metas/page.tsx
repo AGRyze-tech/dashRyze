@@ -247,8 +247,8 @@ export default function MetasPage() {
   const [monthRevenue, setMonthRevenue] = useState(0)
   const [salesCount, setSalesCount] = useState(0)
 
-  const supabase = useMemo(() => createClient(), [])
-  const monthLabel = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+  const supabase   = useMemo(() => createClient(), [])
+  const monthLabel = useMemo(() => new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }), [])
 
   useEffect(() => {
     async function load() {

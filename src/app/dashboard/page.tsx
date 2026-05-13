@@ -401,9 +401,21 @@ export default function DashboardPage() {
   }, [])
 
   // ── Derived stats ─────────────────────────────────────────────────────────
-  const activeClients  = useMemo(() => clients.filter(c => c.status === 'ativo').length, [clients])
-  const activeProjects = useMemo(() => projects.filter(p => !['entregue', 'concluido'].includes(p.status)), [projects])
-  const deliveredCount = useMemo(() => projects.filter(p => p.status === 'entregue' || p.status === 'concluido').length, [projects])
+  const activeClients = useMemo(() => {
+    let count = 0
+    for (const c of clients) { if (c.status === 'ativo') count++ }
+    return count
+  }, [clients])
+
+  const { activeProjects, deliveredCount } = useMemo(() => {
+    const active: DashProject[] = []
+    let deliveredCount = 0
+    for (const p of projects) {
+      if (p.status === 'entregue' || p.status === 'concluido') deliveredCount++
+      else active.push(p)
+    }
+    return { activeProjects: active, deliveredCount }
+  }, [projects])
 
   const { monthRevenue, monthExpenses, salesCount } = useMemo(() => {
     let monthRevenue = 0, monthExpenses = 0, salesCount = 0
@@ -415,8 +427,11 @@ export default function DashboardPage() {
   }, [transactions])
   const balance = monthRevenue - monthExpenses
 
-  const newLeads    = useMemo(() => leads.filter(l => l.status === 'novo').length, [leads])
-  const recentLeads = useMemo(() => leads.slice(0, 4), [leads])
+  const { newLeads, recentLeads } = useMemo(() => {
+    let newLeads = 0
+    for (const l of leads) { if (l.status === 'novo') newLeads++ }
+    return { newLeads, recentLeads: leads.slice(0, 4) }
+  }, [leads])
 
   const deadlineProjects = useMemo(() => {
     const sorted = [...activeProjects].sort(
