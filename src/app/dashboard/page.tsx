@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useMemo } from 'react'
 import { Header } from '@/components/layout/Header'
+import { Badge } from '@/components/ui/Badge'
 import {
   Users, FolderKanban, TrendingUp, TrendingDown, Wallet,
   ArrowRight, AlertTriangle, Target, MousePointer, Eye,
@@ -8,27 +9,23 @@ import {
 } from 'lucide-react'
 import { formatCurrency, formatDateShort, daysUntil, projectStatusConfig, leadStatusConfig } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
+import { loadMetaCampaigns } from '@/lib/meta'
 import Link from 'next/link'
-import { Client, Project, Transaction, Lead, MetaCampaign } from '@/types'
+import { Transaction, Lead, MetaCampaign } from '@/types'
+import type { ClientStatus, ProjectStatus } from '@/types'
 
-const META_KEY = 'ryze_meta_campaigns'
-
-function loadMeta(): MetaCampaign[] {
-  if (typeof window === 'undefined') return []
-  try { return JSON.parse(localStorage.getItem(META_KEY) ?? '[]') } catch { return [] }
-}
+type DashClient  = { id: string; name: string; status: ClientStatus }
+type DashProject = { id: string; name: string; status: ProjectStatus; deadline: string; client_id: string; client?: { name: string } }
 
 function monthStart() {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
 }
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
 function Skeleton({ className }: { className?: string }) {
   return <div className={`animate-pulse rounded-lg bg-gray-100 dark:bg-[#1A2C1F] ${className}`} />
 }
 
-// ─── KPI Card ─────────────────────────────────────────────────────────────────
 interface KpiCardProps {
   label: string
   value: string | number
@@ -68,8 +65,7 @@ function KpiCard({ label, value, sub, icon: Icon, iconCls, accent = 'from-gray-5
   return href ? <Link href={href}>{inner}</Link> : inner
 }
 
-// ─── Deadline row ──────────────────────────────────────────────────────────────
-function DeadlineRow({ project }: { project: Project & { client?: Pick<Client, 'name'> } }) {
+function DeadlineRow({ project }: { project: DashProject }) {
   const days = daysUntil(project.deadline)
   const isOverdue = days < 0
   const isWarning = days >= 0 && days <= 5
@@ -83,9 +79,9 @@ function DeadlineRow({ project }: { project: Project & { client?: Pick<Client, '
         <p className="text-[11px] text-gray-400 dark:text-[#4A6B52] truncate">{project.client?.name ?? '—'}</p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
-        <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${cfg.color === 'yellow' ? 'bg-amber-50 text-amber-600 dark:bg-amber-900/25 dark:text-amber-400' : cfg.color === 'blue' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/25 dark:text-blue-400' : 'bg-[#F0FBF5] text-[#40916C] dark:bg-[#1B4332] dark:text-[#52B788]'}`}>
+        <Badge color={cfg.color as 'green' | 'yellow' | 'red' | 'gray' | 'blue' | 'purple'} dot={false}>
           {cfg.label}
-        </span>
+        </Badge>
         <span className={`flex items-center gap-1 text-[11px] font-medium tabular ${isOverdue ? 'text-red-500 dark:text-red-400' : isWarning ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#4A6B52]'}`}>
           {(isOverdue || isWarning) && <AlertTriangle size={9} />}
           {formatDateShort(project.deadline)}
@@ -95,7 +91,6 @@ function DeadlineRow({ project }: { project: Project & { client?: Pick<Client, '
   )
 }
 
-// ─── Lead row ─────────────────────────────────────────────────────────────────
 function LeadRow({ lead }: { lead: Lead }) {
   const cfg = leadStatusConfig[lead.status]
   const initials = lead.name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
@@ -108,29 +103,21 @@ function LeadRow({ lead }: { lead: Lead }) {
         <p className="text-[13px] font-medium text-gray-800 dark:text-[#E2F5EC] truncate">{lead.name}</p>
         <p className="text-[11px] text-gray-400 dark:text-[#4A6B52]">{lead.revenue}</p>
       </div>
-      <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${
-        cfg.color === 'green' ? 'bg-[#F0FBF5] text-[#40916C] dark:bg-[#1B4332] dark:text-[#52B788]' :
-        cfg.color === 'yellow' ? 'bg-amber-50 text-amber-600 dark:bg-amber-900/25 dark:text-amber-400' :
-        cfg.color === 'blue' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/25 dark:text-blue-400' :
-        cfg.color === 'red' ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400' :
-        'bg-gray-100 text-gray-500 dark:bg-[#1A2C1F] dark:text-[#4A6B52]'
-      }`}>
+      <Badge color={cfg.color as 'green' | 'yellow' | 'red' | 'gray' | 'blue' | 'purple'} dot={false}>
         {cfg.label}
-      </span>
+      </Badge>
     </div>
   )
 }
 
-// ─── Page ──────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const [greeting, setGreeting] = useState('')
   const [loading, setLoading] = useState(true)
-
-  const [clients, setClients] = useState<Client[]>([])
-  const [projects, setProjects] = useState<(Project & { client?: Pick<Client, 'name'> })[]>([])
+  const [clients, setClients] = useState<DashClient[]>([])
+  const [projects, setProjects] = useState<DashProject[]>([])
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
-  const [meta, setMeta] = useState<MetaCampaign[]>([])
+  const [meta] = useState<MetaCampaign[]>(loadMetaCampaigns)
 
   const supabase = useMemo(() => createClient(), [])
 
@@ -144,13 +131,13 @@ export default function DashboardPage() {
     async function load() {
       try {
         const [{ data: cli }, { data: proj }, { data: txn }, { data: lds }] = await Promise.all([
-          supabase.from('clients').select('*').order('name'),
-          supabase.from('projects').select('*, client:clients(name)').order('deadline'),
-          supabase.from('transactions').select('type, amount, date').gte('date', monthStart()),
+          supabase.from('clients').select('id, name, status').order('name'),
+          supabase.from('projects').select('id, name, status, deadline, client_id, client:clients(name)').order('deadline'),
+          supabase.from('transactions').select('type, amount').gte('date', monthStart()),
           supabase.from('leads').select('*').order('created_at', { ascending: false }),
         ])
-        if (cli) setClients(cli)
-        if (proj) setProjects(proj as (Project & { client?: Pick<Client, 'name'> })[])
+        if (cli) setClients(cli as DashClient[])
+        if (proj) setProjects(proj as unknown as DashProject[])
         if (txn) setTransactions(txn as Transaction[])
         if (lds) setLeads(lds)
       } finally {
@@ -159,41 +146,45 @@ export default function DashboardPage() {
     }
 
     load()
-    setMeta(loadMeta())
   }, [])
 
-  // ── Derived stats ──────────────────────────────────────────────────────────
-  const activeClients = clients.filter(c => c.status === 'ativo').length
-  const activeProjects = projects.filter(p => !['entregue', 'concluido'].includes(p.status))
-  const deliveredThisMonth = projects.filter(p => p.status === 'entregue' || p.status === 'concluido').length
+  // ── Derived stats — single pass each ──────────────────────────────────────
+  const activeClients  = useMemo(() => clients.filter(c => c.status === 'ativo').length, [clients])
+  const activeProjects = useMemo(() => projects.filter(p => !['entregue', 'concluido'].includes(p.status)), [projects])
+  const deliveredCount = useMemo(() => projects.filter(p => p.status === 'entregue' || p.status === 'concluido').length, [projects])
 
-  const monthRevenue = transactions.filter(t => t.type === 'entrada').reduce((s, t) => s + t.amount, 0)
-  const monthExpenses = transactions.filter(t => t.type === 'saida').reduce((s, t) => s + t.amount, 0)
-  const salesCount = transactions.filter(t => t.type === 'entrada').length
+  const { monthRevenue, monthExpenses, salesCount } = useMemo(() => {
+    let monthRevenue = 0, monthExpenses = 0, salesCount = 0
+    for (const t of transactions) {
+      if (t.type === 'entrada') { monthRevenue += t.amount; salesCount++ }
+      else monthExpenses += t.amount
+    }
+    return { monthRevenue, monthExpenses, salesCount }
+  }, [transactions])
   const balance = monthRevenue - monthExpenses
 
-  const newLeads = leads.filter(l => l.status === 'novo').length
-  const recentLeads = leads.slice(0, 4)
+  const newLeads    = useMemo(() => leads.filter(l => l.status === 'novo').length, [leads])
+  const recentLeads = useMemo(() => leads.slice(0, 4), [leads])
 
-  const urgentProjects = activeProjects
-    .filter(p => daysUntil(p.deadline) <= 14 || daysUntil(p.deadline) < 0)
-    .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
-    .slice(0, 5)
+  const deadlineProjects = useMemo(() => {
+    const sorted = [...activeProjects].sort(
+      (a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
+    )
+    const urgent = sorted.filter(p => daysUntil(p.deadline) <= 14)
+    return (urgent.length > 0 ? urgent : sorted).slice(0, 5)
+  }, [activeProjects])
 
-  const allDeadlineProjects = activeProjects
-    .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
-    .slice(0, urgentProjects.length > 0 ? 0 : 5)
-
-  const deadlineProjects = urgentProjects.length > 0 ? urgentProjects : activeProjects
-    .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
-    .slice(0, 5)
-
-  // Meta aggregate
-  const metaSpend = meta.reduce((s, c) => s + c.spend, 0)
-  const metaImpressions = meta.reduce((s, c) => s + c.impressions, 0)
-  const metaClicks = meta.reduce((s, c) => s + c.clicks, 0)
+  const { metaSpend, metaImpressions, metaClicks, metaActive } = useMemo(() => {
+    let metaSpend = 0, metaImpressions = 0, metaClicks = 0, metaActive = 0
+    for (const c of meta) {
+      metaSpend += c.spend
+      metaImpressions += c.impressions
+      metaClicks += c.clicks
+      if (c.status === 'ACTIVE') metaActive++
+    }
+    return { metaSpend, metaImpressions, metaClicks, metaActive }
+  }, [meta])
   const metaCTR = metaImpressions > 0 ? (metaClicks / metaImpressions) * 100 : 0
-  const metaActive = meta.filter(c => c.status === 'ACTIVE').length
 
   return (
     <div>
@@ -201,7 +192,6 @@ export default function DashboardPage() {
 
       <div className="p-4 sm:p-6 space-y-5">
 
-        {/* ── Primary KPI row ────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 stagger-children">
           <KpiCard
             label="Receita do Mês"
@@ -215,7 +205,7 @@ export default function DashboardPage() {
           />
           <KpiCard
             label="Clientes Ativos"
-            value={loading ? '—' : activeClients}
+            value={activeClients}
             sub={`${clients.length} total cadastrado${clients.length !== 1 ? 's' : ''}`}
             icon={Users}
             iconCls="bg-[#F0FBF5] dark:bg-[#1B4332] text-[#40916C] dark:text-[#52B788]"
@@ -225,8 +215,8 @@ export default function DashboardPage() {
           />
           <KpiCard
             label="Projetos em Andamento"
-            value={loading ? '—' : activeProjects.length}
-            sub={`${deliveredThisMonth} entregue${deliveredThisMonth !== 1 ? 's' : ''} este mês`}
+            value={activeProjects.length}
+            sub={`${deliveredCount} entregue${deliveredCount !== 1 ? 's' : ''} este mês`}
             icon={FolderKanban}
             iconCls="bg-blue-50 dark:bg-blue-900/25 text-blue-600 dark:text-blue-400"
             accent="from-blue-500/5"
@@ -235,7 +225,7 @@ export default function DashboardPage() {
           />
           <KpiCard
             label="Leads Novos"
-            value={loading ? '—' : newLeads}
+            value={newLeads}
             sub={`${leads.length} lead${leads.length !== 1 ? 's' : ''} no total`}
             icon={Zap}
             iconCls="bg-amber-50 dark:bg-amber-900/30 text-amber-500 dark:text-amber-400"
@@ -245,10 +235,7 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* ── Financial balance + Meta Ads ───────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-
-          {/* Saldo + mini financeiro */}
           <div className="lg:col-span-2 card-light p-5 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div>
@@ -293,7 +280,6 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          {/* Meta Ads summary */}
           <div className="lg:col-span-3 card-light p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -335,10 +321,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ── Deadlines + Leads ──────────────────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-          {/* Projects / deadlines */}
           <div className="card-light overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#1E3020]">
               <div>
@@ -373,13 +356,10 @@ export default function DashboardPage() {
                 <p className="text-[12px] text-gray-400 dark:text-[#4A6B52]">Nenhum projeto em andamento</p>
               </div>
             ) : (
-              <div>
-                {deadlineProjects.map(p => <DeadlineRow key={p.id} project={p} />)}
-              </div>
+              <div>{deadlineProjects.map(p => <DeadlineRow key={p.id} project={p} />)}</div>
             )}
           </div>
 
-          {/* Recent leads */}
           <div className="card-light overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#1E3020]">
               <div>
@@ -414,9 +394,7 @@ export default function DashboardPage() {
                 <p className="text-[12px] text-gray-400 dark:text-[#4A6B52]">Nenhum lead registrado ainda</p>
               </div>
             ) : (
-              <div>
-                {recentLeads.map(l => <LeadRow key={l.id} lead={l} />)}
-              </div>
+              <div>{recentLeads.map(l => <LeadRow key={l.id} lead={l} />)}</div>
             )}
           </div>
         </div>

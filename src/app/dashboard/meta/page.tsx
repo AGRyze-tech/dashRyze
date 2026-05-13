@@ -10,13 +10,7 @@ import { BarChart2, Eye, MousePointer, DollarSign, TrendingUp, Plus, Pencil, Tra
 import { formatCurrency } from '@/lib/utils'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { MetaCampaign } from '@/types'
-
-const STORAGE_KEY = 'ryze_meta_campaigns'
-
-function loadCampaigns(): MetaCampaign[] {
-  if (typeof window === 'undefined') return []
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]') } catch { return [] }
-}
+import { META_STORAGE_KEY, loadMetaCampaigns, saveMetaCampaigns } from '@/lib/meta'
 
 const emptyForm = {
   name: '',
@@ -57,13 +51,13 @@ export default function MetaPage() {
   const isDark = theme === 'dark'
 
   useEffect(() => {
-    setCampaigns(loadCampaigns())
+    setCampaigns(loadMetaCampaigns())
     setHydrated(true)
   }, [])
 
   useEffect(() => {
     if (!hydrated) return
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(campaigns))
+    saveMetaCampaigns(campaigns)
   }, [campaigns, hydrated])
 
   useEffect(() => {
