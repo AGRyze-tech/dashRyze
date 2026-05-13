@@ -27,7 +27,7 @@ function monthStart() {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function Skeleton({ className }: { className?: string }) {
-  return <div className={`animate-pulse rounded-lg bg-gray-100 dark:bg-[#1A2C1F] ${className}`} />
+  return <div className={`animate-pulse motion-reduce:animate-none rounded-lg bg-gray-100 dark:bg-[#1A2C1F] ${className}`} />
 }
 
 function pct(value: number, goal: number) {
@@ -127,7 +127,7 @@ function RevenueCard({ current, goal, loading, editing, editValue, onEditChange,
               <p className="text-[15px] font-bold text-gray-800 dark:text-[#D1FAE5] mt-0.5">Faturamento</p>
             </div>
           </div>
-          <button type="button" onClick={onEdit} aria-label="Editar meta de faturamento" className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#1A2C1F] text-gray-300 dark:text-[#2A4030] hover:text-gray-500 dark:hover:text-[#8BA891] transition-colors">
+          <button type="button" onClick={onEdit} aria-label="Editar meta de faturamento" className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#1A2C1F] text-gray-300 dark:text-[#2A4030] hover:text-gray-500 dark:hover:text-[#8BA891] transition-colors">
             <Pencil size={13} />
           </button>
         </div>
@@ -154,7 +154,7 @@ function RevenueCard({ current, goal, loading, editing, editValue, onEditChange,
               </div>
             </div>
             <div className="relative h-3 bg-gray-100 dark:bg-[#1A2C1F] rounded-full overflow-hidden">
-              <div ref={barRef} className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out w-[var(--bar-w,0%)] ${barColor(p)}`} />
+              <div ref={barRef} className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ease-out motion-reduce:transition-none w-[var(--bar-w,0%)] ${barColor(p)}`} />
               <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-full pointer-events-none" />
             </div>
             <div className="flex items-center justify-between">
@@ -203,7 +203,7 @@ function SalesCard({ current, goal, loading, editing, editValue, onEditChange, o
             <p className="text-[11px] text-gray-400 dark:text-[#4A6B52] mt-0.5">Transações de entrada</p>
           </div>
         </div>
-        <button type="button" onClick={onEdit} aria-label="Editar meta de vendas" className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#1A2C1F] text-gray-300 dark:text-[#2A4030] hover:text-gray-500 dark:hover:text-[#8BA891] transition-colors flex-shrink-0">
+        <button type="button" onClick={onEdit} aria-label="Editar meta de vendas" className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#1A2C1F] text-gray-300 dark:text-[#2A4030] hover:text-gray-500 dark:hover:text-[#8BA891] transition-colors flex-shrink-0">
           <Pencil size={12} />
         </button>
       </div>
@@ -222,7 +222,7 @@ function SalesCard({ current, goal, loading, editing, editValue, onEditChange, o
             <span className={`text-[13px] font-bold tabular ${textColor(p)}`}>{p.toFixed(1)}%</span>
           </div>
           <div className="relative h-2 bg-gray-100 dark:bg-[#1A2C1F] rounded-full overflow-hidden">
-            <div ref={barRef} className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out w-[var(--bar-w,0%)] ${barColor(p)}`} />
+            <div ref={barRef} className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ease-out motion-reduce:transition-none w-[var(--bar-w,0%)] ${barColor(p)}`} />
             <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-full pointer-events-none" />
           </div>
           <div className="flex items-center justify-between">
@@ -309,7 +309,7 @@ export default function MetasPage() {
             <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52] mb-1">Progresso Geral</p>
             <p className={`tabular text-[28px] font-bold leading-none ${textColor(overallPct)}`}>{overallPct.toFixed(0)}%</p>
             <div className="mt-3 h-1.5 bg-gray-100 dark:bg-[#1A2C1F] rounded-full overflow-hidden">
-              <div className={`h-full rounded-full transition-all duration-700 ${barColor(overallPct)}`} style={{ width: `${overallPct}%` }} />
+              <div className={`h-full rounded-full transition-all duration-500 motion-reduce:transition-none ${barColor(overallPct)}`} style={{ width: `${overallPct}%` }} />
             </div>
           </div>
 

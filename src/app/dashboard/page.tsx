@@ -35,7 +35,7 @@ function monthStart() {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function Skeleton({ className }: { className?: string }) {
-  return <div className={`animate-pulse rounded-lg bg-gray-100 dark:bg-[#1A2C1F] ${className}`} />
+  return <div className={`animate-pulse motion-reduce:animate-none rounded-lg bg-gray-100 dark:bg-[#1A2C1F] ${className}`} />
 }
 
 function pct(value: number, goal: number) {
@@ -102,7 +102,7 @@ function ProgressRow({ label, icon: Icon, current, goal, formatValue, loading, o
             type="button"
             onClick={onEditGoal}
             aria-label={`Editar meta de ${label}`}
-            className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-[#1A2C1F] text-gray-300 dark:text-[#2A4030] hover:text-gray-500 dark:hover:text-[#8BA891] transition-colors"
+            className="p-2.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#1A2C1F] text-gray-300 dark:text-[#2A4030] hover:text-gray-500 dark:hover:text-[#8BA891] transition-colors"
           >
             <Pencil size={11} />
           </button>
@@ -113,7 +113,7 @@ function ProgressRow({ label, icon: Icon, current, goal, formatValue, loading, o
       <div className="relative h-2.5 bg-gray-100 dark:bg-[#1A2C1F] rounded-full overflow-hidden">
         <div
           ref={barRef}
-          className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out w-[var(--bar-w,0%)] ${barColor(p)}`}
+          className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ease-out motion-reduce:transition-none w-[var(--bar-w,0%)] ${barColor(p)}`}
         />
         {/* shine */}
         <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-full pointer-events-none" />
