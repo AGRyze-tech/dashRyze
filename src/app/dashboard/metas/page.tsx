@@ -167,8 +167,9 @@ interface GoalCardProps {
   onEditChange: (v: string) => void
   onCommit: () => void
   onCancel: () => void
+  featured?: boolean
 }
-function GoalCard({ goalKey, current, goal, loading, onEdit, editing, editValue, onEditChange, onCommit, onCancel }: GoalCardProps) {
+function GoalCard({ goalKey, current, goal, loading, onEdit, editing, editValue, onEditChange, onCommit, onCancel, featured }: GoalCardProps) {
   const cfg = GOAL_CONFIG[goalKey]
   const Icon = cfg.icon
   const p = pct(current, goal)
@@ -176,6 +177,90 @@ function GoalCard({ goalKey, current, goal, loading, onEdit, editing, editValue,
   const remaining = Math.max(0, goal - current)
   const barRef = useRef<HTMLDivElement>(null)
   useLayoutEffect(() => { barRef.current?.style.setProperty('--bar-w', `${p}%`) }, [p])
+
+  if (featured) {
+    return (
+      <div className={`card-light overflow-hidden relative ring-1 ${done ? 'ring-[#40916C]/30 dark:ring-[#40916C]/40' : `ring-transparent ${ringColor(p)}`}`}>
+        <div className={`absolute inset-0 bg-gradient-to-br ${done ? 'from-[#40916C]/8' : 'from-emerald-500/5'} via-transparent to-transparent pointer-events-none`} />
+        {editing ? (
+          <div className="p-6">
+            <EditRow goalKey={goalKey} value={editValue} onChange={onEditChange} onCommit={onCommit} onCancel={onCancel} />
+          </div>
+        ) : (
+          <div className="p-6 flex flex-col gap-5">
+            {/* Top row */}
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${done ? 'bg-[#40916C]/15 dark:bg-[#40916C]/25' : cfg.iconCls}`}>
+                  <Icon size={19} className={done ? 'text-[#40916C] dark:text-[#52B788]' : ''} />
+                </div>
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52]">Meta Principal</p>
+                  <p className="text-[15px] font-bold text-gray-800 dark:text-[#D1FAE5] mt-0.5">{cfg.label}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={onEdit}
+                aria-label={`Editar meta de ${cfg.label}`}
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#1A2C1F] text-gray-300 dark:text-[#2A4030] hover:text-gray-500 dark:hover:text-[#8BA891] transition-colors"
+              >
+                <Pencil size={13} />
+              </button>
+            </div>
+
+            {loading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-10 w-48" />
+                <Skeleton className="h-3 w-full rounded-full" />
+                <Skeleton className="h-3 w-32" />
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {/* Big number row */}
+                <div className="flex items-end gap-4 flex-wrap">
+                  <span className={`tabular text-[38px] font-bold leading-none ${textColor(p)}`}>
+                    {cfg.format(current)}
+                  </span>
+                  <div className="pb-1 flex items-center gap-2">
+                    <span className={`text-[20px] font-bold tabular ${textColor(p)}`}>{p.toFixed(1)}%</span>
+                    {done && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full bg-[#40916C]/10 dark:bg-[#40916C]/20 text-[#40916C] dark:text-[#52B788]">
+                        <CheckCircle2 size={10} /> Atingida!
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Thick bar */}
+                <div className="relative h-3 bg-gray-100 dark:bg-[#1A2C1F] rounded-full overflow-hidden">
+                  <div
+                    ref={barRef}
+                    className={`absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out w-[var(--bar-w,0%)] ${barColor(p)}`}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-full pointer-events-none" />
+                </div>
+
+                {/* Footer */}
+                <div className="flex items-center justify-between">
+                  {done ? (
+                    <span className="text-[12px] text-[#40916C] dark:text-[#52B788] font-medium">Meta do mês superada!</span>
+                  ) : (
+                    <span className="text-[12px] text-gray-400 dark:text-[#4A6B52]">
+                      Faltam <span className="font-semibold text-gray-700 dark:text-[#D1FAE5]">{cfg.format(remaining)}</span> para a meta
+                    </span>
+                  )}
+                  <span className="text-[12px] text-gray-400 dark:text-[#4A6B52]">
+                    Meta: <span className="font-semibold text-gray-700 dark:text-[#D1FAE5]">{cfg.format(goal)}</span>
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className={`card-light p-5 flex flex-col gap-4 ring-1 ${done ? 'ring-[#40916C]/25 dark:ring-[#40916C]/35' : `ring-transparent ${ringColor(p)}`}`}>
@@ -406,8 +491,40 @@ export default function MetasPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {GOAL_ORDER.map(key => (
+          {/* Revenue — featured, full width on its row */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="sm:col-span-2">
+              <GoalCard
+                goalKey="revenue"
+                current={currentValues.revenue}
+                goal={goals.revenue}
+                loading={loading}
+                onEdit={() => startEdit('revenue')}
+                editing={editing === 'revenue'}
+                editValue={inputVal}
+                onEditChange={setInputVal}
+                onCommit={commitEdit}
+                onCancel={() => setEditing(null)}
+                featured
+              />
+            </div>
+            <GoalCard
+              goalKey="sales"
+              current={currentValues.sales}
+              goal={goals.sales}
+              loading={loading}
+              onEdit={() => startEdit('sales')}
+              editing={editing === 'sales'}
+              editValue={inputVal}
+              onEditChange={setInputVal}
+              onCommit={commitEdit}
+              onCancel={() => setEditing(null)}
+            />
+          </div>
+
+          {/* Remaining goals */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+            {(['clients', 'projects', 'leads'] as GoalKey[]).map(key => (
               <GoalCard
                 key={key}
                 goalKey={key}

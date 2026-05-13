@@ -15,7 +15,7 @@ const navItems = [
   { href: '/dashboard/clientes', icon: Users, label: 'Clientes' },
   { href: '/dashboard/projetos', icon: FolderKanban, label: 'Projetos' },
   { href: '/dashboard/financeiro', icon: TrendingUp, label: 'Financeiro' },
-  { href: '/dashboard/meta', icon: BarChart2, label: 'Meta Ads' },
+  { href: '/dashboard/meta', icon: BarChart2, label: 'Meta Ads', exact: true },
   { href: '/dashboard/metas', icon: Target, label: 'Metas' },
 ]
 
