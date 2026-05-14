@@ -41,6 +41,17 @@ export function transactionRepository(db: Db) {
       return data
     },
 
+    async update(id: string, input: Partial<TransactionInput>): Promise<Transaction> {
+      const { data, error } = await db
+        .from('transactions')
+        .update(input)
+        .eq('id', id)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
+
     async remove(id: string): Promise<void> {
       const { error } = await db.from('transactions').delete().eq('id', id)
       if (error) throw error

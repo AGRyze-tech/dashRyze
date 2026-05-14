@@ -6,7 +6,7 @@ import { Modal } from '@/components/ui/Modal'
 import { useTheme } from '@/components/layout/ThemeProvider'
 import {
   TrendingUp, TrendingDown, Wallet, Plus, ArrowUpRight, ArrowDownLeft,
-  Trash2, CheckCircle2, Activity,
+  Trash2, CheckCircle2, Activity, Pencil,
 } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -120,6 +120,7 @@ export default function FinanceiroPage() {
   const [loading, setLoading] = useState(true)
   const [typeFilter, setTypeFilter] = useState<'todos' | 'entrada' | 'saida'>('todos')
   const [showModal, setShowModal] = useState(false)
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
@@ -186,9 +187,30 @@ export default function FinanceiroPage() {
   }
 
   function handleOpenModal() {
+    setEditingTransaction(null)
     setForm(emptyForm)
     setSaveError('')
     setShowModal(true)
+  }
+
+  function handleOpenEdit(t: Transaction) {
+    setEditingTransaction(t)
+    setForm({
+      type: t.type,
+      category: t.category,
+      service: '',
+      reference: '',
+      description: t.description,
+      amount: String(t.amount),
+      date: t.date,
+    })
+    setSaveError('')
+    setShowModal(true)
+  }
+
+  function handleCloseModal() {
+    setShowModal(false)
+    setEditingTransaction(null)
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -200,16 +222,26 @@ export default function FinanceiroPage() {
     setSaving(true)
     setSaveError('')
     try {
-      const data = await repo.create({
+      const payload = {
         type: form.type,
         category: form.category,
         description: form.description.trim(),
         amount,
         date: form.date,
-      })
-      setTransactions(prev => [data, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()))
-      setToast('Lançamento registrado!')
-      setShowModal(false)
+      }
+      if (editingTransaction) {
+        const data = await repo.update(editingTransaction.id, payload)
+        setTransactions(prev =>
+          prev.map(t => t.id === editingTransaction.id ? data : t)
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        )
+        setToast('Lançamento atualizado!')
+      } else {
+        const data = await repo.create(payload)
+        setTransactions(prev => [data, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()))
+        setToast('Lançamento registrado!')
+      }
+      handleCloseModal()
     } catch (err: unknown) {
       setSaveError(err instanceof Error ? err.message : 'Erro ao salvar.')
     } finally {
@@ -443,14 +475,24 @@ export default function FinanceiroPage() {
                       }`}>
                         {t.type === 'entrada' ? '+' : '−'}{formatCurrency(t.amount)}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => setDeleteModal(t)}
-                        aria-label="Remover lançamento"
-                        className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-200 dark:text-[#1E3020] hover:text-red-500 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"
-                      >
-                        <Trash2 size={13} />
-                      </button>
+                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 flex-shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(t)}
+                          aria-label="Editar lançamento"
+                          className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-200 dark:text-[#1E3020] hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+                        >
+                          <Pencil size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDeleteModal(t)}
+                          aria-label="Remover lançamento"
+                          className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-200 dark:text-[#1E3020] hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -460,8 +502,8 @@ export default function FinanceiroPage() {
         </div>
       </div>
 
-      {/* ── New Transaction Modal ─────────────────────────────────────── */}
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Novo Lançamento" size="lg">
+      {/* ── New / Edit Transaction Modal ──────────────────────────────── */}
+      <Modal isOpen={showModal} onClose={handleCloseModal} title={editingTransaction ? 'Editar Lançamento' : 'Novo Lançamento'} size="lg">
         <form onSubmit={handleSave} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
 
@@ -574,8 +616,8 @@ export default function FinanceiroPage() {
           )}
 
           <div className="flex justify-end gap-3 pt-2">
-            <Button variant="outline" type="button" onClick={() => setShowModal(false)}>Cancelar</Button>
-            <Button type="submit" loading={saving}>Registrar lançamento</Button>
+            <Button variant="outline" type="button" onClick={handleCloseModal}>Cancelar</Button>
+            <Button type="submit" loading={saving}>{editingTransaction ? 'Salvar alterações' : 'Registrar lançamento'}</Button>
           </div>
         </form>
       </Modal>
