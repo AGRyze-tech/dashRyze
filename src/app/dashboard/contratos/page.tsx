@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import { FileText, Download, Plus, AlertCircle, CheckCircle2, Clock, Trash2, Calendar } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
+import { contractRepository, projectRepository, clientRepository } from '@/lib/repositories'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { Contract, InstallmentStatus, Client, Project, PaymentMethod } from '@/types'
 
@@ -26,19 +27,6 @@ function defaultDueDate(index: number): string {
   const d = new Date()
   d.setDate(d.getDate() + 30 * (index + 1))
   return d.toISOString().split('T')[0]
-}
-
-async function generateContractNumber(supabase: ReturnType<typeof createClient>): Promise<string> {
-  const year = new Date().getFullYear()
-  const { data } = await supabase
-    .from('contracts')
-    .select('number')
-    .like('number', `RYZE-${year}-%`)
-    .order('number', { ascending: false })
-    .limit(1)
-  const lastNum = data?.[0]?.number
-  const next = lastNum ? (parseInt(lastNum.split('-')[2]) || 0) + 1 : 1
-  return `RYZE-${year}-${String(next).padStart(3, '0')}`
 }
 
 const emptyForm = {
@@ -62,20 +50,19 @@ export default function ContratosPage() {
   const [deleteModal, setDeleteModal] = useState<Contract | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [toast, setToast] = useState('')
-  const supabase = useMemo(() => createClient(), [])
+  const contractRepo = useMemo(() => contractRepository(createClient()), [])
+  const clientRepo = useMemo(() => clientRepository(createClient()), [])
+  const projectRepo = useMemo(() => projectRepository(createClient()), [])
 
   useEffect(() => {
     async function load() {
       try {
-        const [contractsRes, clientsRes] = await Promise.all([
-          supabase
-            .from('contracts')
-            .select('*, client:clients(*), project:projects(*), installments:contract_installments(*)')
-            .order('created_at', { ascending: false }),
-          supabase.from('clients').select('*').order('name'),
+        const [contractsData, clientsData] = await Promise.all([
+          contractRepo.findAll(),
+          clientRepo.findForSelect(),
         ])
-        if (contractsRes.data) setContracts(contractsRes.data)
-        if (clientsRes.data) setClients(clientsRes.data)
+        setContracts(contractsData)
+        setClients(clientsData as Client[])
       } finally {
         setLoading(false)
       }
@@ -91,9 +78,9 @@ export default function ContratosPage() {
 
   useEffect(() => {
     if (!form.client_id) { setProjects([]); return }
-    supabase.from('projects').select('*').eq('client_id', form.client_id).order('name')
-      .then(({ data }) => setProjects(data ?? []))
-  }, [form.client_id, supabase])
+    projectRepo.findByClientId(form.client_id)
+      .then(data => setProjects(data as Project[]))
+  }, [form.client_id])
 
   useEffect(() => {
     const count = form.payment_method === 'avista' ? 1 : form.installments_count
@@ -133,41 +120,27 @@ export default function ContratosPage() {
     setSaving(true)
     setSaveError('')
     try {
-      const number = await generateContractNumber(supabase)
       const count = form.payment_method === 'avista' ? 1 : form.installments_count
-
-      const { data: contract, error } = await supabase
-        .from('contracts')
-        .insert([{
-          number,
-          client_id: form.client_id,
-          project_id: form.project_id || null,
-          total_value: totalValue,
-          payment_method: form.payment_method,
-          installments_count: count,
-        }])
-        .select('*, client:clients(*), project:projects(*)')
-        .single()
-
-      if (error) throw error
-
       const installmentsPayload = Array.from({ length: count }, (_, i) => ({
-        contract_id: contract.id,
         number: i + 1,
         value: parseFloat((totalValue / count).toFixed(2)),
         due_date: dueDates[i] ?? defaultDueDate(i),
         status: 'pendente' as InstallmentStatus,
       }))
 
-      const { data: installments, error: instError } = await supabase
-        .from('contract_installments')
-        .insert(installmentsPayload)
-        .select()
+      const contract = await contractRepo.create(
+        {
+          client_id: form.client_id,
+          project_id: form.project_id || null,
+          total_value: totalValue,
+          payment_method: form.payment_method,
+          installments_count: count,
+        },
+        installmentsPayload,
+      )
 
-      if (instError) throw instError
-
-      setContracts(prev => [{ ...contract, installments: installments ?? [] }, ...prev])
-      setToast(`Contrato ${number} criado com sucesso!`)
+      setContracts(prev => [contract, ...prev])
+      setToast(`Contrato ${contract.number} criado com sucesso!`)
       setShowModal(false)
     } catch (err: unknown) {
       setSaveError(err instanceof Error ? err.message : 'Erro desconhecido.')
@@ -180,8 +153,7 @@ export default function ContratosPage() {
     if (!deleteModal) return
     setDeleting(true)
     try {
-      const { error } = await supabase.from('contracts').delete().eq('id', deleteModal.id)
-      if (error) throw error
+      await contractRepo.remove(deleteModal.id)
       setContracts(prev => prev.filter(c => c.id !== deleteModal.id))
       setToast(`Contrato ${deleteModal.number} removido.`)
       setDeleteModal(null)

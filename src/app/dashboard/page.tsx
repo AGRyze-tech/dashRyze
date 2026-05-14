@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { formatCurrency, formatDateShort, daysUntil, projectStatusConfig, leadStatusConfig } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
+import { clientRepository, projectRepository, transactionRepository, leadRepository } from '@/lib/repositories'
 import { loadMetaCampaigns } from '@/lib/meta'
 import Link from 'next/link'
 import { Transaction, Lead, MetaCampaign } from '@/types'
@@ -371,8 +372,6 @@ export default function DashboardPage() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [meta] = useState<MetaCampaign[]>(loadMetaCampaigns)
 
-  const supabase = useMemo(() => createClient(), [])
-
   useEffect(() => {
     const now = new Date()
     const h = now.getHours()
@@ -380,18 +379,20 @@ export default function DashboardPage() {
     const date = now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
     setGreeting(`${period}, Isaac · ${date}`)
 
+    const db = createClient()
+
     async function load() {
       try {
-        const [{ data: cli }, { data: proj }, { data: txn }, { data: lds }] = await Promise.all([
-          supabase.from('clients').select('id, name, status').order('name'),
-          supabase.from('projects').select('id, name, status, deadline, client_id, client:clients(name)').order('deadline'),
-          supabase.from('transactions').select('type, amount').gte('date', monthStart()),
-          supabase.from('leads').select('*').order('created_at', { ascending: false }),
+        const [cli, proj, txn, lds] = await Promise.all([
+          clientRepository(db).findSummary(),
+          projectRepository(db).findDashboard(),
+          transactionRepository(db).findSince(monthStart()),
+          leadRepository(db).findAll(),
         ])
-        if (cli) setClients(cli as DashClient[])
-        if (proj) setProjects(proj as unknown as DashProject[])
-        if (txn) setTransactions(txn as Transaction[])
-        if (lds) setLeads(lds)
+        setClients(cli as DashClient[])
+        setProjects(proj as DashProject[])
+        setTransactions(txn as Transaction[])
+        setLeads(lds)
       } finally {
         setLoading(false)
       }

@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import { MessageCircle, UserPlus, Globe, DollarSign, Users, ChevronDown, Plus, Trash2, CheckCircle2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
+import { leadRepository } from '@/lib/repositories'
 import { leadStatusConfig, formatDate } from '@/lib/utils'
 import { Lead, LeadStatus } from '@/types'
 
@@ -55,13 +56,13 @@ export default function LeadsPage() {
   const [convertModal, setConvertModal] = useState<Lead | null>(null)
   const [toast, setToast] = useState('')
   const [openStatusId, setOpenStatusId] = useState<string | null>(null)
-  const supabase = useMemo(() => createClient(), [])
+  const repo = useMemo(() => leadRepository(createClient()), [])
 
   useEffect(() => {
     async function load() {
       try {
-        const { data } = await supabase.from('leads').select('*').order('created_at', { ascending: false })
-        if (data) setLeads(data)
+        const data = await repo.findAll()
+        setLeads(data)
       } finally {
         setLoading(false)
       }
@@ -107,19 +108,14 @@ export default function LeadsPage() {
     setSaving(true)
     setSaveError('')
     try {
-      const { data, error } = await supabase
-        .from('leads')
-        .insert([{
-          name: form.name.trim(),
-          whatsapp: form.whatsapp.trim(),
-          revenue: form.revenue.trim() || null,
-          patients_per_month: form.patients_per_month.trim() || null,
-          has_site: form.has_site,
-          status: form.status,
-        }])
-        .select()
-        .single()
-      if (error) throw error
+      const data = await repo.create({
+        name: form.name.trim(),
+        whatsapp: form.whatsapp.trim(),
+        revenue: form.revenue.trim() || null,
+        patients_per_month: form.patients_per_month.trim() || null,
+        has_site: form.has_site,
+        status: form.status,
+      })
       setLeads(prev => [data, ...prev])
       setToast(`${data.name} adicionado com sucesso!`)
       setShowModal(false)
@@ -133,12 +129,13 @@ export default function LeadsPage() {
   async function handleUpdateStatus(id: string, status: LeadStatus): Promise<boolean> {
     const prev = leads.find(l => l.id === id)?.status
     setLeads(ls => ls.map(l => l.id === id ? { ...l, status } : l))
-    const { error } = await supabase.from('leads').update({ status }).eq('id', id)
-    if (error) {
+    try {
+      await repo.updateStatus(id, status)
+      return true
+    } catch {
       if (prev) setLeads(ls => ls.map(l => l.id === id ? { ...l, status: prev } : l))
       return false
     }
-    return true
   }
 
   async function handleConvert(lead: Lead) {
@@ -152,8 +149,7 @@ export default function LeadsPage() {
     if (!deleteModal) return
     setDeleting(true)
     try {
-      const { error } = await supabase.from('leads').delete().eq('id', deleteModal.id)
-      if (error) throw error
+      await repo.remove(deleteModal.id)
       setLeads(prev => prev.filter(l => l.id !== deleteModal.id))
       setToast(`${deleteModal.name} removido.`)
       setDeleteModal(null)

@@ -13,6 +13,7 @@ import {
   PieChart, Pie, Cell, Legend,
 } from 'recharts'
 import { createClient } from '@/lib/supabase'
+import { transactionRepository } from '@/lib/repositories'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { Transaction, TransactionType, TransactionCategory } from '@/types'
 
@@ -125,18 +126,15 @@ export default function FinanceiroPage() {
   const [deleteModal, setDeleteModal] = useState<Transaction | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [toast, setToast] = useState('')
-  const supabase = useMemo(() => createClient(), [])
+  const repo = useMemo(() => transactionRepository(createClient()), [])
   const { theme } = useTheme()
   const isDark = theme === 'dark'
 
   useEffect(() => {
     async function load() {
       try {
-        const { data } = await supabase
-          .from('transactions')
-          .select('*')
-          .order('date', { ascending: false })
-        if (data) setTransactions(data)
+        const data = await repo.findAll()
+        setTransactions(data)
       } finally {
         setLoading(false)
       }
@@ -202,12 +200,13 @@ export default function FinanceiroPage() {
     setSaving(true)
     setSaveError('')
     try {
-      const { data, error } = await supabase
-        .from('transactions')
-        .insert([{ type: form.type, category: form.category, description: form.description.trim(), amount, date: form.date }])
-        .select()
-        .single()
-      if (error) throw error
+      const data = await repo.create({
+        type: form.type,
+        category: form.category,
+        description: form.description.trim(),
+        amount,
+        date: form.date,
+      })
       setTransactions(prev => [data, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()))
       setToast('Lançamento registrado!')
       setShowModal(false)
@@ -222,8 +221,7 @@ export default function FinanceiroPage() {
     if (!deleteModal) return
     setDeleting(true)
     try {
-      const { error } = await supabase.from('transactions').delete().eq('id', deleteModal.id)
-      if (error) throw error
+      await repo.remove(deleteModal.id)
       setTransactions(prev => prev.filter(t => t.id !== deleteModal.id))
       setToast('Lançamento removido.')
       setDeleteModal(null)

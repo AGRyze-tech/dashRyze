@@ -8,6 +8,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Card } from '@/components/ui/Card'
 import { Search, Plus, Phone, Mail, Instagram, ExternalLink, ChevronRight, CheckCircle2, Pencil, Trash2, Paperclip, X, FileCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
+import { clientRepository } from '@/lib/repositories'
 import { clientStatusConfig, formatDate, specialties } from '@/lib/utils'
 import { Client, ClientStatus } from '@/types'
 
@@ -62,12 +63,9 @@ export default function ClientesPage() {
   useEffect(() => {
     async function load() {
       try {
-        const supabase = createClient()
-        const { data, error } = await supabase
-          .from('clients')
-          .select('*')
-          .order('created_at', { ascending: false })
-        if (!error && data) setClients(data)
+        const repo = clientRepository(createClient())
+        const data = await repo.findAll()
+        setClients(data)
       } finally {
         setLoading(false)
       }
@@ -137,42 +135,26 @@ export default function ClientesPage() {
     setSaving(true)
     setSaveError('')
     try {
-      const supabase = createClient()
+      const repo = clientRepository(createClient())
       const payload = {
         ...form,
         closed_at: form.closed_at || null,
         delivery_date: form.delivery_date || null,
       }
+
       let contractUrl: string | null = null
       if (contractFile) {
-        const ext = contractFile.name.split('.').pop()
-        const path = `contratos/${Date.now()}-${contractFile.name.replace(/\s+/g, '_')}`
-        const { error: uploadError } = await supabase.storage.from('clientes').upload(path, contractFile, { upsert: true })
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage.from('clientes').getPublicUrl(path)
-          contractUrl = urlData.publicUrl
-        }
+        contractUrl = await repo.uploadContract(contractFile)
       }
 
       const fullPayload = contractUrl ? { ...payload, contract_url: contractUrl } : payload
 
       if (editingClient) {
-        const { data, error } = await supabase
-          .from('clients')
-          .update(fullPayload)
-          .eq('id', editingClient.id)
-          .select()
-          .single()
-        if (error) throw error
+        const data = await repo.update(editingClient.id, fullPayload)
         setClients(prev => prev.map(c => c.id === editingClient.id ? data : c))
         setToast(`${data.name} atualizado com sucesso!`)
       } else {
-        const { data, error } = await supabase
-          .from('clients')
-          .insert([fullPayload])
-          .select()
-          .single()
-        if (error) throw error
+        const data = await repo.create(fullPayload)
         setClients(prev => [data, ...prev])
         setToast(`${data.name} adicionado com sucesso!`)
       }
@@ -186,15 +168,13 @@ export default function ClientesPage() {
     } finally {
       setSaving(false)
     }
-  }, [form, editingClient])
+  }, [form, editingClient, contractFile])
 
   async function handleDelete() {
     if (!deleteModal) return
     setDeleting(true)
     try {
-      const supabase = createClient()
-      const { error } = await supabase.from('clients').delete().eq('id', deleteModal.id)
-      if (error) throw error
+      await clientRepository(createClient()).remove(deleteModal.id)
       setClients(prev => prev.filter(c => c.id !== deleteModal.id))
       setToast(`${deleteModal.name} removido.`)
       setDeleteModal(null)

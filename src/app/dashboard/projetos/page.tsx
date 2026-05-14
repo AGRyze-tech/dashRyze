@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo, memo } from 'react'
 import { createClient } from '@/lib/supabase'
+import { projectRepository, clientRepository } from '@/lib/repositories'
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
@@ -124,23 +125,20 @@ export default function ProjetosPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  const supabase = useMemo(() => createClient(), [])
+  const projRepo = useMemo(() => projectRepository(createClient()), [])
+  const clientRepo = useMemo(() => clientRepository(createClient()), [])
 
   const load = useCallback(async () => {
     setLoading(true)
-    const { data: proj } = await supabase
-      .from('projects')
-      .select('*, client:clients(id, name)')
-      .order('created_at', { ascending: false })
-    setProjects((proj as Project[]) ?? [])
+    const data = await projRepo.findAll()
+    setProjects(data)
     setLoading(false)
-  }, [supabase])
+  }, [projRepo])
 
   useEffect(() => {
-    supabase.from('clients').select('id, name, specialty').order('name')
-      .then(({ data }) => setClients((data as Client[]) ?? []))
+    clientRepo.findForSelect().then(data => setClients(data as Client[]))
     load()
-  }, [load, supabase])
+  }, [load])
 
   function openCreate() {
     setEditTarget(null)
@@ -189,11 +187,11 @@ export default function ProjetosPage() {
     }
 
     if (editTarget) {
-      const { error: err } = await supabase.from('projects').update(payload).eq('id', editTarget.id)
-      if (err) { setError('Erro ao salvar.'); setSaving(false); return }
+      try { await projRepo.update(editTarget.id, payload) }
+      catch { setError('Erro ao salvar.'); setSaving(false); return }
     } else {
-      const { error: err } = await supabase.from('projects').insert(payload)
-      if (err) { setError('Erro ao salvar.'); setSaving(false); return }
+      try { await projRepo.create(payload) }
+      catch { setError('Erro ao salvar.'); setSaving(false); return }
     }
 
     await load()
@@ -202,7 +200,7 @@ export default function ProjetosPage() {
   }
 
   async function handleDelete(project: Project) {
-    await supabase.from('projects').delete().eq('id', project.id)
+    await projRepo.remove(project.id)
     setProjects(prev => prev.filter(p => p.id !== project.id))
     setDeleteTarget(null)
   }
@@ -214,8 +212,8 @@ export default function ProjetosPage() {
     setProjects(ps => ps.map(p => p.id === id ? { ...p, status } : p))
     setDragging(null)
     setDragOver(null)
-    const { error } = await supabase.from('projects').update({ status }).eq('id', id)
-    if (error && prev) setProjects(ps => ps.map(p => p.id === id ? { ...p, status: prev } : p))
+    try { await projRepo.updateStatus(id, status) }
+    catch { if (prev) setProjects(ps => ps.map(p => p.id === id ? { ...p, status: prev } : p)) }
   }
 
   const set = (field: keyof typeof emptyForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
