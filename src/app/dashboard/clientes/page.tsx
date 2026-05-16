@@ -203,7 +203,13 @@ export default function ClientesPage() {
       setShowModal(false)
     } catch (err: unknown) {
       console.error('Erro ao salvar cliente:', err)
-      setSaveError(err instanceof Error ? err.message : 'Erro desconhecido ao salvar.')
+      const msg =
+        err instanceof Error
+          ? err.message
+          : typeof err === 'object' && err !== null && 'message' in err
+          ? String((err as { message: unknown }).message)
+          : JSON.stringify(err)
+      setSaveError(msg || 'Erro desconhecido ao salvar.')
     } finally {
       setSaving(false)
     }
