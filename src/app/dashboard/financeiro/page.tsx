@@ -13,9 +13,9 @@ import {
   PieChart, Pie, Cell, Legend,
 } from 'recharts'
 import { createClient } from '@/lib/supabase'
-import { transactionRepository } from '@/lib/repositories'
+import { transactionRepository, clientRepository } from '@/lib/repositories'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import { Transaction, TransactionType, TransactionCategory } from '@/types'
+import { Transaction, TransactionType, TransactionCategory, Client } from '@/types'
 
 const categoryLabels: Record<TransactionCategory, string> = {
   ferramentas: 'Ferramentas',
@@ -118,8 +118,9 @@ function ChartTooltip({ active, payload, label, isDark }: { active?: boolean; pa
 
 export default function FinanceiroPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [pendingClients, setPendingClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
-  const [typeFilter, setTypeFilter] = useState<'todos' | 'entrada' | 'saida'>('todos')
+  const [typeFilter, setTypeFilter] = useState<'todos' | 'entrada' | 'saida' | 'pendentes'>('todos')
   const [showModal, setShowModal] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
   const [form, setForm] = useState(emptyForm)
@@ -135,14 +136,21 @@ export default function FinanceiroPage() {
   useEffect(() => {
     async function load() {
       try {
-        const data = await repo.findAll()
-        setTransactions(data)
+        const db = createClient()
+        const [txns, clients] = await Promise.all([
+          repo.findAll(),
+          clientRepository(db).findAll(),
+        ])
+        setTransactions(txns)
+        setPendingClients(
+          clients.filter(c => (c.total_value ?? 0) > 0 && (c.paid_value ?? 0) < (c.total_value ?? 0))
+        )
       } finally {
         setLoading(false)
       }
     }
     load()
-  }, [])
+  }, [repo])
 
   useEffect(() => {
     if (!toast) return
@@ -396,22 +404,33 @@ export default function FinanceiroPage() {
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#1E3020]">
             <div>
               <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52]">Lançamentos</h3>
-              <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5">{filtered.length} registro{filtered.length !== 1 ? 's' : ''}</p>
+              <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5">
+                {typeFilter === 'pendentes'
+                  ? `${pendingClients.length} cliente${pendingClients.length !== 1 ? 's' : ''} com pagamento pendente`
+                  : `${filtered.length} registro${filtered.length !== 1 ? 's' : ''}`}
+              </p>
             </div>
             <div className="flex items-center gap-2">
               <div className="flex bg-gray-100 dark:bg-[#152218] rounded-lg p-0.5">
-                {(['todos', 'entrada', 'saida'] as const).map(f => (
+                {([
+                  { key: 'todos',     label: 'Todos' },
+                  { key: 'entrada',   label: 'Entradas' },
+                  { key: 'saida',     label: 'Saídas' },
+                  { key: 'pendentes', label: `Pendentes${pendingClients.length > 0 ? ` (${pendingClients.length})` : ''}` },
+                ] as { key: typeof typeFilter; label: string }[]).map(({ key, label }) => (
                   <button
                     type="button"
-                    key={f}
-                    onClick={() => setTypeFilter(f)}
+                    key={key}
+                    onClick={() => setTypeFilter(key)}
                     className={`px-3 py-1.5 text-[12px] font-medium rounded-md transition-all cursor-pointer ${
-                      typeFilter === f
-                        ? 'bg-white dark:bg-[#1A2C1F] shadow-sm text-gray-900 dark:text-[#F8FBF9]'
+                      typeFilter === key
+                        ? key === 'pendentes'
+                          ? 'bg-amber-500 dark:bg-amber-600 text-white shadow-sm'
+                          : 'bg-white dark:bg-[#1A2C1F] shadow-sm text-gray-900 dark:text-[#F8FBF9]'
                         : 'text-gray-500 dark:text-[#4A6B52] hover:text-gray-700 dark:hover:text-[#8BA891]'
                     }`}
                   >
-                    {f === 'todos' ? 'Todos' : f === 'entrada' ? 'Entradas' : 'Saídas'}
+                    {label}
                   </button>
                 ))}
               </div>
@@ -419,8 +438,74 @@ export default function FinanceiroPage() {
             </div>
           </div>
 
-          {/* Body */}
-          {loading ? (
+          {/* ── Pendentes body ─────────────────────────────────────────── */}
+          {typeFilter === 'pendentes' ? (
+            loading ? (
+              <div className="divide-y divide-gray-50 dark:divide-[#1E3020]">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-3 px-5 py-3.5">
+                    <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#1A2C1F] animate-pulse flex-shrink-0" />
+                    <div className="flex-1 space-y-1.5">
+                      <div className="h-3 w-36 bg-gray-200 dark:bg-[#1E3020] animate-pulse rounded" />
+                      <div className="h-2.5 w-24 bg-gray-100 dark:bg-[#152218] animate-pulse rounded" />
+                    </div>
+                    <div className="h-4 w-24 bg-amber-100 dark:bg-amber-900/20 animate-pulse rounded" />
+                  </div>
+                ))}
+              </div>
+            ) : pendingClients.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center mb-3">
+                  <Wallet size={18} className="text-emerald-500 dark:text-emerald-400" />
+                </div>
+                <p className="text-[13px] font-medium text-gray-400 dark:text-[#4A6B52]">Nenhum pagamento pendente</p>
+                <p className="text-[12px] text-gray-300 dark:text-[#2A4030] mt-0.5">Todos os clientes estão com pagamento em dia</p>
+              </div>
+            ) : (
+              <>
+                {/* Total summary */}
+                <div className="flex items-center justify-between px-5 py-3 bg-amber-50/60 dark:bg-amber-900/10 border-b border-amber-100 dark:border-amber-800/20">
+                  <span className="text-[12px] font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-widest">Total a receber</span>
+                  <span className="text-[16px] font-bold tabular text-amber-700 dark:text-amber-300">
+                    {formatCurrency(pendingClients.reduce((s, c) => s + ((c.total_value ?? 0) - (c.paid_value ?? 0)), 0))}
+                  </span>
+                </div>
+                <div>
+                  {pendingClients.map(c => {
+                    const total = c.total_value ?? 0
+                    const paid  = c.paid_value ?? 0
+                    const remaining = total - paid
+                    const pct = total > 0 ? Math.round((paid / total) * 100) : 0
+                    return (
+                      <div key={c.id} className="flex items-center gap-3 px-5 py-4 border-b border-gray-50 dark:border-[#1E3020] last:border-0 hover:bg-gray-50/70 dark:hover:bg-[#1A2C1F] transition-colors">
+                        <div className="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center flex-shrink-0">
+                          <span className="text-[12px] font-bold text-amber-600 dark:text-amber-400">{c.name.charAt(0)}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] font-medium text-gray-800 dark:text-[#D1FAE5] truncate">{c.name}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="flex-1 h-1.5 bg-gray-100 dark:bg-[#1A2C1F] rounded-full overflow-hidden max-w-[120px]">
+                              <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${pct}%` }} />
+                            </div>
+                            <span className="text-[11px] text-gray-400 dark:text-[#4A6B52]">
+                              {formatCurrency(paid)} pago de {formatCurrency(total)}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-[14px] font-bold text-amber-600 dark:text-amber-400 tabular">{formatCurrency(remaining)}</p>
+                          <p className="text-[11px] text-gray-400 dark:text-[#4A6B52]">a receber</p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </>
+            )
+          ) : null}
+
+          {/* ── Normal ledger body ─────────────────────────────────────── */}
+          {typeFilter !== 'pendentes' && loading ? (
             <div className="divide-y divide-gray-50 dark:divide-[#1E3020]">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3 px-5 py-3.5">

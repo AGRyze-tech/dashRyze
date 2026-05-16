@@ -35,7 +35,15 @@ export function clientRepository(db: Db) {
         .from('clients')
         .select('id, name, status, total_value, paid_value')
         .order('name')
-      if (error) throw error
+      if (error) {
+        // Fallback: payment columns may not exist yet (migration pending)
+        const { data: fallback, error: fe } = await db
+          .from('clients')
+          .select('id, name, status')
+          .order('name')
+        if (fe) throw fe
+        return (fallback ?? []) as { id: string; name: string; status: ClientStatus }[]
+      }
       return (data ?? []) as { id: string; name: string; status: ClientStatus; total_value?: number; paid_value?: number }[]
     },
 
