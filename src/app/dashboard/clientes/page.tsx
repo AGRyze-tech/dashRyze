@@ -11,7 +11,7 @@ import {
   CheckCircle2, Pencil, Trash2, Paperclip, X, FileCheck, AlertCircle,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
-import { clientRepository } from '@/lib/repositories'
+import { clientRepository, ClientInput } from '@/lib/repositories'
 import { clientStatusConfig, formatDate, formatCurrency, specialties } from '@/lib/utils'
 import { Client, ClientStatus } from '@/types'
 
@@ -166,9 +166,15 @@ export default function ClientesPage() {
       const paidVal = totalVal != null && form.payment_mode
         ? form.payment_mode === '100%' ? totalVal : totalVal * 0.5
         : null
-      const { payment_mode: _pm, ...rest } = form
-      const payload = {
-        ...rest,
+      const payload: ClientInput = {
+        name: form.name,
+        specialty: form.specialty,
+        email: form.email,
+        whatsapp: form.whatsapp,
+        instagram: form.instagram || undefined,
+        website: form.website || undefined,
+        status: form.status,
+        notes: form.notes || undefined,
         closed_at: form.closed_at || null,
         delivery_date: form.delivery_date || null,
         total_value: totalVal,
