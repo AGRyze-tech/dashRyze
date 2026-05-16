@@ -15,6 +15,8 @@ export type ClientInput = {
   closed_at?: string | null
   delivery_date?: string | null
   contract_url?: string | null
+  total_value?: number | null
+  paid_value?: number | null
 }
 
 export function clientRepository(db: Db) {
@@ -28,13 +30,13 @@ export function clientRepository(db: Db) {
       return data ?? []
     },
 
-    async findSummary(): Promise<{ id: string; name: string; status: ClientStatus }[]> {
+    async findSummary(): Promise<{ id: string; name: string; status: ClientStatus; total_value?: number; paid_value?: number }[]> {
       const { data, error } = await db
         .from('clients')
-        .select('id, name, status')
+        .select('id, name, status, total_value, paid_value')
         .order('name')
       if (error) throw error
-      return (data ?? []) as { id: string; name: string; status: ClientStatus }[]
+      return (data ?? []) as { id: string; name: string; status: ClientStatus; total_value?: number; paid_value?: number }[]
     },
 
     async findForSelect(): Promise<Pick<Client, 'id' | 'name' | 'specialty'>[]> {

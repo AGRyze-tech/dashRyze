@@ -13,14 +13,13 @@ import {
 import { Project, ProjectStatus, Client } from '@/types'
 
 const columns: { status: ProjectStatus; label: string; color: string }[] = [
-  { status: 'briefing',       label: 'Briefing',       color: '#3B82F6' },
+  { status: 'briefing',        label: 'Briefing',        color: '#3B82F6' },
   { status: 'desenvolvimento', label: 'Desenvolvimento', color: '#7C3AED' },
-  { status: 'revisao',        label: 'Revisão',        color: '#F59E0B' },
-  { status: 'entregue',       label: 'Entregue',       color: '#10B981' },
-  { status: 'concluido',      label: 'Concluído',      color: '#6B7280' },
-  { status: 'pausado',        label: 'Pausado',        color: '#EF4444' },
+  { status: 'revisao',         label: 'Revisão',         color: '#F59E0B' },
+  { status: 'entregue',        label: 'Entregue',        color: '#10B981' },
+  { status: 'concluido',       label: 'Concluído',       color: '#6B7280' },
+  { status: 'pausado',         label: 'Pausado',         color: '#EF4444' },
 ]
-
 
 const emptyForm = {
   client_id: '',
@@ -53,8 +52,8 @@ const ProjectCard = memo(function ProjectCard({
     <div className="bg-white dark:bg-[#152218] border border-gray-200 dark:border-[#1E3020] rounded-xl p-4 shadow-sm dark:shadow-black/30 hover:shadow-md transition-all duration-200 group">
       <div className="flex items-start justify-between mb-2.5">
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-gray-900 text-[13px] leading-tight mb-1">{project.name}</p>
-          <p className="text-[11px] text-gray-400 truncate">{project.client?.name ?? '—'}</p>
+          <p className="font-semibold text-gray-900 dark:text-[#F0FDF4] text-[13px] leading-tight mb-1">{project.name}</p>
+          <p className="text-[11px] text-gray-400 dark:text-[#4A6B52] truncate">{project.client?.name ?? '—'}</p>
         </div>
         <div className="flex items-center gap-1 ml-2 flex-shrink-0">
           <span className="text-[10px] font-medium text-gray-400 dark:text-[#8BA891] bg-gray-100 dark:bg-[#1A2C1F] px-1.5 py-0.5 rounded">
@@ -64,7 +63,7 @@ const ProjectCard = memo(function ProjectCard({
             type="button"
             aria-label="Editar projeto"
             onClick={e => { e.stopPropagation(); onEdit(project) }}
-            className="p-1 rounded hover:bg-gray-100 text-gray-300 hover:text-gray-600 transition-colors opacity-0 group-hover:opacity-100"
+            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#1A2C1F] text-gray-300 dark:text-[#2A4030] hover:text-gray-600 dark:hover:text-[#8BA891] transition-colors opacity-0 group-hover:opacity-100"
           >
             <Pencil size={11} />
           </button>
@@ -72,7 +71,7 @@ const ProjectCard = memo(function ProjectCard({
             type="button"
             aria-label="Excluir projeto"
             onClick={e => { e.stopPropagation(); onDelete(project) }}
-            className="p-1 rounded hover:bg-red-50 text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+            className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 dark:text-[#2A4030] hover:text-red-500 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
           >
             <Trash2 size={11} />
           </button>
@@ -244,8 +243,8 @@ export default function ProjetosPage() {
               return (
                 <div key={col.status} className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full" style={{ background: col.color }} />
-                  <span className="text-[12px] text-gray-500">
-                    {col.label} <strong className="text-gray-700">{count}</strong>
+                  <span className="text-[12px] text-gray-500 dark:text-[#8BA891]">
+                    {col.label} <strong className="text-gray-700 dark:text-[#D1FAE5]">{count}</strong>
                   </span>
                 </div>
               )
@@ -264,17 +263,16 @@ export default function ProjetosPage() {
             return (
               <div
                 key={col.status}
-                className={`flex-shrink-0 w-[270px] rounded-xl transition-all duration-150 ${isOver ? 'ring-2 ring-[#40916C]/40' : ''}`}
-                style={{ background: isOver ? 'rgba(64,145,108,0.04)' : '#F3F4F6' }}
+                className={`flex-shrink-0 w-[270px] rounded-xl transition-all duration-150 bg-gray-100 dark:bg-[#0F1A12] ${isOver ? 'ring-2 ring-[#40916C]/40 !bg-[#40916C]/5' : ''}`}
                 onDragOver={e => { e.preventDefault(); setDragOver(col.status) }}
                 onDragLeave={() => setDragOver(null)}
                 onDrop={() => handleDrop(col.status)}
               >
-                <div className="flex items-center justify-between px-3 py-3 border-b border-gray-200/70">
+                <div className="flex items-center justify-between px-3 py-3 border-b border-gray-200/70 dark:border-[#1E3020]">
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full" style={{ background: col.color }} />
-                    <span className="text-[12px] font-semibold text-gray-700">{col.label}</span>
-                    <span className="text-[11px] text-gray-400 bg-white border border-gray-200 rounded-full px-1.5 py-px font-medium">
+                    <span className="text-[12px] font-semibold text-gray-700 dark:text-[#D1FAE5]">{col.label}</span>
+                    <span className="text-[11px] text-gray-400 dark:text-[#4A6B52] bg-white dark:bg-[#152218] border border-gray-200 dark:border-[#2A4030] rounded-full px-1.5 py-px font-medium">
                       {colProjects.length}
                     </span>
                   </div>
@@ -297,8 +295,8 @@ export default function ProjetosPage() {
                     </div>
                   ))}
                   {colProjects.length === 0 && (
-                    <div className="border-2 border-dashed border-gray-200 rounded-xl h-20 flex items-center justify-center">
-                      <span className="text-[11px] text-gray-400">Soltar aqui</span>
+                    <div className="border-2 border-dashed border-gray-200 dark:border-[#1E3020] rounded-xl h-20 flex items-center justify-center">
+                      <span className="text-[11px] text-gray-400 dark:text-[#2A4030]">Soltar aqui</span>
                     </div>
                   )}
                 </div>
@@ -316,7 +314,7 @@ export default function ProjetosPage() {
       >
         <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2">
-            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Cliente *</label>
+            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Cliente *</label>
             <select value={form.client_id} onChange={set('client_id')} className="input-field cursor-pointer" aria-label="Cliente">
               <option value="">Selecione um cliente</option>
               {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -324,26 +322,26 @@ export default function ProjetosPage() {
           </div>
 
           <div className="col-span-2">
-            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Nome do projeto *</label>
+            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Nome do projeto *</label>
             <input type="text" value={form.name} onChange={set('name')} placeholder="Ex: Site institucional" className="input-field" />
           </div>
 
           <div>
-            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Tipo</label>
+            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Tipo</label>
             <select value={form.type} onChange={set('type')} className="input-field cursor-pointer" aria-label="Tipo">
               {projectTypeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Status</label>
+            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Status</label>
             <select value={form.status} onChange={set('status')} className="input-field cursor-pointer" aria-label="Status">
               {columns.map(c => <option key={c.status} value={c.status}>{c.label}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Responsável</label>
+            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Responsável</label>
             <select value={form.responsible} onChange={set('responsible')} className="input-field cursor-pointer" aria-label="Responsável">
               <option value="isaac">Isaac</option>
               <option value="vinicius">Vinicius</option>
@@ -351,32 +349,32 @@ export default function ProjetosPage() {
           </div>
 
           <div>
-            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Valor (R$)</label>
+            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Valor (R$)</label>
             <input type="number" value={form.value} onChange={set('value')} placeholder="0,00" min="0" step="0.01" className="input-field" />
           </div>
 
           <div>
-            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Data de início *</label>
+            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Data de início *</label>
             <input type="date" value={form.start_date} onChange={set('start_date')} className="input-field" aria-label="Data de início" />
           </div>
 
           <div>
-            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Prazo de entrega *</label>
+            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Prazo de entrega *</label>
             <input type="date" value={form.deadline} onChange={set('deadline')} className="input-field" aria-label="Prazo de entrega" />
           </div>
 
           <div className="col-span-2">
-            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">URL do projeto</label>
+            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">URL do projeto</label>
             <input type="text" value={form.url} onChange={set('url')} placeholder="exemplo.com.br" className="input-field" />
           </div>
 
           <div className="col-span-2">
-            <label className="block text-[12px] font-medium text-gray-700 mb-1.5">Observações</label>
+            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Observações</label>
             <textarea value={form.notes} onChange={set('notes')} rows={3} placeholder="Detalhes adicionais..." className="input-field resize-none" />
           </div>
 
           {error && (
-            <p className="col-span-2 text-[12px] text-red-500 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
+            <p className="col-span-2 text-[12px] text-red-500 bg-red-50 dark:bg-red-900/20 dark:text-red-400 px-3 py-2 rounded-lg">{error}</p>
           )}
 
           <div className="col-span-2 flex gap-2 justify-end pt-1">
@@ -390,8 +388,8 @@ export default function ProjetosPage() {
 
       <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Excluir projeto" size="sm">
         <div className="space-y-4">
-          <p className="text-[14px] text-gray-600">
-            Tem certeza que deseja excluir <strong>{deleteTarget?.name}</strong>? Esta ação não pode ser desfeita.
+          <p className="text-[14px] text-gray-600 dark:text-[#A7C4AF]">
+            Tem certeza que deseja excluir <strong className="text-gray-900 dark:text-[#F8FBF9]">{deleteTarget?.name}</strong>? Esta ação não pode ser desfeita.
           </p>
           <div className="flex gap-2 justify-end">
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancelar</Button>

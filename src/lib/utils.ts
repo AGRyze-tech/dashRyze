@@ -87,13 +87,16 @@ export const projectStatusOptions = (Object.entries(projectStatusConfig) as [Pro
   .map(([status, { label }]) => ({ status, label }))
 
 export const specialties = [
-  'Nutricionista',
   'Psicólogo',
+  'Psicanalista',
+  'Psicoterapeuta',
+  'Terapeuta',
+  'Sexólogo',
+  'Nutricionista',
   'Médico',
   'Clínica',
   'Dentista',
   'Fisioterapeuta',
-  'Terapeuta',
   'Enfermeiro',
   'Farmacêutico',
   'Outro',

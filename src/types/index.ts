@@ -3,7 +3,7 @@ export type ProjectStatus = 'briefing' | 'desenvolvimento' | 'revisao' | 'entreg
 export type ProjectType = 'site' | 'landing' | 'smartpage' | 'sistema' | 'outro'
 export type LeadStatus = 'novo' | 'contatado' | 'qualificado' | 'descartado' | 'convertido'
 export type TransactionType = 'entrada' | 'saida'
-export type TransactionCategory = 'ferramentas' | 'infraestrutura' | 'marketing' | 'pessoal' | 'outros' | 'contrato'
+export type TransactionCategory = 'ferramentas' | 'infraestrutura' | 'marketing' | 'pessoal' | 'outros' | 'contrato' | 'hospedagem'
 export type PaymentMethod = 'avista' | 'parcelado'
 export type InstallmentStatus = 'pendente' | 'pago' | 'atrasado'
 
@@ -19,6 +19,20 @@ export interface Client {
   notes?: string
   closed_at?: string
   delivery_date?: string
+  total_value?: number
+  paid_value?: number
+  created_at: string
+}
+
+export type MeetingType = 'reuniao' | 'no_show' | 'fechamento'
+
+export interface Meeting {
+  id: string
+  title: string
+  client_name: string
+  date: string
+  type: MeetingType
+  notes?: string
   created_at: string
 }
 

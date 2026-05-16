@@ -20,6 +20,7 @@ import { Transaction, TransactionType, TransactionCategory } from '@/types'
 const categoryLabels: Record<TransactionCategory, string> = {
   ferramentas: 'Ferramentas',
   infraestrutura: 'Infraestrutura',
+  hospedagem: 'Hospedagem',
   marketing: 'Marketing',
   pessoal: 'Pessoal',
   outros: 'Outros',

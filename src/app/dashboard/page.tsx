@@ -17,7 +17,7 @@ import { Transaction, Lead, MetaCampaign } from '@/types'
 import type { ClientStatus, ProjectStatus } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type DashClient  = { id: string; name: string; status: ClientStatus }
+type DashClient  = { id: string; name: string; status: ClientStatus; total_value?: number; paid_value?: number }
 type DashProject = { id: string; name: string; status: ProjectStatus; deadline: string; client_id: string; client?: { name: string } }
 
 type Goals = { revenue: number; sales: number }
@@ -408,6 +408,15 @@ export default function DashboardPage() {
     return count
   }, [clients])
 
+  const totalACobrar = useMemo(() => {
+    let total = 0
+    for (const c of clients) {
+      const pending = (c.total_value ?? 0) - (c.paid_value ?? 0)
+      if (pending > 0) total += pending
+    }
+    return total
+  }, [clients])
+
   const { activeProjects, deliveredCount } = useMemo(() => {
     const active: DashProject[] = []
     let deliveredCount = 0
@@ -546,6 +555,19 @@ export default function DashboardPage() {
                 )}
               </div>
             </div>
+
+            {/* A cobrar de clientes */}
+            {(loading || totalACobrar > 0) && (
+              <div className="bg-amber-50/60 dark:bg-amber-900/10 border border-amber-200/60 dark:border-amber-800/30 rounded-xl p-3">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Clock size={12} className="text-amber-600 dark:text-amber-400" />
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-amber-600/80 dark:text-amber-400/80">A cobrar de clientes</span>
+                </div>
+                {loading ? <Skeleton className="h-5 w-24" /> : (
+                  <p className="tabular text-[15px] font-bold text-amber-700 dark:text-amber-300">{formatCurrency(totalACobrar)}</p>
+                )}
+              </div>
+            )}
 
             <Link href="/dashboard/financeiro" className="flex items-center justify-between text-[12px] font-medium text-[#40916C] dark:text-[#52B788] hover:opacity-80 transition-opacity mt-auto pt-1 border-t border-gray-100 dark:border-[#1E3020]">
               Ver lançamentos completos
