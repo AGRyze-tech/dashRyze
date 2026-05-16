@@ -24,7 +24,7 @@ const emptyForm = {
   name: '', specialty: '', email: '', whatsapp: '',
   instagram: '', website: '', status: 'prospecto' as ClientStatus, notes: '',
   closed_at: '', delivery_date: '',
-  total_value: '', paid_value: '',
+  total_value: '', payment_mode: '' as '' | '50%' | '100%',
 }
 
 function SkeletonRow() {
@@ -128,7 +128,13 @@ export default function ClientesPage() {
       closed_at: client.closed_at ?? '',
       delivery_date: client.delivery_date ?? '',
       total_value: client.total_value != null ? String(client.total_value) : '',
-      paid_value: client.paid_value != null ? String(client.paid_value) : '',
+      payment_mode: (() => {
+        if (!client.total_value || !client.paid_value) return ''
+        const ratio = client.paid_value / client.total_value
+        if (Math.abs(ratio - 1) < 0.01) return '100%'
+        if (Math.abs(ratio - 0.5) < 0.01) return '50%'
+        return ''
+      })() as '' | '50%' | '100%',
     })
     setSaveError('')
     setContractFile(null)
@@ -144,10 +150,10 @@ export default function ClientesPage() {
   const set = (field: keyof typeof emptyForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm(f => ({ ...f, [field]: e.target.value }))
 
-  const pendingAmount = (() => {
+  const { computedPaid, pendingAmount } = (() => {
     const total = parseFloat(form.total_value) || 0
-    const paid = parseFloat(form.paid_value) || 0
-    return Math.max(0, total - paid)
+    const paid = form.payment_mode === '100%' ? total : form.payment_mode === '50%' ? total * 0.5 : 0
+    return { computedPaid: paid, pendingAmount: Math.max(0, total - paid) }
   })()
 
   const handleSave = useCallback(async (e: React.FormEvent) => {
@@ -157,9 +163,12 @@ export default function ClientesPage() {
     try {
       const repo = clientRepository(createClient())
       const totalVal = form.total_value ? parseFloat(form.total_value) : null
-      const paidVal = form.paid_value ? parseFloat(form.paid_value) : null
+      const paidVal = totalVal != null && form.payment_mode
+        ? form.payment_mode === '100%' ? totalVal : totalVal * 0.5
+        : null
+      const { payment_mode: _pm, ...rest } = form
       const payload = {
-        ...form,
+        ...rest,
         closed_at: form.closed_at || null,
         delivery_date: form.delivery_date || null,
         total_value: totalVal,
@@ -391,12 +400,16 @@ export default function ClientesPage() {
                         <td>
                           {hasPaymentData ? (
                             <div className="space-y-0.5">
-                              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
-                                {formatCurrency(paidV)} pago
+                              <p className="text-[11px] text-gray-500 dark:text-[#8BA891]">
+                                {formatCurrency(totalV)}
                               </p>
-                              {pendingV > 0 && (
+                              {pendingV > 0 ? (
                                 <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold">
-                                  {formatCurrency(pendingV)} pendente
+                                  Falta {formatCurrency(pendingV)}
+                                </p>
+                              ) : (
+                                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                                  ✓ Quitado
                                 </p>
                               )}
                             </div>
@@ -519,14 +532,34 @@ export default function ClientesPage() {
             </div>
 
             <div>
-              <label htmlFor="cli-paid" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Valor pago (R$)</label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#4A6B52] text-sm font-medium select-none">R$</span>
-                <input id="cli-paid" type="number" className="input-field pl-10" placeholder="0,00" min="0" step="0.01" value={form.paid_value} onChange={set('paid_value')} />
+              <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Forma de pagamento</label>
+              <div className="flex rounded-xl border border-gray-200 dark:border-[#2A4030] overflow-hidden">
+                {([
+                  { value: '', label: 'Não definido' },
+                  { value: '50%', label: '50% (entrada)' },
+                  { value: '100%', label: 'Total (100%)' },
+                ] as { value: '' | '50%' | '100%'; label: string }[]).map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, payment_mode: opt.value }))}
+                    className={`flex-1 py-2.5 text-[12px] font-semibold transition-all cursor-pointer ${
+                      form.payment_mode === opt.value
+                        ? opt.value === '100%'
+                          ? 'bg-[#40916C] dark:bg-[#2D6A4F] text-white'
+                          : opt.value === '50%'
+                          ? 'bg-amber-500 dark:bg-amber-600 text-white'
+                          : 'bg-gray-200 dark:bg-[#2A4030] text-gray-700 dark:text-[#D1FAE5]'
+                        : 'bg-white dark:bg-[#152218] text-gray-400 dark:text-[#4A6B52] hover:bg-gray-50 dark:hover:bg-[#1A2C1F]'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {(parseFloat(form.total_value) > 0 || parseFloat(form.paid_value) > 0) && (
+            {(parseFloat(form.total_value) > 0 && form.payment_mode) && (
               <div className="col-span-2">
                 <div className={`flex items-center justify-between px-4 py-3 rounded-xl border ${
                   pendingAmount > 0
@@ -539,11 +572,18 @@ export default function ClientesPage() {
                       {pendingAmount > 0 ? 'Falta pagar' : 'Quitado'}
                     </span>
                   </div>
-                  <span className={`text-[15px] font-bold tabular ${
-                    pendingAmount > 0 ? 'text-amber-700 dark:text-amber-300' : 'text-emerald-700 dark:text-emerald-300'
-                  }`}>
-                    {pendingAmount > 0 ? formatCurrency(pendingAmount) : '✓ Pago'}
-                  </span>
+                  <div className="text-right">
+                    {pendingAmount > 0 && (
+                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400">
+                        Pago: {formatCurrency(computedPaid)}
+                      </p>
+                    )}
+                    <span className={`text-[15px] font-bold tabular ${
+                      pendingAmount > 0 ? 'text-amber-700 dark:text-amber-300' : 'text-emerald-700 dark:text-emerald-300'
+                    }`}>
+                      {pendingAmount > 0 ? `Falta: ${formatCurrency(pendingAmount)}` : '✓ Quitado'}
+                    </span>
+                  </div>
                 </div>
               </div>
             )}
