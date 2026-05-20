@@ -12,25 +12,11 @@ import { createClient } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
 import { Meeting, MeetingType } from '@/types'
 
-// ─── SQL migration hint (run once in Supabase SQL editor) ─────────────────────
-// create table if not exists meetings (
-//   id uuid primary key default gen_random_uuid(),
-//   title text not null,
-//   client_name text not null default '',
-//   date date not null,
-//   type text not null check (type in ('reuniao', 'no_show', 'fechamento')),
-//   notes text,
-//   created_at timestamptz default now()
-// );
-// alter table meetings enable row level security;
-// create policy "auth_all" on meetings for all using (auth.role() = 'authenticated');
-// ─────────────────────────────────────────────────────────────────────────────
-
-const typeConfig: Record<MeetingType, { label: string; color: 'green' | 'red' | 'blue' | 'purple'; icon: React.ElementType }> = {
-  reuniao:    { label: 'Reunião',    color: 'blue',   icon: Calendar },
-  no_show:    { label: 'No-show',    color: 'red',    icon: Ban },
-  fechamento: { label: 'Fechamento', color: 'green',  icon: Handshake },
-  pos_call:   { label: 'Pós Call',   color: 'purple', icon: PhoneCall },
+const typeConfig: Record<MeetingType, { label: string; color: 'green' | 'red' | 'blue' | 'purple'; icon: React.ElementType; bgClass: string; iconClass: string; activeClass: string }> = {
+  reuniao:    { label: 'Reunião',    color: 'blue',   icon: Calendar,  bgClass: 'bg-blue-50 dark:bg-blue-900/25',        iconClass: 'text-blue-600 dark:text-blue-400',      activeClass: 'bg-blue-500 dark:bg-blue-600 text-white' },
+  no_show:    { label: 'No-show',    color: 'red',    icon: Ban,        bgClass: 'bg-red-50 dark:bg-red-900/20',          iconClass: 'text-red-500 dark:text-red-400',        activeClass: 'bg-red-500 dark:bg-red-600 text-white' },
+  fechamento: { label: 'Fechamento', color: 'green',  icon: Handshake,  bgClass: 'bg-[#40916C]/10 dark:bg-[#40916C]/20', iconClass: 'text-[#40916C] dark:text-[#52B788]',    activeClass: 'bg-[#40916C] dark:bg-[#2D6A4F] text-white' },
+  pos_call:   { label: 'Pós Call',   color: 'purple', icon: PhoneCall,  bgClass: 'bg-purple-50 dark:bg-purple-900/20',    iconClass: 'text-purple-600 dark:text-purple-400',  activeClass: 'bg-purple-500 dark:bg-purple-600 text-white' },
 }
 
 const emptyForm = {
@@ -344,18 +330,8 @@ create policy "auth_all" on meetings
                 const Icon = cfg.icon
                 return (
                   <div key={m.id} className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-50 dark:border-[#1E3020] last:border-0 hover:bg-gray-50/70 dark:hover:bg-[#1A2C1F] transition-colors group">
-                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                      m.type === 'reuniao'    ? 'bg-blue-50 dark:bg-blue-900/25' :
-                      m.type === 'no_show'   ? 'bg-red-50 dark:bg-red-900/20' :
-                      m.type === 'pos_call'  ? 'bg-purple-50 dark:bg-purple-900/20' :
-                      'bg-[#40916C]/10 dark:bg-[#40916C]/20'
-                    }`}>
-                      <Icon size={14} className={
-                        m.type === 'reuniao'    ? 'text-blue-600 dark:text-blue-400' :
-                        m.type === 'no_show'   ? 'text-red-500 dark:text-red-400' :
-                        m.type === 'pos_call'  ? 'text-purple-600 dark:text-purple-400' :
-                        'text-[#40916C] dark:text-[#52B788]'
-                      } />
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${cfg.bgClass}`}>
+                      <Icon size={14} className={cfg.iconClass} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-medium text-gray-800 dark:text-[#D1FAE5] truncate">{m.title}</p>
@@ -409,12 +385,7 @@ create policy "auth_all" on meetings
                       type="button"
                       onClick={() => setForm(f => ({ ...f, type }))}
                       className={`flex-1 py-2 text-[11px] font-semibold transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                        form.type === type
-                          ? type === 'reuniao'    ? 'bg-blue-500 dark:bg-blue-600 text-white'
-                          : type === 'no_show'   ? 'bg-red-500 dark:bg-red-600 text-white'
-                          : type === 'pos_call'  ? 'bg-purple-500 dark:bg-purple-600 text-white'
-                          : 'bg-[#40916C] dark:bg-[#2D6A4F] text-white'
-                          : 'bg-white dark:bg-[#152218] text-gray-500 dark:text-[#4A6B52] hover:bg-gray-50 dark:hover:bg-[#1A2C1F]'
+                        form.type === type ? cfg.activeClass : 'bg-white dark:bg-[#152218] text-gray-500 dark:text-[#4A6B52] hover:bg-gray-50 dark:hover:bg-[#1A2C1F]'
                       }`}
                     >
                       <Icon size={13} /> {cfg.label}

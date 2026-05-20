@@ -12,6 +12,15 @@ import {
 } from '@/lib/utils'
 import { Project, ProjectStatus, Client } from '@/types'
 
+function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">{label}</p>
+      {children}
+    </div>
+  )
+}
+
 const columns: { status: ProjectStatus; label: string; color: string }[] = [
   { status: 'briefing',        label: 'Briefing',        color: '#3B82F6' },
   { status: 'desenvolvimento', label: 'Desenvolvimento', color: '#7C3AED' },
@@ -135,8 +144,9 @@ export default function ProjetosPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  const projRepo = useMemo(() => projectRepository(createClient()), [])
-  const clientRepo = useMemo(() => clientRepository(createClient()), [])
+  const db = useMemo(() => createClient(), [])
+  const projRepo = useMemo(() => projectRepository(db), [db])
+  const clientRepo = useMemo(() => clientRepository(db), [db])
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -232,15 +242,21 @@ export default function ProjetosPage() {
   function handleClientChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const id = e.target.value
     const client = clients.find(c => c.id === id)
-    if (client) {
-      setForm(prev => ({
-        ...prev,
-        client_id: id,
-        name: `${client.name} - ${projectTypeLabels[prev.type] || 'Projeto'}`,
-      }))
-    } else {
-      setForm(prev => ({ ...prev, client_id: id }))
-    }
+    setForm(prev => ({
+      ...prev,
+      client_id: id,
+      name: client ? `${client.name} - ${projectTypeLabels[prev.type] || 'Projeto'}` : prev.name,
+    }))
+  }
+
+  function handleTypeChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const type = e.target.value as Project['type']
+    setForm(prev => {
+      if (!prev.client_id) return { ...prev, type }
+      const client = clients.find(c => c.id === prev.client_id)
+      if (!client) return { ...prev, type }
+      return { ...prev, type, name: `${client.name} - ${projectTypeLabels[type] || 'Projeto'}` }
+    })
   }
 
   const { projectsByStatus, totalValue } = useMemo(() => {
@@ -349,7 +365,7 @@ export default function ProjetosPage() {
 
           <div>
             <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Tipo</label>
-            <select value={form.type} onChange={set('type')} className="input-field cursor-pointer" aria-label="Tipo">
+            <select value={form.type} onChange={handleTypeChange} className="input-field cursor-pointer" aria-label="Tipo">
               {projectTypeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
@@ -412,57 +428,29 @@ export default function ProjetosPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2">
-                <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">Projeto</p>
-                <p className="text-[15px] font-semibold text-gray-900 dark:text-[#F0FDF4]">{viewTarget.name}</p>
+                <DetailRow label="Projeto">
+                  <p className="text-[15px] font-semibold text-gray-900 dark:text-[#F0FDF4]">{viewTarget.name}</p>
+                </DetailRow>
               </div>
-              <div>
-                <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">Cliente</p>
-                <p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{viewTarget.client?.name ?? '—'}</p>
-              </div>
-              <div>
-                <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">Tipo</p>
-                <p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{projectTypeLabels[viewTarget.type]}</p>
-              </div>
-              <div>
-                <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">Status</p>
-                <p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">
-                  {columns.find(c => c.status === viewTarget.status)?.label ?? viewTarget.status}
-                </p>
-              </div>
-              <div>
-                <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">Responsável</p>
-                <p className="text-[13px] text-gray-700 dark:text-[#D1FAE5] capitalize">{viewTarget.responsible}</p>
-              </div>
-              <div>
-                <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">Valor</p>
-                <p className="text-[13px] font-semibold text-[#40916C]">{formatCurrency(viewTarget.value)}</p>
-              </div>
-              <div>
-                <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">Prazo</p>
-                <p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{formatDate(viewTarget.deadline)}</p>
-              </div>
-              <div>
-                <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">Início</p>
-                <p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{formatDate(viewTarget.start_date)}</p>
-              </div>
+              <DetailRow label="Cliente"><p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{viewTarget.client?.name ?? '—'}</p></DetailRow>
+              <DetailRow label="Tipo"><p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{projectTypeLabels[viewTarget.type]}</p></DetailRow>
+              <DetailRow label="Status"><p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{columns.find(c => c.status === viewTarget.status)?.label ?? viewTarget.status}</p></DetailRow>
+              <DetailRow label="Responsável"><p className="text-[13px] text-gray-700 dark:text-[#D1FAE5] capitalize">{viewTarget.responsible}</p></DetailRow>
+              <DetailRow label="Valor"><p className="text-[13px] font-semibold text-[#40916C]">{formatCurrency(viewTarget.value)}</p></DetailRow>
+              <DetailRow label="Prazo"><p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{formatDate(viewTarget.deadline)}</p></DetailRow>
+              <DetailRow label="Início"><p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{formatDate(viewTarget.start_date)}</p></DetailRow>
               {viewTarget.url && (
                 <div className="col-span-2">
-                  <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">URL</p>
-                  <a
-                    href={viewTarget.url.startsWith('http') ? viewTarget.url : `https://${viewTarget.url}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[13px] text-[#40916C] hover:underline flex items-center gap-1"
-                  >
-                    <ExternalLink size={11} />
-                    {viewTarget.url}
-                  </a>
+                  <DetailRow label="URL">
+                    <a href={viewTarget.url.startsWith('http') ? viewTarget.url : `https://${viewTarget.url}`} target="_blank" rel="noopener noreferrer" className="text-[13px] text-[#40916C] hover:underline flex items-center gap-1">
+                      <ExternalLink size={11} />{viewTarget.url}
+                    </a>
+                  </DetailRow>
                 </div>
               )}
               {viewTarget.notes && (
                 <div className="col-span-2">
-                  <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">Observações</p>
-                  <p className="text-[13px] text-gray-600 dark:text-[#A7C4AF] whitespace-pre-wrap">{viewTarget.notes}</p>
+                  <DetailRow label="Observações"><p className="text-[13px] text-gray-600 dark:text-[#A7C4AF] whitespace-pre-wrap">{viewTarget.notes}</p></DetailRow>
                 </div>
               )}
             </div>

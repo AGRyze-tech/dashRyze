@@ -31,7 +31,6 @@ const categoryLabels: Record<TransactionCategory, string> = {
   contrato:      'Contrato',
 }
 
-// Categories available per transaction type in the form
 const entradaCategories: TransactionCategory[] = ['clientes']
 const saidaCategories: TransactionCategory[] = ['meta_ads', 'imposto']
 

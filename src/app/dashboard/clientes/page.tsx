@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { Header } from '@/components/layout/Header'
 import { Badge } from '@/components/ui/Badge'
@@ -20,6 +20,20 @@ const statusOptions: { value: ClientStatus | 'todos'; label: string }[] = [
   { value: 'todos', label: 'Todos' },
   ...activeClientStatuses.map(s => ({ value: s, label: clientStatusConfig[s].label })),
 ]
+
+function detectPaymentMode(client: Client): '' | '50%' | '100%' {
+  if (!client.total_value || !client.paid_value) return ''
+  const ratio = client.paid_value / client.total_value
+  if (Math.abs(ratio - 1) < 0.01) return '100%'
+  if (Math.abs(ratio - 0.5) < 0.01) return '50%'
+  return ''
+}
+
+function computePaidValue(mode: '' | '50%' | '100%', total: number | null, custom: string): number | null {
+  if (mode === '100%') return total
+  if (mode === '50%') return total != null ? total * 0.5 : null
+  return custom ? parseFloat(custom) : null
+}
 
 const emptyForm = {
   name: '', specialty: '', email: '', whatsapp: '',
@@ -87,25 +101,24 @@ export default function ClientesPage() {
     return () => clearTimeout(t)
   }, [toast])
 
-  const lowerSearch = search.toLowerCase()
-  const filtered = clients.filter(c => {
-    const matchSearch = (c.name ?? '').toLowerCase().includes(lowerSearch) ||
-      (c.specialty ?? '').toLowerCase().includes(lowerSearch) ||
-      (c.email ?? '').toLowerCase().includes(lowerSearch)
-    const matchStatus = statusFilter === 'todos' || c.status === statusFilter
-    const matchSpec = specialtyFilter === 'todas' || c.specialty === specialtyFilter
-    return matchSearch && matchStatus && matchSpec
-  })
+  const filtered = useMemo(() => {
+    const lower = search.toLowerCase()
+    return clients.filter(c => {
+      const matchSearch = (c.name ?? '').toLowerCase().includes(lower) ||
+        (c.specialty ?? '').toLowerCase().includes(lower) ||
+        (c.email ?? '').toLowerCase().includes(lower)
+      const matchStatus = statusFilter === 'todos' || c.status === statusFilter
+      const matchSpec = specialtyFilter === 'todas' || c.specialty === specialtyFilter
+      return matchSearch && matchStatus && matchSpec
+    })
+  }, [clients, search, statusFilter, specialtyFilter])
 
-  const statusCounts = clients.reduce(
-    (acc, c) => {
-      acc.todos++
-      const key = c.status as ClientStatus | 'todos'
-      if (key in acc) acc[key as ClientStatus]++
-      return acc
-    },
-    { todos: 0, prospecto: 0, ativo: 0, inativo: 0, churned: 0 } as Record<ClientStatus | 'todos', number>
-  )
+  const statusCounts = useMemo(() =>
+    clients.reduce(
+      (acc, c) => { acc.todos++; if (c.status in acc) acc[c.status as ClientStatus]++; return acc },
+      { todos: 0, prospecto: 0, ativo: 0, inativo: 0, churned: 0 } as Record<ClientStatus | 'todos', number>
+    ),
+  [clients])
 
   function handleOpenModal() {
     setEditingClient(null)
@@ -117,13 +130,7 @@ export default function ClientesPage() {
 
   function handleOpenEdit(client: Client) {
     setEditingClient(client)
-    const detectedMode = (() => {
-      if (!client.total_value || !client.paid_value) return '' as '' | '50%' | '100%'
-      const ratio = client.paid_value / client.total_value
-      if (Math.abs(ratio - 1) < 0.01) return '100%' as '100%'
-      if (Math.abs(ratio - 0.5) < 0.01) return '50%' as '50%'
-      return '' as ''
-    })()
+    const detectedMode = detectPaymentMode(client)
     setForm({
       name: client.name,
       specialty: client.specialty,
@@ -152,26 +159,21 @@ export default function ClientesPage() {
   const set = (field: keyof typeof emptyForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm(f => ({ ...f, [field]: e.target.value }))
 
-  const { computedPaid, pendingAmount } = (() => {
+  const { computedPaid, pendingAmount } = useMemo(() => {
     const total = parseFloat(form.total_value) || 0
-    const paid =
-      form.payment_mode === '100%' ? total :
-      form.payment_mode === '50%' ? total * 0.5 :
-      parseFloat(form.custom_paid_value) || 0
+    const paid = computePaidValue(form.payment_mode, total, form.custom_paid_value) ?? 0
     return { computedPaid: paid, pendingAmount: Math.max(0, total - paid) }
-  })()
+  }, [form.total_value, form.payment_mode, form.custom_paid_value])
 
   const handleSave = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
     setSaveError('')
     try {
-      const repo = clientRepository(createClient())
+      const db = createClient()
+      const repo = clientRepository(db)
       const totalVal = form.total_value ? parseFloat(form.total_value) : null
-      const paidVal =
-        form.payment_mode === '100%' ? totalVal :
-        form.payment_mode === '50%' ? (totalVal != null ? totalVal * 0.5 : null) :
-        form.custom_paid_value ? parseFloat(form.custom_paid_value) : null
+      const paidVal = computePaidValue(form.payment_mode, totalVal, form.custom_paid_value)
       const payload: ClientInput = {
         name: form.name,
         specialty: form.specialty,
@@ -204,9 +206,8 @@ export default function ClientesPage() {
         setToast(`${data.name} adicionado com sucesso!`)
       }
 
-      // Auto-create domain expense when domain_included is enabled
       if (form.domain_included && wasNotDomain) {
-        const txRepo = transactionRepository(createClient())
+        const txRepo = transactionRepository(db)
         await txRepo.create({
           type: 'saida',
           category: 'dominio',

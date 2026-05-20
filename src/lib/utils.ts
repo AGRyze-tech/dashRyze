@@ -50,7 +50,6 @@ export const clientStatusConfig: Record<ClientStatus, { label: string; color: st
   churned: { label: 'Churned', color: 'red' },
 }
 
-// Status options shown in UI (excludes legacy 'churned')
 export const activeClientStatuses: ClientStatus[] = ['prospecto', 'ativo', 'inativo']
 
 export const projectStatusConfig: Record<ProjectStatus, { label: string; color: string }> = {
