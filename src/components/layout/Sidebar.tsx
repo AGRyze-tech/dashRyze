@@ -10,14 +10,42 @@ import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
 import { useTheme } from './ThemeProvider'
 
-const navItems = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', exact: true },
-  { href: '/dashboard/clientes', icon: Users, label: 'Clientes' },
-  { href: '/dashboard/projetos', icon: FolderKanban, label: 'Projetos' },
-  { href: '/dashboard/reunioes', icon: CalendarCheck, label: 'Reuniões' },
-  { href: '/dashboard/financeiro', icon: TrendingUp, label: 'Financeiro' },
-  { href: '/dashboard/meta', icon: BarChart2, label: 'Meta Ads', exact: true },
-  { href: '/dashboard/metas', icon: Target, label: 'Metas' },
+type NavItem = { href: string; icon: React.ElementType; label: string; exact?: boolean }
+type NavGroup = { label: string; items: NavItem[] }
+
+const navGroups: NavGroup[] = [
+  {
+    label: 'Visão Geral',
+    items: [
+      { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', exact: true },
+    ],
+  },
+  {
+    label: 'Financeiro',
+    items: [
+      { href: '/dashboard/financeiro', icon: TrendingUp, label: 'Financeiro' },
+      { href: '/dashboard/metas', icon: Target, label: 'Metas' },
+    ],
+  },
+  {
+    label: 'Comercial',
+    items: [
+      { href: '/dashboard/clientes', icon: Users, label: 'Clientes' },
+      { href: '/dashboard/reunioes', icon: CalendarCheck, label: 'Reuniões' },
+    ],
+  },
+  {
+    label: 'Projetos',
+    items: [
+      { href: '/dashboard/projetos', icon: FolderKanban, label: 'Projetos' },
+    ],
+  },
+  {
+    label: 'Marketing',
+    items: [
+      { href: '/dashboard/meta', icon: BarChart2, label: 'Meta Ads', exact: true },
+    ],
+  },
 ]
 
 interface SidebarProps {
@@ -66,29 +94,36 @@ export function Sidebar({ userRole = 'admin', mobileOpen = false }: SidebarProps
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        <p className="px-3 pt-1 pb-2 text-[10px] font-semibold text-[#2A4030] uppercase tracking-[0.15em]">Menu</p>
-        {navItems.map(({ href, icon: Icon, label, exact }) => (
-          <Link
-            key={href}
-            href={href}
-            aria-current={isActive(href, exact) ? 'page' : undefined}
-            className={cn('nav-item', isActive(href, exact) && 'active')}
-          >
-            <Icon size={16} strokeWidth={isActive(href, exact) ? 2 : 1.75} />
-            <span>{label}</span>
-          </Link>
+      <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-3">
+        {navGroups.map(group => (
+          <div key={group.label}>
+            <p className="px-3 pb-1 text-[10px] font-semibold text-[#2A4030] uppercase tracking-[0.15em]">{group.label}</p>
+            <div className="space-y-0.5">
+              {group.items.map(({ href, icon: Icon, label, exact }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  aria-current={isActive(href, exact) ? 'page' : undefined}
+                  className={cn('nav-item', isActive(href, exact) && 'active')}
+                >
+                  <Icon size={16} strokeWidth={isActive(href, exact) ? 2 : 1.75} />
+                  <span>{label}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
         ))}
 
         {userRole === 'admin' && (
-          <>
-            <div className="my-3 border-t border-[#1E3020]" />
-            <p className="px-3 pt-1 pb-2 text-[10px] font-semibold text-[#2A4030] uppercase tracking-[0.15em]">Sistema</p>
-            <Link href="/dashboard/configuracoes" className={cn('nav-item', isActive('/dashboard/configuracoes') && 'active')}>
-              <Settings size={16} strokeWidth={1.75} />
-              <span>Configurações</span>
-            </Link>
-          </>
+          <div>
+            <p className="px-3 pb-1 text-[10px] font-semibold text-[#2A4030] uppercase tracking-[0.15em]">Administração</p>
+            <div className="space-y-0.5">
+              <Link href="/dashboard/configuracoes" className={cn('nav-item', isActive('/dashboard/configuracoes') && 'active')}>
+                <Settings size={16} strokeWidth={1.75} />
+                <span>Configurações</span>
+              </Link>
+            </div>
+          </div>
         )}
       </nav>
 

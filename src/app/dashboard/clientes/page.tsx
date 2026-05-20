@@ -8,23 +8,27 @@ import { Modal } from '@/components/ui/Modal'
 import { Card } from '@/components/ui/Card'
 import {
   Search, Plus, Phone, Mail, Instagram, ExternalLink, ChevronRight,
-  CheckCircle2, Pencil, Trash2, Paperclip, X, FileCheck, AlertCircle,
+  CheckCircle2, Pencil, Trash2, Paperclip, X, FileCheck, Globe,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { clientRepository, ClientInput } from '@/lib/repositories'
-import { clientStatusConfig, formatDate, formatCurrency, specialties } from '@/lib/utils'
+import { transactionRepository } from '@/lib/repositories'
+import { clientStatusConfig, activeClientStatuses, formatDate, formatCurrency, specialties } from '@/lib/utils'
 import { Client, ClientStatus } from '@/types'
 
 const statusOptions: { value: ClientStatus | 'todos'; label: string }[] = [
   { value: 'todos', label: 'Todos' },
-  ...Object.entries(clientStatusConfig).map(([value, { label }]) => ({ value: value as ClientStatus, label })),
+  ...activeClientStatuses.map(s => ({ value: s, label: clientStatusConfig[s].label })),
 ]
 
 const emptyForm = {
   name: '', specialty: '', email: '', whatsapp: '',
-  instagram: '', website: '', status: 'prospecto' as ClientStatus, notes: '',
+  status: 'prospecto' as ClientStatus, notes: '',
   closed_at: '', delivery_date: '',
-  total_value: '', payment_mode: '' as '' | '50%' | '100%',
+  total_value: '',
+  payment_mode: '' as '' | '50%' | '100%',
+  custom_paid_value: '',
+  domain_included: false,
 }
 
 function SkeletonRow() {
@@ -94,17 +98,14 @@ export default function ClientesPage() {
   })
 
   const statusCounts = clients.reduce(
-    (acc, c) => { acc[c.status]++; return acc },
-    { todos: clients.length, prospecto: 0, ativo: 0, inativo: 0, churned: 0 } as Record<ClientStatus | 'todos', number>
+    (acc, c) => {
+      acc.todos++
+      const key = c.status as ClientStatus | 'todos'
+      if (key in acc) acc[key as ClientStatus]++
+      return acc
+    },
+    { todos: 0, prospecto: 0, ativo: 0, inativo: 0, churned: 0 } as Record<ClientStatus | 'todos', number>
   )
-
-  // Clients with outstanding balance
-  const inadimplentes = clients.filter(c => {
-    const total = c.total_value ?? 0
-    const paid = c.paid_value ?? 0
-    return total > 0 && paid < total
-  })
-  const totalPendente = inadimplentes.reduce((sum, c) => sum + ((c.total_value ?? 0) - (c.paid_value ?? 0)), 0)
 
   function handleOpenModal() {
     setEditingClient(null)
@@ -116,25 +117,26 @@ export default function ClientesPage() {
 
   function handleOpenEdit(client: Client) {
     setEditingClient(client)
+    const detectedMode = (() => {
+      if (!client.total_value || !client.paid_value) return '' as '' | '50%' | '100%'
+      const ratio = client.paid_value / client.total_value
+      if (Math.abs(ratio - 1) < 0.01) return '100%' as '100%'
+      if (Math.abs(ratio - 0.5) < 0.01) return '50%' as '50%'
+      return '' as ''
+    })()
     setForm({
       name: client.name,
       specialty: client.specialty,
       email: client.email ?? '',
       whatsapp: client.whatsapp,
-      instagram: client.instagram ?? '',
-      website: client.website ?? '',
       status: client.status,
       notes: client.notes ?? '',
       closed_at: client.closed_at ?? '',
       delivery_date: client.delivery_date ?? '',
       total_value: client.total_value != null ? String(client.total_value) : '',
-      payment_mode: (() => {
-        if (!client.total_value || !client.paid_value) return ''
-        const ratio = client.paid_value / client.total_value
-        if (Math.abs(ratio - 1) < 0.01) return '100%'
-        if (Math.abs(ratio - 0.5) < 0.01) return '50%'
-        return ''
-      })() as '' | '50%' | '100%',
+      payment_mode: detectedMode,
+      custom_paid_value: detectedMode === '' && client.paid_value ? String(client.paid_value) : '',
+      domain_included: client.domain_included ?? false,
     })
     setSaveError('')
     setContractFile(null)
@@ -152,7 +154,10 @@ export default function ClientesPage() {
 
   const { computedPaid, pendingAmount } = (() => {
     const total = parseFloat(form.total_value) || 0
-    const paid = form.payment_mode === '100%' ? total : form.payment_mode === '50%' ? total * 0.5 : 0
+    const paid =
+      form.payment_mode === '100%' ? total :
+      form.payment_mode === '50%' ? total * 0.5 :
+      parseFloat(form.custom_paid_value) || 0
     return { computedPaid: paid, pendingAmount: Math.max(0, total - paid) }
   })()
 
@@ -163,22 +168,22 @@ export default function ClientesPage() {
     try {
       const repo = clientRepository(createClient())
       const totalVal = form.total_value ? parseFloat(form.total_value) : null
-      const paidVal = totalVal != null && form.payment_mode
-        ? form.payment_mode === '100%' ? totalVal : totalVal * 0.5
-        : null
+      const paidVal =
+        form.payment_mode === '100%' ? totalVal :
+        form.payment_mode === '50%' ? (totalVal != null ? totalVal * 0.5 : null) :
+        form.custom_paid_value ? parseFloat(form.custom_paid_value) : null
       const payload: ClientInput = {
         name: form.name,
         specialty: form.specialty,
         email: form.email,
         whatsapp: form.whatsapp,
-        instagram: form.instagram || undefined,
-        website: form.website || undefined,
         status: form.status,
         notes: form.notes || undefined,
         closed_at: form.closed_at || null,
         delivery_date: form.delivery_date || null,
         total_value: totalVal,
         paid_value: paidVal,
+        domain_included: form.domain_included,
       }
 
       let contractUrl: string | null = null
@@ -188,6 +193,7 @@ export default function ClientesPage() {
 
       const fullPayload = contractUrl ? { ...payload, contract_url: contractUrl } : payload
 
+      const wasNotDomain = !editingClient?.domain_included
       if (editingClient) {
         const data = await repo.update(editingClient.id, fullPayload)
         setClients(prev => prev.map(c => c.id === editingClient.id ? data : c))
@@ -196,6 +202,18 @@ export default function ClientesPage() {
         const data = await repo.create(fullPayload)
         setClients(prev => [data, ...prev])
         setToast(`${data.name} adicionado com sucesso!`)
+      }
+
+      // Auto-create domain expense when domain_included is enabled
+      if (form.domain_included && wasNotDomain) {
+        const txRepo = transactionRepository(createClient())
+        await txRepo.create({
+          type: 'saida',
+          category: 'dominio',
+          description: `Domínio - ${form.name}`,
+          amount: 40,
+          date: new Date().toISOString().split('T')[0],
+        })
       }
       setForm(emptyForm)
       setContractFile(null)
@@ -238,30 +256,6 @@ export default function ClientesPage() {
       />
 
       <div className="p-4 sm:p-6 space-y-5">
-
-        {/* ── Alerta de inadimplentes ───────────────────────────────────── */}
-        {!loading && inadimplentes.length > 0 && (
-          <div className="flex items-start gap-3 px-4 py-3.5 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50/70 dark:bg-amber-900/10">
-            <AlertCircle size={16} className="text-amber-500 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold text-amber-800 dark:text-amber-300">
-                {inadimplentes.length} cliente{inadimplentes.length !== 1 ? 's' : ''} com pagamento pendente
-              </p>
-              <p className="text-[12px] text-amber-600 dark:text-amber-400/80 mt-0.5">
-                Total a receber: <span className="font-bold">{formatCurrency(totalPendente)}</span>
-                {' · '}
-                {inadimplentes.map(c => c.name).join(', ')}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setStatusFilter('todos')}
-              className="text-[11px] font-medium text-amber-600 dark:text-amber-400 hover:underline flex-shrink-0"
-            >
-              Ver todos
-            </button>
-          </div>
-        )}
 
         {/* Filters bar */}
         <div className="flex items-center gap-3 flex-wrap">
@@ -510,16 +504,6 @@ export default function ClientesPage() {
             </div>
 
             <div>
-              <label htmlFor="cli-instagram" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Instagram</label>
-              <input id="cli-instagram" className="input-field" placeholder="@perfil" value={form.instagram} onChange={set('instagram')} />
-            </div>
-
-            <div>
-              <label htmlFor="cli-website" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Site</label>
-              <input id="cli-website" className="input-field" placeholder="exemplo.com.br" value={form.website} onChange={set('website')} />
-            </div>
-
-            <div>
               <label htmlFor="cli-closed-at" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Data de fechamento</label>
               <input id="cli-closed-at" type="date" className="input-field" value={form.closed_at} onChange={set('closed_at')} />
             </div>
@@ -547,21 +531,21 @@ export default function ClientesPage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Forma de pagamento</label>
               <div className="flex rounded-xl border border-gray-200 dark:border-[#2A4030] overflow-hidden">
                 {([
-                  { value: '', label: 'Não definido' },
+                  { value: '', label: 'Personalizado' },
                   { value: '50%', label: '50% (entrada)' },
                   { value: '100%', label: 'Total (100%)' },
                 ] as { value: '' | '50%' | '100%'; label: string }[]).map(opt => (
                   <button
                     key={opt.value}
                     type="button"
-                    onClick={() => setForm(f => ({ ...f, payment_mode: opt.value }))}
+                    onClick={() => setForm(f => ({ ...f, payment_mode: opt.value, custom_paid_value: '' }))}
                     className={`flex-1 py-2.5 text-[12px] font-semibold transition-all cursor-pointer ${
                       form.payment_mode === opt.value
                         ? opt.value === '100%'
                           ? 'bg-[#40916C] dark:bg-[#2D6A4F] text-white'
                           : opt.value === '50%'
                           ? 'bg-amber-500 dark:bg-amber-600 text-white'
-                          : 'bg-gray-200 dark:bg-[#2A4030] text-gray-700 dark:text-[#D1FAE5]'
+                          : 'bg-blue-500 dark:bg-blue-600 text-white'
                         : 'bg-white dark:bg-[#152218] text-gray-400 dark:text-[#4A6B52] hover:bg-gray-50 dark:hover:bg-[#1A2C1F]'
                     }`}
                   >
@@ -571,7 +555,27 @@ export default function ClientesPage() {
               </div>
             </div>
 
-            {(parseFloat(form.total_value) > 0 && form.payment_mode) && (
+            {/* Campo livre de valor pago (modo Personalizado) */}
+            {form.payment_mode === '' && parseFloat(form.total_value) > 0 && (
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Valor já pago (R$)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#4A6B52] text-sm font-medium select-none">R$</span>
+                  <input
+                    type="number"
+                    className="input-field pl-10"
+                    placeholder="0,00"
+                    min="0"
+                    step="0.01"
+                    value={form.custom_paid_value}
+                    onChange={e => setForm(f => ({ ...f, custom_paid_value: e.target.value }))}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Resumo financeiro */}
+            {parseFloat(form.total_value) > 0 && (form.payment_mode !== '' || parseFloat(form.custom_paid_value) > 0) && (
               <div className="col-span-2">
                 <div className={`flex items-center justify-between px-4 py-3 rounded-xl border ${
                   pendingAmount > 0
@@ -599,6 +603,35 @@ export default function ClientesPage() {
                 </div>
               </div>
             )}
+
+            {/* Domínio incluso */}
+            <div className="col-span-2">
+              <div className="h-px bg-gray-100 dark:bg-[#1E3020] mb-4" />
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-700 dark:text-[#A7C4AF]">Domínio incluso</p>
+                  <p className="text-[11px] text-gray-400 dark:text-[#4A6B52] mt-0.5">Gera saída de R$40 automaticamente</p>
+                </div>
+                <div className="flex rounded-lg border border-gray-200 dark:border-[#2A4030] overflow-hidden">
+                  {([{ v: false, l: 'Não' }, { v: true, l: 'Sim' }] as { v: boolean; l: string }[]).map(opt => (
+                    <button
+                      key={String(opt.v)}
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, domain_included: opt.v }))}
+                      className={`px-4 py-2 text-[12px] font-semibold transition-all cursor-pointer ${
+                        form.domain_included === opt.v
+                          ? opt.v
+                            ? 'bg-[#40916C] dark:bg-[#2D6A4F] text-white'
+                            : 'bg-gray-200 dark:bg-[#2A4030] text-gray-700 dark:text-[#D1FAE5]'
+                          : 'bg-white dark:bg-[#152218] text-gray-400 dark:text-[#4A6B52] hover:bg-gray-50 dark:hover:bg-[#1A2C1F]'
+                      }`}
+                    >
+                      {opt.l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
 
             {/* ── Contrato ──────────────────────────────────────────────── */}
             <div className="col-span-2">

@@ -17,6 +17,7 @@ export type ClientInput = {
   contract_url?: string | null
   total_value?: number | null
   paid_value?: number | null
+  domain_included?: boolean | null
 }
 
 export function clientRepository(db: Db) {

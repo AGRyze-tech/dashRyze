@@ -44,11 +44,14 @@ export function isOverdue(deadline: string): boolean {
 }
 
 export const clientStatusConfig: Record<ClientStatus, { label: string; color: string }> = {
-  prospecto: { label: 'Prospecto', color: 'yellow' },
+  prospecto: { label: 'Prospecção', color: 'yellow' },
   ativo: { label: 'Ativo', color: 'green' },
   inativo: { label: 'Inativo', color: 'gray' },
   churned: { label: 'Churned', color: 'red' },
 }
+
+// Status options shown in UI (excludes legacy 'churned')
+export const activeClientStatuses: ClientStatus[] = ['prospecto', 'ativo', 'inativo']
 
 export const projectStatusConfig: Record<ProjectStatus, { label: string; color: string }> = {
   briefing: { label: 'Briefing', color: 'blue' },

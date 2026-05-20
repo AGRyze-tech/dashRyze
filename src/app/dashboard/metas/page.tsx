@@ -1,9 +1,9 @@
 'use client'
-import { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useMemo } from 'react'
 import { Header } from '@/components/layout/Header'
 import {
   Target, TrendingUp, Zap,
-  Pencil, Check, X as XIcon, CheckCircle2, Trophy, Flame,
+  Pencil, Check, X as XIcon, CheckCircle2, Flame,
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
@@ -172,67 +172,28 @@ function RevenueCard({ current, goal, loading, editing, editValue, onEditChange,
 }
 
 // ─── Sales card ───────────────────────────────────────────────────────────────
-interface SalesCardProps {
-  current: number
-  goal: number
-  loading: boolean
-  editing: boolean
-  editValue: string
-  onEditChange: (v: string) => void
-  onEdit: () => void
-  onCommit: () => void
-  onCancel: () => void
-}
-function SalesCard({ current, goal, loading, editing, editValue, onEditChange, onEdit, onCommit, onCancel }: SalesCardProps) {
-  const p = pct(current, goal)
-  const done = p >= 100
-  const remaining = Math.max(0, goal - current)
+function SalesCard({ current, loading }: { current: number; loading: boolean }) {
   const fmt = (v: number) => `${Math.round(v)} venda${Math.round(v) !== 1 ? 's' : ''}`
-  const barRef = useRef<HTMLDivElement>(null)
-  useLayoutEffect(() => { barRef.current?.style.setProperty('--bar-w', `${p}%`) }, [p])
-
   return (
-    <div className={`card-light p-5 flex flex-col gap-4 ring-1 ${done ? 'ring-[#40916C]/25 dark:ring-[#40916C]/35' : `ring-transparent ${ringColor(p)}`}`}>
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${done ? 'bg-[#40916C]/15 dark:bg-[#40916C]/25' : 'bg-amber-50 dark:bg-amber-900/25'}`}>
-            <Zap size={17} className={done ? 'text-[#40916C] dark:text-[#52B788]' : 'text-amber-500 dark:text-amber-400'} />
-          </div>
-          <div>
-            <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5]">Número de Vendas</p>
-            <p className="text-[11px] text-gray-400 dark:text-[#4A6B52] mt-0.5">Transações de entrada</p>
-          </div>
+    <div className="card-light p-5 flex flex-col gap-4">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/25 flex items-center justify-center flex-shrink-0">
+          <Zap size={17} className="text-amber-500 dark:text-amber-400" />
         </div>
-        <button type="button" onClick={onEdit} aria-label="Editar meta de vendas" className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#1A2C1F] text-gray-300 dark:text-[#2A4030] hover:text-gray-500 dark:hover:text-[#8BA891] transition-colors flex-shrink-0">
-          <Pencil size={12} />
-        </button>
+        <div>
+          <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5]">Número de Vendas</p>
+          <p className="text-[11px] text-gray-400 dark:text-[#4A6B52] mt-0.5">Transações de entrada este mês</p>
+        </div>
       </div>
-
-      {editing ? (
-        <EditRow label="Vendas (nº)" placeholder="Ex: 20" value={editValue} onChange={onEditChange} onCommit={onCommit} onCancel={onCancel} />
-      ) : loading ? (
-        <div className="space-y-2">
-          <Skeleton className="h-6 w-24" />
-          <Skeleton className="h-2 w-full rounded-full" />
-        </div>
+      {loading ? (
+        <Skeleton className="h-9 w-28" />
       ) : (
-        <div className="space-y-2.5">
-          <div className="flex items-end justify-between">
-            <span className={`tabular text-[22px] font-bold leading-none ${textColor(p)}`}>{fmt(current)}</span>
-            <span className={`text-[13px] font-bold tabular ${textColor(p)}`}>{p.toFixed(1)}%</span>
-          </div>
-          <div className="relative h-2 bg-gray-100 dark:bg-[#1A2C1F] rounded-full overflow-hidden">
-            <div ref={barRef} className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ease-out motion-reduce:transition-none w-[var(--bar-w,0%)] ${barColor(p)}`} />
-            <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-full pointer-events-none" />
-          </div>
-          <div className="flex items-center justify-between">
-            {done
-              ? <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#40916C] dark:text-[#52B788]"><CheckCircle2 size={11} /> Meta atingida!</span>
-              : <span className="text-[11px] text-gray-400 dark:text-[#4A6B52]">Faltam <span className="font-semibold text-gray-600 dark:text-[#8BA891]">{fmt(remaining)}</span></span>
-            }
-            <span className="text-[11px] text-gray-400 dark:text-[#4A6B52]">meta: <span className="font-semibold">{fmt(goal)}</span></span>
-          </div>
-        </div>
+        <p className="tabular text-[32px] font-bold leading-none text-amber-600 dark:text-amber-400">
+          {Math.round(current)}
+          <span className="text-[16px] font-medium text-gray-400 dark:text-[#4A6B52] ml-2">
+            venda{Math.round(current) !== 1 ? 's' : ''}
+          </span>
+        </p>
       )}
     </div>
   )
@@ -273,9 +234,7 @@ export default function MetasPage() {
   }, [])
 
   const revenuePct = pct(monthRevenue, goals.revenue)
-  const salesPct   = pct(salesCount, goals.sales)
-  const overallPct = (revenuePct + salesPct) / 2
-  const achieved   = (revenuePct >= 100 ? 1 : 0) + (salesPct >= 100 ? 1 : 0)
+  const overallPct = revenuePct
 
   function startEdit(key: GoalKey) {
     setInputVal(String(goals[key]))
@@ -300,7 +259,7 @@ export default function MetasPage() {
       <div className="p-4 sm:p-6 space-y-5">
 
         {/* ── Summary KPIs ──────────────────────────────────────────────── */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <div className="stat-card p-5 overflow-hidden relative">
             <div className="absolute inset-0 bg-gradient-to-br from-[#40916C]/5 via-transparent to-transparent pointer-events-none" />
             <div className="w-10 h-10 rounded-xl bg-[#40916C]/10 dark:bg-[#40916C]/20 flex items-center justify-center mb-3">
@@ -311,17 +270,6 @@ export default function MetasPage() {
             <div className="mt-3 h-1.5 bg-gray-100 dark:bg-[#1A2C1F] rounded-full overflow-hidden">
               <div className={`h-full rounded-full transition-all duration-500 motion-reduce:transition-none ${barColor(overallPct)}`} style={{ width: `${overallPct}%` }} />
             </div>
-          </div>
-
-          <div className="stat-card p-5 overflow-hidden relative">
-            <div className={`absolute inset-0 bg-gradient-to-br ${achieved > 0 ? 'from-[#40916C]/5' : 'from-gray-500/3'} via-transparent to-transparent pointer-events-none`} />
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${achieved > 0 ? 'bg-[#40916C]/10 dark:bg-[#40916C]/20' : 'bg-gray-100 dark:bg-[#1A2C1F]'}`}>
-              <Trophy size={17} className={achieved > 0 ? 'text-[#40916C] dark:text-[#52B788]' : 'text-gray-400 dark:text-[#2A4030]'} />
-            </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52] mb-1">Metas Atingidas</p>
-            <p className={`tabular text-[28px] font-bold leading-none ${achieved > 0 ? 'text-[#40916C] dark:text-[#52B788]' : 'text-gray-500 dark:text-[#8BA891]'}`}>
-              {achieved}<span className="text-[16px] font-medium text-gray-400 dark:text-[#4A6B52] ml-1">/ 2</span>
-            </p>
           </div>
 
           <div className="stat-card p-5 overflow-hidden relative">
@@ -363,17 +311,7 @@ export default function MetasPage() {
                 onCancel={() => setEditing(null)}
               />
             </div>
-            <SalesCard
-              current={salesCount}
-              goal={goals.sales}
-              loading={loading}
-              editing={editing === 'sales'}
-              editValue={inputVal}
-              onEditChange={setInputVal}
-              onEdit={() => startEdit('sales')}
-              onCommit={commitEdit}
-              onCancel={() => setEditing(null)}
-            />
+            <SalesCard current={salesCount} loading={loading} />
           </div>
         </div>
 

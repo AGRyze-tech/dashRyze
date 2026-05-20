@@ -18,18 +18,28 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import { Transaction, TransactionType, TransactionCategory, Client } from '@/types'
 
 const categoryLabels: Record<TransactionCategory, string> = {
-  ferramentas: 'Ferramentas',
-  infraestrutura: 'Infraestrutura',
-  hospedagem: 'Hospedagem',
-  marketing: 'Marketing',
-  pessoal: 'Pessoal',
-  outros: 'Outros',
-  contrato: 'Contrato',
+  clientes:      'Clientes',
+  meta_ads:      'Meta ADS',
+  imposto:       'Imposto',
+  dominio:       'Domínio',
+  ferramentas:   'Ferramentas',
+  infraestrutura:'Infraestrutura',
+  hospedagem:    'Hospedagem',
+  marketing:     'Marketing',
+  pessoal:       'Pessoal',
+  outros:        'Outros',
+  contrato:      'Contrato',
 }
 
-const categoryOptions = Object.entries(categoryLabels) as [TransactionCategory, string][]
+// Categories available per transaction type in the form
+const entradaCategories: TransactionCategory[] = ['clientes']
+const saidaCategories: TransactionCategory[] = ['meta_ads', 'imposto']
 
-const PIE_COLORS = ['#40916C', '#52B788', '#74C69D', '#95D5B2', '#2D6A4F', '#1B4332']
+const PIE_COLORS = [
+  '#40916C', '#3B82F6', '#F59E0B', '#EF4444',
+  '#8B5CF6', '#EC4899', '#06B6D4', '#F97316',
+  '#52B788', '#6B7280',
+]
 
 const COLOR_CLASS_MAP: Record<string, string> = {
   '#40916C': 'chart-border-entry',
@@ -44,8 +54,8 @@ const COLOR_CLASS_MAP: Record<string, string> = {
 
 const serviceOptions = [
   'Landing Page', 'Site', 'Smartpage',
-  'Gerenciamento de Tráfego', 'Consultoria',
-  'Produção de Conteúdo', 'Manutenção',
+  'Gerenciamento de Tráfego',
+  'Produção de Conteúdo',
 ]
 
 function composeDesc(service: string, reference: string, type: TransactionType, category: TransactionCategory): string {
@@ -59,7 +69,7 @@ function composeDesc(service: string, reference: string, type: TransactionType, 
 
 const emptyForm = {
   type: 'entrada' as TransactionType,
-  category: 'outros' as TransactionCategory,
+  category: 'clientes' as TransactionCategory,
   service: '',
   reference: '',
   description: '',
@@ -192,7 +202,8 @@ export default function FinanceiroPage() {
   }
 
   function setType(t: TransactionType) {
-    setForm(f => ({ ...f, type: t, service: '', reference: '', description: '' }))
+    const defaultCat: TransactionCategory = t === 'entrada' ? 'clientes' : 'meta_ads'
+    setForm(f => ({ ...f, type: t, category: defaultCat, service: '', reference: '', description: '' }))
   }
 
   function handleOpenModal() {
@@ -287,13 +298,10 @@ export default function FinanceiroPage() {
           {/* Entradas */}
           <div className="stat-card p-5 overflow-hidden relative">
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent pointer-events-none" />
-            <div className="flex items-start justify-between mb-4">
+            <div className="mb-4">
               <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
                 <TrendingUp size={17} className="text-emerald-600 dark:text-emerald-400" />
               </div>
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
-                {countEntradas} lançamentos
-              </span>
             </div>
             <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52] mb-1">Entradas totais</p>
             <p className="tabular text-[26px] font-bold leading-none text-emerald-600 dark:text-emerald-400">{formatCurrency(totalEntradas)}</p>
@@ -302,32 +310,22 @@ export default function FinanceiroPage() {
           {/* Saídas */}
           <div className="stat-card p-5 overflow-hidden relative">
             <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 via-transparent to-transparent pointer-events-none" />
-            <div className="flex items-start justify-between mb-4">
+            <div className="mb-4">
               <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/30 flex items-center justify-center">
                 <TrendingDown size={17} className="text-red-500 dark:text-red-400" />
               </div>
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400">
-                {countSaidas} lançamentos
-              </span>
             </div>
             <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52] mb-1">Saídas totais</p>
             <p className="tabular text-[26px] font-bold leading-none text-red-500 dark:text-red-400">{formatCurrency(totalSaidas)}</p>
           </div>
 
           {/* Saldo */}
-          <div className={`stat-card p-5 overflow-hidden relative ${saldo >= 0 ? '' : ''}`}>
-            <div className={`absolute inset-0 bg-gradient-to-br ${saldo >= 0 ? 'from-[#40916C]/8 via-transparent to-transparent' : 'from-red-500/5 via-transparent to-transparent'} pointer-events-none`} />
-            <div className="flex items-start justify-between mb-4">
+          <div className="stat-card p-5 overflow-hidden relative">
+            <div className={`absolute inset-0 bg-gradient-to-br ${saldo >= 0 ? 'from-[#40916C]/8' : 'from-red-500/5'} via-transparent to-transparent pointer-events-none`} />
+            <div className="mb-4">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${saldo >= 0 ? 'bg-[#40916C]/10 dark:bg-[#40916C]/20' : 'bg-red-50 dark:bg-red-900/30'}`}>
                 <Wallet size={17} className={saldo >= 0 ? 'text-[#40916C] dark:text-[#52B788]' : 'text-red-500 dark:text-red-400'} />
               </div>
-              <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                saldo >= 0
-                  ? 'bg-[#40916C]/10 dark:bg-[#40916C]/20 text-[#40916C] dark:text-[#52B788]'
-                  : 'bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400'
-              }`}>
-                {saldo >= 0 ? '▲ Positivo' : '▼ Negativo'}
-              </span>
             </div>
             <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52] mb-1">Saldo atual</p>
             <p className={`tabular text-[26px] font-bold leading-none ${saldo >= 0 ? 'text-[#40916C] dark:text-[#52B788]' : 'text-red-500 dark:text-red-400'}`}>
@@ -622,7 +620,9 @@ export default function FinanceiroPage() {
             <div>
               <label htmlFor="fin-category" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Categoria *</label>
               <select id="fin-category" className="input-field cursor-pointer" value={form.category} onChange={handleCategoryChange}>
-                {categoryOptions.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                {(form.type === 'entrada' ? entradaCategories : saidaCategories).map(v => (
+                  <option key={v} value={v}>{categoryLabels[v]}</option>
+                ))}
               </select>
             </div>
 

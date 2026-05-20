@@ -5,7 +5,7 @@ import { projectRepository, clientRepository } from '@/lib/repositories'
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
-import { AlertTriangle, Clock, Plus, ExternalLink, User, Pencil, Trash2 } from 'lucide-react'
+import { AlertTriangle, Clock, Plus, ExternalLink, User, Pencil, Trash2, Eye } from 'lucide-react'
 import {
   formatDate, formatCurrency, daysUntil, isDeadlineWarning, isOverdue,
   projectTypeLabels, projectTypeOptions, deadlineLabel,
@@ -38,10 +38,12 @@ const ProjectCard = memo(function ProjectCard({
   project,
   onEdit,
   onDelete,
+  onView,
 }: {
   project: Project
   onEdit: (p: Project) => void
   onDelete: (p: Project) => void
+  onView: (p: Project) => void
 }) {
   const days = daysUntil(project.deadline)
   const warn = isDeadlineWarning(project.deadline)
@@ -59,6 +61,14 @@ const ProjectCard = memo(function ProjectCard({
           <span className="text-[10px] font-medium text-gray-400 dark:text-[#8BA891] bg-gray-100 dark:bg-[#1A2C1F] px-1.5 py-0.5 rounded">
             {projectTypeLabels[project.type]}
           </span>
+          <button
+            type="button"
+            aria-label="Visualizar projeto"
+            onClick={e => { e.stopPropagation(); onView(project) }}
+            className="p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-300 dark:text-[#2A4030] hover:text-blue-500 dark:hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100"
+          >
+            <Eye size={11} />
+          </button>
           <button
             type="button"
             aria-label="Editar projeto"
@@ -120,6 +130,7 @@ export default function ProjetosPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<Project | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null)
+  const [viewTarget, setViewTarget] = useState<Project | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -165,7 +176,7 @@ export default function ProjetosPage() {
   }, [])
 
   async function handleSave() {
-    if (!form.client_id || !form.name || !form.start_date || !form.deadline) {
+    if (!form.client_id || !form.start_date || !form.deadline) {
       setError('Preencha os campos obrigatórios.')
       return
     }
@@ -217,6 +228,20 @@ export default function ProjetosPage() {
 
   const set = (field: keyof typeof emptyForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm(prev => ({ ...prev, [field]: e.target.value }))
+
+  function handleClientChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const id = e.target.value
+    const client = clients.find(c => c.id === id)
+    if (client) {
+      setForm(prev => ({
+        ...prev,
+        client_id: id,
+        name: `${client.name} - ${projectTypeLabels[prev.type] || 'Projeto'}`,
+      }))
+    } else {
+      setForm(prev => ({ ...prev, client_id: id }))
+    }
+  }
 
   const { projectsByStatus, totalValue } = useMemo(() => {
     const byStatus: Partial<Record<ProjectStatus, Project[]>> = {}
@@ -291,6 +316,7 @@ export default function ProjetosPage() {
                         project={project}
                         onEdit={openEdit}
                         onDelete={setDeleteTarget}
+                        onView={setViewTarget}
                       />
                     </div>
                   ))}
@@ -315,15 +341,10 @@ export default function ProjetosPage() {
         <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2">
             <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Cliente *</label>
-            <select value={form.client_id} onChange={set('client_id')} className="input-field cursor-pointer" aria-label="Cliente">
+            <select value={form.client_id} onChange={handleClientChange} className="input-field cursor-pointer" aria-label="Cliente">
               <option value="">Selecione um cliente</option>
               {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
-          </div>
-
-          <div className="col-span-2">
-            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Nome do projeto *</label>
-            <input type="text" value={form.name} onChange={set('name')} placeholder="Ex: Site institucional" className="input-field" />
           </div>
 
           <div>
@@ -334,23 +355,11 @@ export default function ProjetosPage() {
           </div>
 
           <div>
-            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Status</label>
-            <select value={form.status} onChange={set('status')} className="input-field cursor-pointer" aria-label="Status">
-              {columns.map(c => <option key={c.status} value={c.status}>{c.label}</option>)}
-            </select>
-          </div>
-
-          <div>
             <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Responsável</label>
             <select value={form.responsible} onChange={set('responsible')} className="input-field cursor-pointer" aria-label="Responsável">
               <option value="isaac">Isaac</option>
               <option value="vinicius">Vinicius</option>
             </select>
-          </div>
-
-          <div>
-            <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Valor (R$)</label>
-            <input type="number" value={form.value} onChange={set('value')} placeholder="0,00" min="0" step="0.01" className="input-field" />
           </div>
 
           <div>
@@ -396,6 +405,72 @@ export default function ProjetosPage() {
             <Button variant="danger" onClick={() => deleteTarget && handleDelete(deleteTarget)}>Excluir</Button>
           </div>
         </div>
+      </Modal>
+
+      <Modal isOpen={!!viewTarget} onClose={() => setViewTarget(null)} title="Detalhes do projeto" size="lg">
+        {viewTarget && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2">
+                <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">Projeto</p>
+                <p className="text-[15px] font-semibold text-gray-900 dark:text-[#F0FDF4]">{viewTarget.name}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">Cliente</p>
+                <p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{viewTarget.client?.name ?? '—'}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">Tipo</p>
+                <p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{projectTypeLabels[viewTarget.type]}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">Status</p>
+                <p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">
+                  {columns.find(c => c.status === viewTarget.status)?.label ?? viewTarget.status}
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">Responsável</p>
+                <p className="text-[13px] text-gray-700 dark:text-[#D1FAE5] capitalize">{viewTarget.responsible}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">Valor</p>
+                <p className="text-[13px] font-semibold text-[#40916C]">{formatCurrency(viewTarget.value)}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">Prazo</p>
+                <p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{formatDate(viewTarget.deadline)}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">Início</p>
+                <p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{formatDate(viewTarget.start_date)}</p>
+              </div>
+              {viewTarget.url && (
+                <div className="col-span-2">
+                  <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">URL</p>
+                  <a
+                    href={viewTarget.url.startsWith('http') ? viewTarget.url : `https://${viewTarget.url}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[13px] text-[#40916C] hover:underline flex items-center gap-1"
+                  >
+                    <ExternalLink size={11} />
+                    {viewTarget.url}
+                  </a>
+                </div>
+              )}
+              {viewTarget.notes && (
+                <div className="col-span-2">
+                  <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">Observações</p>
+                  <p className="text-[13px] text-gray-600 dark:text-[#A7C4AF] whitespace-pre-wrap">{viewTarget.notes}</p>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end pt-1">
+              <Button variant="outline" onClick={() => setViewTarget(null)}>Fechar</Button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   )

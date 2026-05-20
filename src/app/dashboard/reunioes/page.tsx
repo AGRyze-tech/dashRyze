@@ -6,7 +6,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
 import {
   Calendar, Plus, CheckCircle2, XCircle, Handshake,
-  Trash2, Pencil, TrendingUp, Users, Ban,
+  Trash2, Pencil, TrendingUp, Users, Ban, PhoneCall,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
@@ -26,10 +26,11 @@ import { Meeting, MeetingType } from '@/types'
 // create policy "auth_all" on meetings for all using (auth.role() = 'authenticated');
 // ─────────────────────────────────────────────────────────────────────────────
 
-const typeConfig: Record<MeetingType, { label: string; color: 'green' | 'red' | 'blue'; icon: React.ElementType }> = {
-  reuniao:    { label: 'Reunião',    color: 'blue',  icon: Calendar },
-  no_show:    { label: 'No-show',    color: 'red',   icon: Ban },
-  fechamento: { label: 'Fechamento', color: 'green', icon: Handshake },
+const typeConfig: Record<MeetingType, { label: string; color: 'green' | 'red' | 'blue' | 'purple'; icon: React.ElementType }> = {
+  reuniao:    { label: 'Reunião',    color: 'blue',   icon: Calendar },
+  no_show:    { label: 'No-show',    color: 'red',    icon: Ban },
+  fechamento: { label: 'Fechamento', color: 'green',  icon: Handshake },
+  pos_call:   { label: 'Pós Call',   color: 'purple', icon: PhoneCall },
 }
 
 const emptyForm = {
@@ -96,7 +97,7 @@ export default function ReunioesPage() {
   const { totalReunioes, totalNoShows, totalFechamentos, taxaFechamento, taxaComparecimento } = useMemo(() => {
     let totalReunioes = 0, totalNoShows = 0, totalFechamentos = 0
     for (const m of filtered) {
-      if (m.type === 'reuniao')    totalReunioes++
+      if (m.type === 'reuniao' || m.type === 'pos_call') totalReunioes++
       if (m.type === 'no_show')   totalNoShows++
       if (m.type === 'fechamento') totalFechamentos++
     }
@@ -346,11 +347,13 @@ create policy "auth_all" on meetings
                     <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${
                       m.type === 'reuniao'    ? 'bg-blue-50 dark:bg-blue-900/25' :
                       m.type === 'no_show'   ? 'bg-red-50 dark:bg-red-900/20' :
+                      m.type === 'pos_call'  ? 'bg-purple-50 dark:bg-purple-900/20' :
                       'bg-[#40916C]/10 dark:bg-[#40916C]/20'
                     }`}>
                       <Icon size={14} className={
                         m.type === 'reuniao'    ? 'text-blue-600 dark:text-blue-400' :
                         m.type === 'no_show'   ? 'text-red-500 dark:text-red-400' :
+                        m.type === 'pos_call'  ? 'text-purple-600 dark:text-purple-400' :
                         'text-[#40916C] dark:text-[#52B788]'
                       } />
                     </div>
@@ -405,10 +408,11 @@ create policy "auth_all" on meetings
                       key={type}
                       type="button"
                       onClick={() => setForm(f => ({ ...f, type }))}
-                      className={`flex-1 py-2.5 text-[12px] font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      className={`flex-1 py-2 text-[11px] font-semibold transition-all cursor-pointer flex items-center justify-center gap-1 ${
                         form.type === type
                           ? type === 'reuniao'    ? 'bg-blue-500 dark:bg-blue-600 text-white'
                           : type === 'no_show'   ? 'bg-red-500 dark:bg-red-600 text-white'
+                          : type === 'pos_call'  ? 'bg-purple-500 dark:bg-purple-600 text-white'
                           : 'bg-[#40916C] dark:bg-[#2D6A4F] text-white'
                           : 'bg-white dark:bg-[#152218] text-gray-500 dark:text-[#4A6B52] hover:bg-gray-50 dark:hover:bg-[#1A2C1F]'
                       }`}

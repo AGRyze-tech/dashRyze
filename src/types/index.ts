@@ -1,9 +1,10 @@
 export type ClientStatus = 'prospecto' | 'ativo' | 'inativo' | 'churned'
+// 'churned' kept for legacy data; hidden from UI
 export type ProjectStatus = 'briefing' | 'desenvolvimento' | 'revisao' | 'entregue' | 'concluido' | 'pausado'
 export type ProjectType = 'site' | 'landing' | 'smartpage' | 'sistema' | 'outro'
 export type LeadStatus = 'novo' | 'contatado' | 'qualificado' | 'descartado' | 'convertido'
 export type TransactionType = 'entrada' | 'saida'
-export type TransactionCategory = 'ferramentas' | 'infraestrutura' | 'marketing' | 'pessoal' | 'outros' | 'contrato' | 'hospedagem'
+export type TransactionCategory = 'ferramentas' | 'infraestrutura' | 'marketing' | 'pessoal' | 'outros' | 'contrato' | 'hospedagem' | 'clientes' | 'meta_ads' | 'imposto' | 'dominio'
 export type PaymentMethod = 'avista' | 'parcelado'
 export type InstallmentStatus = 'pendente' | 'pago' | 'atrasado'
 
@@ -21,10 +22,11 @@ export interface Client {
   delivery_date?: string
   total_value?: number
   paid_value?: number
+  domain_included?: boolean
   created_at: string
 }
 
-export type MeetingType = 'reuniao' | 'no_show' | 'fechamento'
+export type MeetingType = 'reuniao' | 'no_show' | 'fechamento' | 'pos_call'
 
 export interface Meeting {
   id: string

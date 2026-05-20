@@ -616,83 +616,43 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ── Prazos + Leads ────────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="card-light overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#1E3020]">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52]">Prazos próximos</p>
-                <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5">
-                  {loading ? '—' : `${activeProjects.length} projeto${activeProjects.length !== 1 ? 's' : ''} em andamento`}
-                </p>
-              </div>
-              <Link href="/dashboard/projetos" className="flex items-center gap-1 text-[11px] font-medium text-[#40916C] dark:text-[#52B788] hover:opacity-80 transition-opacity">
-                Ver todos <ArrowRight size={11} />
-              </Link>
+        {/* ── Prazos ────────────────────────────────────────────────────── */}
+        <div className="card-light overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#1E3020]">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52]">Prazos próximos</p>
+              <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5">
+                {loading ? '—' : `${activeProjects.length} projeto${activeProjects.length !== 1 ? 's' : ''} em andamento`}
+              </p>
             </div>
-
-            {loading ? (
-              <div className="divide-y divide-gray-50 dark:divide-[#1E3020]">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-3 px-5 py-3.5">
-                    <Skeleton className="w-2 h-2 rounded-full" />
-                    <div className="flex-1 space-y-1.5">
-                      <Skeleton className="h-3 w-36" />
-                      <Skeleton className="h-2.5 w-20" />
-                    </div>
-                    <Skeleton className="h-5 w-16 rounded-full" />
-                  </div>
-                ))}
-              </div>
-            ) : deadlineProjects.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-[#1A2C1F] flex items-center justify-center mb-2">
-                  <CheckCircle2 size={16} className="text-gray-300 dark:text-[#2A4030]" />
-                </div>
-                <p className="text-[12px] text-gray-400 dark:text-[#4A6B52]">Nenhum projeto em andamento</p>
-              </div>
-            ) : (
-              <div>{deadlineProjects.map(p => <DeadlineRow key={p.id} project={p} />)}</div>
-            )}
+            <Link href="/dashboard/projetos" className="flex items-center gap-1 text-[11px] font-medium text-[#40916C] dark:text-[#52B788] hover:opacity-80 transition-opacity">
+              Ver todos <ArrowRight size={11} />
+            </Link>
           </div>
 
-          <div className="card-light overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#1E3020]">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52]">Leads recentes</p>
-                <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5">
-                  {loading ? '—' : `${newLeads} novo${newLeads !== 1 ? 's' : ''} · ${leads.length} total`}
-                </p>
-              </div>
-              <Link href="/dashboard/leads" className="flex items-center gap-1 text-[11px] font-medium text-[#40916C] dark:text-[#52B788] hover:opacity-80 transition-opacity">
-                Ver todos <ArrowRight size={11} />
-              </Link>
-            </div>
-
-            {loading ? (
-              <div className="divide-y divide-gray-50 dark:divide-[#1E3020]">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-3 px-5 py-3.5">
-                    <Skeleton className="w-8 h-8 rounded-full" />
-                    <div className="flex-1 space-y-1.5">
-                      <Skeleton className="h-3 w-32" />
-                      <Skeleton className="h-2.5 w-20" />
-                    </div>
-                    <Skeleton className="h-5 w-16 rounded-full" />
+          {loading ? (
+            <div className="divide-y divide-gray-50 dark:divide-[#1E3020]">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3 px-5 py-3.5">
+                  <Skeleton className="w-2 h-2 rounded-full" />
+                  <div className="flex-1 space-y-1.5">
+                    <Skeleton className="h-3 w-36" />
+                    <Skeleton className="h-2.5 w-20" />
                   </div>
-                ))}
-              </div>
-            ) : recentLeads.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-[#1A2C1F] flex items-center justify-center mb-2">
-                  <Clock size={16} className="text-gray-300 dark:text-[#2A4030]" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
                 </div>
-                <p className="text-[12px] text-gray-400 dark:text-[#4A6B52]">Nenhum lead registrado ainda</p>
+              ))}
+            </div>
+          ) : deadlineProjects.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-[#1A2C1F] flex items-center justify-center mb-2">
+                <CheckCircle2 size={16} className="text-gray-300 dark:text-[#2A4030]" />
               </div>
-            ) : (
-              <div>{recentLeads.map(l => <LeadRow key={l.id} lead={l} />)}</div>
-            )}
-          </div>
+              <p className="text-[12px] text-gray-400 dark:text-[#4A6B52]">Nenhum projeto em andamento</p>
+            </div>
+          ) : (
+            <div>{deadlineProjects.map(p => <DeadlineRow key={p.id} project={p} />)}</div>
+          )}
         </div>
 
       </div>
