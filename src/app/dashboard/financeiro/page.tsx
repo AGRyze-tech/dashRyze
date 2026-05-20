@@ -263,7 +263,11 @@ export default function FinanceiroPage() {
       }
       handleCloseModal()
     } catch (err: unknown) {
-      setSaveError(err instanceof Error ? err.message : 'Erro ao salvar.')
+      const msg = err instanceof Error ? err.message
+        : typeof err === 'object' && err !== null && 'message' in err
+        ? String((err as { message: unknown }).message)
+        : 'Erro ao salvar.'
+      setSaveError(msg || 'Erro ao salvar.')
     } finally {
       setSaving(false)
     }
