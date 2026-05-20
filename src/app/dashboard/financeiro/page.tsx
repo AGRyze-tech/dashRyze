@@ -169,15 +169,16 @@ export default function FinanceiroPage() {
 
   let totalEntradas = 0
   let totalSaidas = 0
-  let countEntradas = 0
-  let countSaidas = 0
   for (const t of transactions) {
-    if (t.type === 'entrada') { totalEntradas += t.amount; countEntradas++ }
-    else { totalSaidas += t.amount; countSaidas++ }
+    if (t.type === 'entrada') totalEntradas += t.amount
+    else totalSaidas += t.amount
   }
   const saldo = totalEntradas - totalSaidas
 
-  const filtered = transactions.filter(t => typeFilter === 'todos' || t.type === typeFilter)
+  const filtered = useMemo(
+    () => transactions.filter(t => typeFilter === 'todos' || t.type === typeFilter),
+    [transactions, typeFilter]
+  )
   const grouped = useMemo(() => groupByDate(filtered), [filtered])
   const monthlyData = useMemo(() => buildMonthlyData(transactions), [transactions])
   const categoryData = useMemo(() => buildCategoryData(transactions), [transactions])

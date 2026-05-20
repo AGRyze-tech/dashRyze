@@ -488,8 +488,8 @@ export default function ClientesPage() {
             <div>
               <label htmlFor="cli-status" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Status</label>
               <select id="cli-status" className="input-field cursor-pointer" value={form.status} onChange={set('status')}>
-                {Object.entries(clientStatusConfig).map(([value, { label }]) => (
-                  <option key={value} value={value}>{label}</option>
+                {activeClientStatuses.map(s => (
+                  <option key={s} value={s}>{clientStatusConfig[s].label}</option>
                 ))}
               </select>
             </div>

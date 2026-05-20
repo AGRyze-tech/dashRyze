@@ -204,7 +204,7 @@ export default function ReunioesPage() {
   client_name text not null default '',
   date date not null,
   type text not null check (
-    type in ('reuniao', 'no_show', 'fechamento')
+    type in ('reuniao', 'no_show', 'fechamento', 'pos_call')
   ),
   notes text,
   created_at timestamptz default now()
