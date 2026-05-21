@@ -5,25 +5,32 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
 import {
-  Calendar, Plus, CheckCircle2, XCircle, Handshake,
-  Trash2, Pencil, TrendingUp, Users, Ban, PhoneCall,
+  Calendar, Plus, CheckCircle2, Handshake,
+  Trash2, Pencil, PhoneCall, ChevronDown, XCircle,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
-import { Meeting, MeetingType } from '@/types'
+import { Meeting, MeetingType, MeetingStatus } from '@/types'
 
-const typeConfig: Record<MeetingType, { label: string; color: 'green' | 'red' | 'blue' | 'purple'; icon: React.ElementType; bgClass: string; iconClass: string; activeClass: string }> = {
-  reuniao:    { label: 'Reunião',    color: 'blue',   icon: Calendar,  bgClass: 'bg-blue-50 dark:bg-blue-900/25',        iconClass: 'text-blue-600 dark:text-blue-400',      activeClass: 'bg-blue-500 dark:bg-blue-600 text-white' },
-  no_show:    { label: 'No-show',    color: 'red',    icon: Ban,        bgClass: 'bg-red-50 dark:bg-red-900/20',          iconClass: 'text-red-500 dark:text-red-400',        activeClass: 'bg-red-500 dark:bg-red-600 text-white' },
-  fechamento: { label: 'Fechamento', color: 'green',  icon: Handshake,  bgClass: 'bg-[#40916C]/10 dark:bg-[#40916C]/20', iconClass: 'text-[#40916C] dark:text-[#52B788]',    activeClass: 'bg-[#40916C] dark:bg-[#2D6A4F] text-white' },
-  pos_call:   { label: 'Pós Call',   color: 'purple', icon: PhoneCall,  bgClass: 'bg-purple-50 dark:bg-purple-900/20',    iconClass: 'text-purple-600 dark:text-purple-400',  activeClass: 'bg-purple-500 dark:bg-purple-600 text-white' },
+const typeConfig: Record<MeetingType, { label: string; color: 'green' | 'blue' | 'purple'; icon: React.ElementType; bgClass: string; iconClass: string; activeClass: string }> = {
+  reuniao:    { label: 'Reunião',    color: 'blue',   icon: Calendar,  bgClass: 'bg-blue-50 dark:bg-blue-900/25',        iconClass: 'text-blue-600 dark:text-blue-400',     activeClass: 'bg-blue-500 dark:bg-blue-600 text-white' },
+  fechamento: { label: 'Fechamento', color: 'green',  icon: Handshake, bgClass: 'bg-[#40916C]/10 dark:bg-[#40916C]/20', iconClass: 'text-[#40916C] dark:text-[#52B788]',   activeClass: 'bg-[#40916C] dark:bg-[#2D6A4F] text-white' },
+  pos_call:   { label: 'Pós Call',   color: 'purple', icon: PhoneCall, bgClass: 'bg-purple-50 dark:bg-purple-900/20',    iconClass: 'text-purple-600 dark:text-purple-400', activeClass: 'bg-purple-500 dark:bg-purple-600 text-white' },
+}
+
+const statusConfig: Record<MeetingStatus, { label: string; selectClass: string }> = {
+  agendada:  { label: 'Agendada',  selectClass: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800' },
+  concluida: { label: 'Concluída', selectClass: 'bg-[#40916C]/10 dark:bg-[#40916C]/20 text-[#40916C] dark:text-[#52B788] border-[#40916C]/30 dark:border-[#40916C]/40' },
+  churned:   { label: 'Churned',   selectClass: 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800' },
+  no_show:   { label: 'No-show',   selectClass: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800' },
 }
 
 const emptyForm = {
-  title: '',
   client_name: '',
   date: new Date().toISOString().split('T')[0],
+  scheduled_time: '',
   type: 'reuniao' as MeetingType,
+  status: 'agendada' as MeetingStatus,
   notes: '',
 }
 
@@ -80,22 +87,29 @@ export default function ReunioesPage() {
     [meetings, monthFilter]
   )
 
-  const { totalReunioes, totalNoShows, totalFechamentos, taxaFechamento, taxaComparecimento } = useMemo(() => {
-    let totalReunioes = 0, totalNoShows = 0, totalFechamentos = 0
+  const { total, concluidas, fechamentos, churned, taxaNoShow } = useMemo(() => {
+    let concluidas = 0, fechamentos = 0, churned = 0, noShows = 0
     for (const m of filtered) {
-      if (m.type === 'reuniao' || m.type === 'pos_call') totalReunioes++
-      if (m.type === 'no_show')   totalNoShows++
-      if (m.type === 'fechamento') totalFechamentos++
+      if (m.status === 'concluida') concluidas++
+      if (m.type === 'fechamento') fechamentos++
+      if (m.status === 'churned') churned++
+      if (m.status === 'no_show') noShows++
     }
-    const totalAgendadas = totalReunioes + totalNoShows + totalFechamentos
-    const taxaComparecimento = totalAgendadas > 0
-      ? Math.round(((totalReunioes + totalFechamentos) / totalAgendadas) * 100)
-      : 0
-    const taxaFechamento = (totalReunioes + totalFechamentos) > 0
-      ? Math.round((totalFechamentos / (totalReunioes + totalFechamentos)) * 100)
-      : 0
-    return { totalReunioes, totalNoShows, totalFechamentos, taxaFechamento, taxaComparecimento }
+    const taxaNoShow = filtered.length > 0 ? Math.round((noShows / filtered.length) * 100) : 0
+    return { total: filtered.length, concluidas, fechamentos, churned, taxaNoShow }
   }, [filtered])
+
+  const monthOptions = useMemo(() => {
+    const opts: { value: string; label: string }[] = []
+    const now = new Date()
+    for (let i = 0; i < 6; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      const label = d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+      opts.push({ value, label })
+    }
+    return opts
+  }, [])
 
   function handleOpenModal() {
     setEditingMeeting(null)
@@ -107,10 +121,11 @@ export default function ReunioesPage() {
   function handleOpenEdit(m: Meeting) {
     setEditingMeeting(m)
     setForm({
-      title: m.title,
       client_name: m.client_name,
       date: m.date,
+      scheduled_time: m.scheduled_time ?? '',
       type: m.type,
+      status: m.status,
       notes: m.notes ?? '',
     })
     setSaveError('')
@@ -123,16 +138,17 @@ export default function ReunioesPage() {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.title.trim()) { setSaveError('Título é obrigatório.'); return }
+    if (!form.client_name.trim()) { setSaveError('Cliente é obrigatório.'); return }
     if (!form.date) { setSaveError('Data é obrigatória.'); return }
     setSaving(true)
     setSaveError('')
     try {
       const payload = {
-        title: form.title.trim(),
         client_name: form.client_name.trim(),
         date: form.date,
+        scheduled_time: form.scheduled_time || null,
         type: form.type,
+        status: form.status,
         notes: form.notes.trim() || null,
       }
       if (editingMeeting) {
@@ -173,18 +189,11 @@ export default function ReunioesPage() {
     }
   }
 
-  // Generate last 6 months for the month filter
-  const monthOptions = useMemo(() => {
-    const opts: { value: string; label: string }[] = []
-    const now = new Date()
-    for (let i = 0; i < 6; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-      const label = d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
-      opts.push({ value, label })
-    }
-    return opts
-  }, [])
+  async function handleStatusChange(meetingId: string, status: MeetingStatus) {
+    const { data, error } = await db.from('meetings').update({ status }).eq('id', meetingId).select().single()
+    if (error) return
+    setMeetings(prev => prev.map(m => m.id === meetingId ? (data as Meeting) : m))
+  }
 
   if (!tableExists) {
     return (
@@ -204,18 +213,22 @@ export default function ReunioesPage() {
             <pre className="w-full text-left text-[11px] bg-gray-900 text-emerald-400 rounded-xl p-4 overflow-x-auto leading-relaxed">
 {`create table if not exists meetings (
   id uuid primary key default gen_random_uuid(),
-  title text not null,
+  title text,
   client_name text not null default '',
   date date not null,
+  scheduled_time time,
   type text not null check (
-    type in ('reuniao', 'no_show', 'fechamento', 'pos_call')
+    type in ('reuniao', 'fechamento', 'pos_call')
+  ),
+  status text not null default 'agendada' check (
+    status in ('agendada', 'concluida', 'churned', 'no_show')
   ),
   notes text,
   created_at timestamptz default now()
 );
 alter table meetings enable row level security;
-create policy "auth_all" on meetings
-  for all using (auth.role() = 'authenticated');`}
+create policy "allow all" on meetings
+  for all using (true) with check (true);`}
             </pre>
           </div>
         </div>
@@ -235,19 +248,19 @@ create policy "auth_all" on meetings
             <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-900/25 flex items-center justify-center mb-3">
               <Calendar size={16} className="text-blue-600 dark:text-blue-400" />
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52] mb-1">Reuniões</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52] mb-1">Total</p>
             {loading ? <Skeleton className="h-7 w-12" /> : (
-              <p className="text-[28px] font-bold leading-none text-gray-900 dark:text-[#F0FDF4]">{totalReunioes}</p>
+              <p className="text-[28px] font-bold leading-none text-gray-900 dark:text-[#F0FDF4]">{total}</p>
             )}
           </div>
 
           <div className="stat-card p-5 xl:col-span-1">
-            <div className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-3">
-              <Ban size={16} className="text-red-500 dark:text-red-400" />
+            <div className="w-9 h-9 rounded-xl bg-[#40916C]/10 dark:bg-[#40916C]/20 flex items-center justify-center mb-3">
+              <CheckCircle2 size={16} className="text-[#40916C] dark:text-[#52B788]" />
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52] mb-1">No-shows</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52] mb-1">Concluídas</p>
             {loading ? <Skeleton className="h-7 w-12" /> : (
-              <p className="text-[28px] font-bold leading-none text-red-600 dark:text-red-400">{totalNoShows}</p>
+              <p className="text-[28px] font-bold leading-none text-[#40916C] dark:text-[#52B788]">{concluidas}</p>
             )}
           </div>
 
@@ -257,27 +270,27 @@ create policy "auth_all" on meetings
             </div>
             <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52] mb-1">Fechamentos</p>
             {loading ? <Skeleton className="h-7 w-12" /> : (
-              <p className="text-[28px] font-bold leading-none text-[#40916C] dark:text-[#52B788]">{totalFechamentos}</p>
+              <p className="text-[28px] font-bold leading-none text-[#40916C] dark:text-[#52B788]">{fechamentos}</p>
+            )}
+          </div>
+
+          <div className="stat-card p-5 xl:col-span-1">
+            <div className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-3">
+              <XCircle size={16} className="text-red-500 dark:text-red-400" />
+            </div>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52] mb-1">Churned</p>
+            {loading ? <Skeleton className="h-7 w-12" /> : (
+              <p className="text-[28px] font-bold leading-none text-red-600 dark:text-red-400">{churned}</p>
             )}
           </div>
 
           <div className="stat-card p-5 xl:col-span-1">
             <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-900/25 flex items-center justify-center mb-3">
-              <Users size={16} className="text-amber-600 dark:text-amber-400" />
+              <XCircle size={16} className="text-amber-600 dark:text-amber-400" />
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52] mb-1">Comparecimento</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52] mb-1">Taxa No-show</p>
             {loading ? <Skeleton className="h-7 w-16" /> : (
-              <p className="text-[28px] font-bold leading-none text-amber-700 dark:text-amber-300">{taxaComparecimento}%</p>
-            )}
-          </div>
-
-          <div className="stat-card p-5 xl:col-span-1">
-            <div className="w-9 h-9 rounded-xl bg-[#40916C]/10 dark:bg-[#40916C]/20 flex items-center justify-center mb-3">
-              <TrendingUp size={16} className="text-[#40916C] dark:text-[#52B788]" />
-            </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52] mb-1">Taxa de fechamento</p>
-            {loading ? <Skeleton className="h-7 w-16" /> : (
-              <p className="text-[28px] font-bold leading-none text-[#40916C] dark:text-[#52B788]">{taxaFechamento}%</p>
+              <p className="text-[28px] font-bold leading-none text-amber-700 dark:text-amber-300">{taxaNoShow}%</p>
             )}
           </div>
         </div>
@@ -332,20 +345,38 @@ create policy "auth_all" on meetings
               {filtered.map(m => {
                 const cfg = typeConfig[m.type]
                 const Icon = cfg.icon
+                const sCfg = statusConfig[m.status]
                 return (
                   <div key={m.id} className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-50 dark:border-[#1E3020] last:border-0 hover:bg-gray-50/70 dark:hover:bg-[#1A2C1F] transition-colors group">
                     <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${cfg.bgClass}`}>
                       <Icon size={14} className={cfg.iconClass} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-medium text-gray-800 dark:text-[#D1FAE5] truncate">{m.title}</p>
-                      <p className="text-[11px] text-gray-400 dark:text-[#4A6B52]">
+                      <p className="text-[13px] font-medium text-gray-800 dark:text-[#D1FAE5] truncate">
                         {m.client_name || '—'}
+                      </p>
+                      <p className="text-[11px] text-gray-400 dark:text-[#4A6B52]">
+                        {m.scheduled_time ? m.scheduled_time.slice(0, 5) : formatDate(m.date)}
+                        {!m.scheduled_time && ''}
+                        {m.scheduled_time && <span className="ml-1 opacity-70">· {formatDate(m.date)}</span>}
                         {m.notes && <span className="ml-1.5 opacity-70">· {m.notes}</span>}
                       </p>
                     </div>
-                    <span className="text-[11px] text-gray-400 dark:text-[#4A6B52] tabular flex-shrink-0">{formatDate(m.date)}</span>
                     <Badge color={cfg.color} dot={false}>{cfg.label}</Badge>
+                    {/* Inline status select */}
+                    <div className="relative flex-shrink-0">
+                      <select
+                        value={m.status}
+                        onChange={e => handleStatusChange(m.id, e.target.value as MeetingStatus)}
+                        className={`appearance-none text-[10px] font-semibold px-2 py-0.5 pr-5 rounded-full border cursor-pointer ${sCfg.selectClass}`}
+                        aria-label="Status da reunião"
+                      >
+                        {(Object.entries(statusConfig) as [MeetingStatus, { label: string; selectClass: string }][]).map(([s, sc]) => (
+                          <option key={s} value={s}>{sc.label}</option>
+                        ))}
+                      </select>
+                      <ChevronDown size={9} className="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none opacity-60" />
+                    </div>
                     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity">
                       <button
                         type="button"
@@ -399,19 +430,28 @@ create policy "auth_all" on meetings
               </div>
             </div>
 
-            <div className="col-span-2">
-              <label htmlFor="mtg-title" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Título / Assunto *</label>
-              <input id="mtg-title" className="input-field" placeholder="Ex: Apresentação de proposta" value={form.title} onChange={set('title')} required />
-            </div>
-
             <div>
-              <label htmlFor="mtg-client" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Cliente / Contato</label>
-              <input id="mtg-client" className="input-field" placeholder="Dr. Nome..." value={form.client_name} onChange={set('client_name')} />
+              <label htmlFor="mtg-client" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Cliente / Contato *</label>
+              <input id="mtg-client" className="input-field" placeholder="Dr. Nome..." value={form.client_name} onChange={set('client_name')} required />
             </div>
 
             <div>
               <label htmlFor="mtg-date" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Data *</label>
               <input id="mtg-date" type="date" className="input-field" value={form.date} onChange={set('date')} required />
+            </div>
+
+            <div>
+              <label htmlFor="mtg-time" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Horário</label>
+              <input id="mtg-time" type="time" className="input-field" value={form.scheduled_time} onChange={set('scheduled_time')} />
+            </div>
+
+            <div>
+              <label htmlFor="mtg-status" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Status</label>
+              <select id="mtg-status" className="input-field" value={form.status} onChange={set('status')}>
+                {(Object.entries(statusConfig) as [MeetingStatus, { label: string; selectClass: string }][]).map(([s, sc]) => (
+                  <option key={s} value={s}>{sc.label}</option>
+                ))}
+              </select>
             </div>
 
             <div className="col-span-2">
@@ -438,7 +478,7 @@ create policy "auth_all" on meetings
         {deleteModal && (
           <div className="space-y-4">
             <p className="text-sm text-gray-600 dark:text-[#A7C4AF]">
-              Remover <strong className="text-gray-900 dark:text-[#F8FBF9]">{deleteModal.title}</strong>? Esta ação não pode ser desfeita.
+              Remover a reunião com <strong className="text-gray-900 dark:text-[#F8FBF9]">{deleteModal.client_name || '—'}</strong>? Esta ação não pode ser desfeita.
             </p>
             <div className="flex gap-3 justify-end">
               <Button variant="outline" onClick={() => setDeleteModal(null)}>Cancelar</Button>

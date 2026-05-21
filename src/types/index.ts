@@ -26,15 +26,18 @@ export interface Client {
   created_at: string
 }
 
-export type MeetingType = 'reuniao' | 'no_show' | 'fechamento' | 'pos_call'
+export type MeetingType = 'reuniao' | 'fechamento' | 'pos_call'
+export type MeetingStatus = 'agendada' | 'concluida' | 'churned' | 'no_show'
 
 export interface Meeting {
   id: string
-  title: string
+  title?: string | null
   client_name: string
   date: string
+  scheduled_time?: string | null
   type: MeetingType
-  notes?: string
+  status: MeetingStatus
+  notes?: string | null
   created_at: string
 }
 
