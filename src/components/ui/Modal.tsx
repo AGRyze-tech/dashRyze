@@ -77,17 +77,17 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
         aria-modal="true"
         aria-labelledby={titleId}
         className={cn(
-          'modal-panel relative w-full bg-white dark:bg-[#152218] text-gray-900 dark:text-[#F8FBF9] rounded-xl shadow-2xl flex flex-col',
+          'modal-panel relative w-full bg-white dark:bg-[#07100A] text-gray-900 dark:text-[#E6F2EB] rounded-xl shadow-2xl flex flex-col',
           sizeMap[size]
         )}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#1E3020] flex-shrink-0 bg-gradient-to-r from-gray-50/70 to-white dark:from-[#1A2C20] dark:to-[#152218] rounded-t-xl">
-          <h2 id={titleId} className="text-base font-semibold text-gray-900 dark:text-[#F8FBF9]">{title}</h2>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#111B14] flex-shrink-0 bg-gradient-to-r from-gray-50/70 to-white dark:from-[#0C150E] dark:to-[#07100A] rounded-t-xl">
+          <h2 id={titleId} className="text-base font-semibold text-gray-900 dark:text-[#E6F2EB]">{title}</h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Fechar"
-            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#1E3020] text-gray-400 dark:text-[#4A6B52] hover:text-gray-600 dark:hover:text-[#8BA891] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#111B14] text-gray-400 dark:text-[#2A5C3C] hover:text-gray-600 dark:hover:text-[#3E9E60] transition-colors"
           >
             <X size={18} aria-hidden="true" />
           </button>

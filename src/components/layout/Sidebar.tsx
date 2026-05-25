@@ -1,10 +1,10 @@
-'use client'
+﻿'use client'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, Users, FolderKanban,
-  TrendingUp, BarChart2, Target, Settings, LogOut, Sun, Moon, CalendarCheck,
+  TrendingUp, BarChart2, Target, Settings, LogOut, Sun, Moon, CalendarCheck, CalendarDays,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
@@ -32,6 +32,7 @@ const navGroups: NavGroup[] = [
     items: [
       { href: '/dashboard/clientes', icon: Users, label: 'Clientes' },
       { href: '/dashboard/reunioes', icon: CalendarCheck, label: 'Reuniões' },
+      { href: '/dashboard/agenda', icon: CalendarDays, label: 'Agenda' },
     ],
   },
   {
@@ -75,9 +76,9 @@ export function Sidebar({ userRole = 'admin', mobileOpen = false }: SidebarProps
       mobileOpen && 'translate-x-0',
     )}>
       {/* Logo */}
-      <div className="px-5 py-5 border-b border-[#1E3020]">
+      <div className="px-5 py-5 border-b border-[#111B14]">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center flex-shrink-0 p-1 ring-1 ring-[#40916C]/30 shadow-[0_0_14px_rgba(64,145,108,0.28)]">
+          <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center flex-shrink-0 p-1 ring-1 ring-[#32B86A]/30 shadow-[0_0_14px_rgba(64,145,108,0.28)]">
             <Image
               src="/logotipo-removebg-preview.png"
               alt="RyzeSystems"
@@ -88,7 +89,7 @@ export function Sidebar({ userRole = 'admin', mobileOpen = false }: SidebarProps
           </div>
           <div className="leading-none">
             <div className="text-[15px] font-bold text-white tracking-tight">RYZE</div>
-            <div className="text-[10px] font-medium text-[#4A6B52] tracking-[0.15em] uppercase">Systems</div>
+            <div className="text-[10px] font-medium text-[#2A5C3C] tracking-[0.15em] uppercase">Systems</div>
           </div>
         </div>
       </div>
@@ -97,7 +98,7 @@ export function Sidebar({ userRole = 'admin', mobileOpen = false }: SidebarProps
       <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-3">
         {navGroups.map(group => (
           <div key={group.label}>
-            <p className="px-3 pb-1 text-[10px] font-semibold text-[#2A4030] uppercase tracking-[0.15em]">{group.label}</p>
+            <p className="px-3 pb-1 text-[10px] font-semibold text-[#192A1D] uppercase tracking-[0.15em]">{group.label}</p>
             <div className="space-y-0.5">
               {group.items.map(({ href, icon: Icon, label, exact }) => (
                 <Link
@@ -116,7 +117,7 @@ export function Sidebar({ userRole = 'admin', mobileOpen = false }: SidebarProps
 
         {userRole === 'admin' && (
           <div>
-            <p className="px-3 pb-1 text-[10px] font-semibold text-[#2A4030] uppercase tracking-[0.15em]">Administração</p>
+            <p className="px-3 pb-1 text-[10px] font-semibold text-[#192A1D] uppercase tracking-[0.15em]">Administração</p>
             <div className="space-y-0.5">
               <Link href="/dashboard/configuracoes" className={cn('nav-item', isActive('/dashboard/configuracoes') && 'active')}>
                 <Settings size={16} strokeWidth={1.75} />
@@ -128,27 +129,27 @@ export function Sidebar({ userRole = 'admin', mobileOpen = false }: SidebarProps
       </nav>
 
       {/* Footer */}
-      <div className="px-3 py-4 border-t border-[#1E3020]">
+      <div className="px-3 py-4 border-t border-[#111B14]">
         <div className="flex items-center gap-3 px-3 py-2.5 mb-1">
-          <div className="w-7 h-7 rounded-full bg-[#40916C] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+          <div className="w-7 h-7 rounded-full bg-[#32B86A] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
             {userRole === 'admin' ? 'I' : 'V'}
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-[13px] font-medium text-[#F8FBF9] truncate">
               {userRole === 'admin' ? 'Isaac' : 'Vinícius'}
             </div>
-            <div className="text-[11px] text-[#4A6B52] capitalize">{userRole}</div>
+            <div className="text-[11px] text-[#2A5C3C] capitalize">{userRole}</div>
           </div>
           <button
             type="button"
             onClick={toggleTheme}
             aria-label={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
-            className="p-1.5 rounded-md text-[#4A6B52] hover:text-[#8BA891] hover:bg-[#1E3020] transition-colors flex-shrink-0"
+            className="p-1.5 rounded-md text-[#2A5C3C] hover:text-[#3E9E60] hover:bg-[#111B14] transition-colors flex-shrink-0"
           >
             {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
           </button>
         </div>
-        <button type="button" onClick={handleSignOut} className="nav-item w-full text-[#4A6B52] hover:text-red-400 hover:bg-red-400/5">
+        <button type="button" onClick={handleSignOut} className="nav-item w-full text-[#2A5C3C] hover:text-red-400 hover:bg-red-400/5">
           <LogOut size={15} strokeWidth={1.75} />
           <span className="text-[13px]">Sair</span>
         </button>

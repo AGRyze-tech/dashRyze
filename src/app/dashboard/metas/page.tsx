@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect, useLayoutEffect, useRef, useMemo } from 'react'
 import { Header } from '@/components/layout/Header'
 import {
@@ -27,7 +27,7 @@ function monthStart() {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function Skeleton({ className }: { className?: string }) {
-  return <div className={`animate-pulse motion-reduce:animate-none rounded-lg bg-gray-100 dark:bg-[#1A2C1F] ${className}`} />
+  return <div className={`animate-pulse motion-reduce:animate-none rounded-lg bg-gray-100 dark:bg-[#0C150E] ${className}`} />
 }
 
 function pct(value: number, goal: number) {
@@ -36,21 +36,21 @@ function pct(value: number, goal: number) {
 }
 
 function barColor(p: number) {
-  if (p >= 100) return 'bg-[#40916C]'
+  if (p >= 100) return 'bg-[#32B86A]'
   if (p >= 70)  return 'bg-emerald-500'
   if (p >= 40)  return 'bg-amber-500'
   return 'bg-red-500'
 }
 
 function textColor(p: number) {
-  if (p >= 100) return 'text-[#40916C] dark:text-[#52B788]'
+  if (p >= 100) return 'text-[#32B86A] dark:text-[#4EE88A]'
   if (p >= 70)  return 'text-emerald-600 dark:text-emerald-400'
   if (p >= 40)  return 'text-amber-600 dark:text-amber-400'
   return 'text-red-500 dark:text-red-400'
 }
 
 function ringColor(p: number) {
-  if (p >= 100) return 'ring-[#40916C]/30 dark:ring-[#40916C]/40'
+  if (p >= 100) return 'ring-[#32B86A]/30 dark:ring-[#32B86A]/40'
   if (p >= 70)  return 'ring-emerald-500/30'
   if (p >= 40)  return 'ring-amber-500/30'
   return 'ring-red-500/30'
@@ -83,10 +83,10 @@ function EditRow({ label, placeholder, value, onChange, onCommit, onCancel }: Ed
           step="any"
           onKeyDown={e => { if (e.key === 'Enter') onCommit(); if (e.key === 'Escape') onCancel() }}
         />
-        <button type="button" onClick={onCommit} className="h-9 px-3 rounded-lg bg-[#40916C] hover:bg-[#2D6A4F] text-white text-[12px] font-medium flex items-center gap-1.5 transition-colors flex-shrink-0">
+        <button type="button" onClick={onCommit} className="h-9 px-3 rounded-lg bg-[#32B86A] hover:bg-[#1A5C35] text-white text-[12px] font-medium flex items-center gap-1.5 transition-colors flex-shrink-0">
           <Check size={12} /> Salvar
         </button>
-        <button type="button" onClick={onCancel} aria-label="Cancelar" className="h-9 px-2.5 rounded-lg border border-gray-200 dark:border-[#2A4030] hover:bg-gray-50 dark:hover:bg-[#1A2C1F] text-gray-500 dark:text-[#8BA891] transition-colors flex-shrink-0">
+        <button type="button" onClick={onCancel} aria-label="Cancelar" className="h-9 px-2.5 rounded-lg border border-gray-200 dark:border-[#192A1D] hover:bg-gray-50 dark:hover:bg-[#0C150E] text-gray-500 dark:text-[#3E9E60] transition-colors flex-shrink-0">
           <XIcon size={12} />
         </button>
       </div>
@@ -114,20 +114,20 @@ function RevenueCard({ current, goal, loading, editing, editValue, onEditChange,
   useLayoutEffect(() => { barRef.current?.style.setProperty('--bar-w', `${p}%`) }, [p])
 
   return (
-    <div className={`card-light overflow-hidden relative ring-1 ${done ? 'ring-[#40916C]/30 dark:ring-[#40916C]/40' : `ring-transparent ${ringColor(p)}`}`}>
-      <div className={`absolute inset-0 bg-gradient-to-br ${done ? 'from-[#40916C]/8' : 'from-emerald-500/5'} via-transparent to-transparent pointer-events-none`} />
+    <div className={`card-light overflow-hidden relative ring-1 ${done ? 'ring-[#32B86A]/30 dark:ring-[#32B86A]/40' : `ring-transparent ${ringColor(p)}`}`}>
+      <div className={`absolute inset-0 bg-gradient-to-br ${done ? 'from-[#32B86A]/8' : 'from-emerald-500/5'} via-transparent to-transparent pointer-events-none`} />
       <div className="p-6 flex flex-col gap-5">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${done ? 'bg-[#40916C]/15 dark:bg-[#40916C]/25' : 'bg-emerald-50 dark:bg-emerald-900/30'}`}>
-              <TrendingUp size={19} className={done ? 'text-[#40916C] dark:text-[#52B788]' : 'text-emerald-600 dark:text-emerald-400'} />
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${done ? 'bg-[#32B86A]/15 dark:bg-[#32B86A]/25' : 'bg-emerald-50 dark:bg-emerald-900/30'}`}>
+              <TrendingUp size={19} className={done ? 'text-[#32B86A] dark:text-[#4EE88A]' : 'text-emerald-600 dark:text-emerald-400'} />
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52]">Meta Principal</p>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C]">Meta Principal</p>
               <p className="text-[15px] font-bold text-gray-800 dark:text-[#D1FAE5] mt-0.5">Faturamento</p>
             </div>
           </div>
-          <button type="button" onClick={onEdit} aria-label="Editar meta de faturamento" className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#1A2C1F] text-gray-300 dark:text-[#2A4030] hover:text-gray-500 dark:hover:text-[#8BA891] transition-colors">
+          <button type="button" onClick={onEdit} aria-label="Editar meta de faturamento" className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#0C150E] text-gray-300 dark:text-[#192A1D] hover:text-gray-500 dark:hover:text-[#3E9E60] transition-colors">
             <Pencil size={13} />
           </button>
         </div>
@@ -147,22 +147,22 @@ function RevenueCard({ current, goal, loading, editing, editValue, onEditChange,
               <div className="pb-1 flex items-center gap-2">
                 <span className={`text-[20px] font-bold tabular ${textColor(p)}`}>{p.toFixed(1)}%</span>
                 {done && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full bg-[#40916C]/10 dark:bg-[#40916C]/20 text-[#40916C] dark:text-[#52B788]">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full bg-[#32B86A]/10 dark:bg-[#32B86A]/20 text-[#32B86A] dark:text-[#4EE88A]">
                     <CheckCircle2 size={10} /> Atingida!
                   </span>
                 )}
               </div>
             </div>
-            <div className="relative h-3 bg-gray-100 dark:bg-[#1A2C1F] rounded-full overflow-hidden">
+            <div className="relative h-3 bg-gray-100 dark:bg-[#0C150E] rounded-full overflow-hidden">
               <div ref={barRef} className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ease-out motion-reduce:transition-none w-[var(--bar-w,0%)] ${barColor(p)}`} />
               <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-full pointer-events-none" />
             </div>
             <div className="flex items-center justify-between">
               {done
-                ? <span className="text-[12px] text-[#40916C] dark:text-[#52B788] font-medium">Meta do mês superada!</span>
-                : <span className="text-[12px] text-gray-400 dark:text-[#4A6B52]">Faltam <span className="font-semibold text-gray-700 dark:text-[#D1FAE5]">{formatCurrency(remaining)}</span> para a meta</span>
+                ? <span className="text-[12px] text-[#32B86A] dark:text-[#4EE88A] font-medium">Meta do mês superada!</span>
+                : <span className="text-[12px] text-gray-400 dark:text-[#2A5C3C]">Faltam <span className="font-semibold text-gray-700 dark:text-[#D1FAE5]">{formatCurrency(remaining)}</span> para a meta</span>
               }
-              <span className="text-[12px] text-gray-400 dark:text-[#4A6B52]">Meta: <span className="font-semibold text-gray-700 dark:text-[#D1FAE5]">{formatCurrency(goal)}</span></span>
+              <span className="text-[12px] text-gray-400 dark:text-[#2A5C3C]">Meta: <span className="font-semibold text-gray-700 dark:text-[#D1FAE5]">{formatCurrency(goal)}</span></span>
             </div>
           </div>
         )}
@@ -182,7 +182,7 @@ function SalesCard({ current, loading }: { current: number; loading: boolean }) 
         </div>
         <div>
           <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5]">Número de Vendas</p>
-          <p className="text-[11px] text-gray-400 dark:text-[#4A6B52] mt-0.5">Transações de entrada este mês</p>
+          <p className="text-[11px] text-gray-400 dark:text-[#2A5C3C] mt-0.5">Transações de entrada este mês</p>
         </div>
       </div>
       {loading ? (
@@ -190,7 +190,7 @@ function SalesCard({ current, loading }: { current: number; loading: boolean }) 
       ) : (
         <p className="tabular text-[32px] font-bold leading-none text-amber-600 dark:text-amber-400">
           {Math.round(current)}
-          <span className="text-[16px] font-medium text-gray-400 dark:text-[#4A6B52] ml-2">
+          <span className="text-[16px] font-medium text-gray-400 dark:text-[#2A5C3C] ml-2">
             venda{Math.round(current) !== 1 ? 's' : ''}
           </span>
         </p>
@@ -261,24 +261,24 @@ export default function MetasPage() {
         {/* ── Summary KPIs ──────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 gap-4">
           <div className="stat-card p-5 overflow-hidden relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#40916C]/5 via-transparent to-transparent pointer-events-none" />
-            <div className="w-10 h-10 rounded-xl bg-[#40916C]/10 dark:bg-[#40916C]/20 flex items-center justify-center mb-3">
-              <Target size={17} className="text-[#40916C] dark:text-[#52B788]" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#32B86A]/5 via-transparent to-transparent pointer-events-none" />
+            <div className="w-10 h-10 rounded-xl bg-[#32B86A]/10 dark:bg-[#32B86A]/20 flex items-center justify-center mb-3">
+              <Target size={17} className="text-[#32B86A] dark:text-[#4EE88A]" />
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52] mb-1">Progresso Geral</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C] mb-1">Progresso Geral</p>
             <p className={`tabular text-[28px] font-bold leading-none ${textColor(overallPct)}`}>{overallPct.toFixed(0)}%</p>
-            <div className="mt-3 h-1.5 bg-gray-100 dark:bg-[#1A2C1F] rounded-full overflow-hidden">
+            <div className="mt-3 h-1.5 bg-gray-100 dark:bg-[#0C150E] rounded-full overflow-hidden">
               <div className={`h-full rounded-full transition-all duration-500 motion-reduce:transition-none ${barColor(overallPct)}`} style={{ width: `${overallPct}%` }} />
             </div>
           </div>
 
           <div className="stat-card p-5 overflow-hidden relative">
             <div className={`absolute inset-0 bg-gradient-to-br ${overallPct >= 70 ? 'from-amber-500/5' : 'from-gray-500/3'} via-transparent to-transparent pointer-events-none`} />
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${overallPct >= 70 ? 'bg-amber-50 dark:bg-amber-900/25' : 'bg-gray-100 dark:bg-[#1A2C1F]'}`}>
-              <Flame size={17} className={overallPct >= 70 ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#2A4030]'} />
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${overallPct >= 70 ? 'bg-amber-50 dark:bg-amber-900/25' : 'bg-gray-100 dark:bg-[#0C150E]'}`}>
+              <Flame size={17} className={overallPct >= 70 ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#192A1D]'} />
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52] mb-1">Ritmo do Mês</p>
-            <p className={`tabular text-[28px] font-bold leading-none ${overallPct >= 70 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500 dark:text-[#8BA891]'}`}>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C] mb-1">Ritmo do Mês</p>
+            <p className={`tabular text-[28px] font-bold leading-none ${overallPct >= 70 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500 dark:text-[#3E9E60]'}`}>
               {overallPct >= 100 ? 'Ótimo' : overallPct >= 70 ? 'Bom' : overallPct >= 40 ? 'Ok' : 'Baixo'}
             </p>
           </div>
@@ -288,10 +288,10 @@ export default function MetasPage() {
         <div>
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52]">Objetivos do Mês</p>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C]">Objetivos do Mês</p>
               <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5 capitalize">{monthLabel}</p>
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-gray-400 dark:text-[#4A6B52]">
+            <div className="flex items-center gap-1.5 text-[11px] text-gray-400 dark:text-[#2A5C3C]">
               <Pencil size={11} />
               <span>Clique no lápis para editar</span>
             </div>

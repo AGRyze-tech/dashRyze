@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { Header } from '@/components/layout/Header'
@@ -144,71 +144,71 @@ export default function ClientePage({ params }: { params: { id: string } }) {
             <Card>
               {/* Avatar + name */}
               <div className="flex flex-col items-center text-center mb-5">
-                <div className="w-16 h-16 rounded-2xl bg-[#40916C]/10 dark:bg-[#40916C]/15 flex items-center justify-center mb-3">
-                  <span className="text-2xl font-bold text-[#40916C]">{client.name.charAt(0)}</span>
+                <div className="w-16 h-16 rounded-2xl bg-[#32B86A]/10 dark:bg-[#32B86A]/15 flex items-center justify-center mb-3">
+                  <span className="text-2xl font-bold text-[#32B86A]">{client.name.charAt(0)}</span>
                 </div>
                 <h2 className="font-semibold text-gray-900 dark:text-[#F8FBF9] text-base leading-tight mb-0.5">{client.name}</h2>
-                <p className="text-sm text-gray-500 dark:text-[#8BA891] mb-2">{client.specialty}</p>
+                <p className="text-sm text-gray-500 dark:text-[#3E9E60] mb-2">{client.specialty}</p>
                 <Badge color={cfg.color as never}>{cfg.label}</Badge>
               </div>
 
               {/* Contact links */}
               <div className="space-y-2.5 text-sm">
                 {client.email && (
-                  <a href={`mailto:${client.email}`} className="flex items-center gap-2.5 text-gray-600 dark:text-[#A7C4AF] hover:text-[#40916C] dark:hover:text-[#52B788] transition-colors group">
-                    <Mail size={14} className="text-gray-400 dark:text-[#4A6B52] group-hover:text-[#40916C] dark:group-hover:text-[#52B788] flex-shrink-0 transition-colors" />
+                  <a href={`mailto:${client.email}`} className="flex items-center gap-2.5 text-gray-600 dark:text-[#A7C4AF] hover:text-[#32B86A] dark:hover:text-[#4EE88A] transition-colors group">
+                    <Mail size={14} className="text-gray-400 dark:text-[#2A5C3C] group-hover:text-[#32B86A] dark:group-hover:text-[#4EE88A] flex-shrink-0 transition-colors" />
                     <span className="truncate">{client.email}</span>
                   </a>
                 )}
                 {client.whatsapp && (
                   <a href={`https://wa.me/55${client.whatsapp}`} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-2.5 text-gray-600 dark:text-[#A7C4AF] hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors group">
-                    <Phone size={14} className="text-gray-400 dark:text-[#4A6B52] group-hover:text-emerald-600 flex-shrink-0 transition-colors" />
+                    <Phone size={14} className="text-gray-400 dark:text-[#2A5C3C] group-hover:text-emerald-600 flex-shrink-0 transition-colors" />
                     <span>{client.whatsapp}</span>
                   </a>
                 )}
                 {client.instagram && (
                   <a href={`https://instagram.com/${client.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-2.5 text-gray-600 dark:text-[#A7C4AF] hover:text-purple-600 dark:hover:text-purple-400 transition-colors group">
-                    <Instagram size={14} className="text-gray-400 dark:text-[#4A6B52] group-hover:text-purple-600 flex-shrink-0 transition-colors" />
+                    <Instagram size={14} className="text-gray-400 dark:text-[#2A5C3C] group-hover:text-purple-600 flex-shrink-0 transition-colors" />
                     <span>{client.instagram}</span>
                   </a>
                 )}
                 {client.website && (
                   <a href={`https://${client.website}`} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-2.5 text-gray-600 dark:text-[#A7C4AF] hover:text-blue-600 dark:hover:text-blue-400 transition-colors group">
-                    <ExternalLink size={14} className="text-gray-400 dark:text-[#4A6B52] group-hover:text-blue-600 flex-shrink-0 transition-colors" />
+                    <ExternalLink size={14} className="text-gray-400 dark:text-[#2A5C3C] group-hover:text-blue-600 flex-shrink-0 transition-colors" />
                     <span className="truncate">{client.website}</span>
                   </a>
                 )}
               </div>
 
               {/* Dates grid */}
-              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-[#1E3020] space-y-2">
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-[#111B14] space-y-2">
                 {client.closed_at && (
                   <div className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-1.5 text-gray-400 dark:text-[#4A6B52]">
+                    <div className="flex items-center gap-1.5 text-gray-400 dark:text-[#2A5C3C]">
                       <Calendar size={12} />
                       <span>Fechamento</span>
                     </div>
-                    <span className="font-medium text-gray-600 dark:text-[#8BA891]">{formatDate(client.closed_at)}</span>
+                    <span className="font-medium text-gray-600 dark:text-[#3E9E60]">{formatDate(client.closed_at)}</span>
                   </div>
                 )}
                 {client.delivery_date && (
                   <div className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-1.5 text-gray-400 dark:text-[#4A6B52]">
+                    <div className="flex items-center gap-1.5 text-gray-400 dark:text-[#2A5C3C]">
                       <CalendarCheck size={12} />
                       <span>Entrega</span>
                     </div>
-                    <span className="font-medium text-gray-600 dark:text-[#8BA891]">{formatDate(client.delivery_date)}</span>
+                    <span className="font-medium text-gray-600 dark:text-[#3E9E60]">{formatDate(client.delivery_date)}</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-1.5 text-gray-400 dark:text-[#4A6B52]">
+                  <div className="flex items-center gap-1.5 text-gray-400 dark:text-[#2A5C3C]">
                     <User size={12} />
                     <span>Cliente desde</span>
                   </div>
-                  <span className="font-medium text-gray-600 dark:text-[#8BA891]">{formatDate(client.created_at)}</span>
+                  <span className="font-medium text-gray-600 dark:text-[#3E9E60]">{formatDate(client.created_at)}</span>
                 </div>
               </div>
             </Card>
@@ -217,7 +217,7 @@ export default function ClientePage({ params }: { params: { id: string } }) {
               <Card>
                 <CardHeader>
                   <div className="flex items-center gap-2">
-                    <StickyNote size={14} className="text-gray-400 dark:text-[#4A6B52]" />
+                    <StickyNote size={14} className="text-gray-400 dark:text-[#2A5C3C]" />
                     <CardTitle>Observações</CardTitle>
                   </div>
                 </CardHeader>
@@ -227,7 +227,7 @@ export default function ClientePage({ params }: { params: { id: string } }) {
 
             {client.whatsapp && (
               <Card>
-                <p className="text-xs font-semibold text-gray-500 dark:text-[#4A6B52] uppercase tracking-wide mb-3">Contato rápido</p>
+                <p className="text-xs font-semibold text-gray-500 dark:text-[#2A5C3C] uppercase tracking-wide mb-3">Contato rápido</p>
                 <a
                   href={`https://wa.me/55${client.whatsapp}?text=Olá ${client.name.split(' ')[0]}, tudo bem?`}
                   target="_blank"
@@ -245,19 +245,19 @@ export default function ClientePage({ params }: { params: { id: string } }) {
           {/* Projects + Contracts */}
           <div className="col-span-2 space-y-4">
             <Card padding="none">
-              <CardHeader className="px-5 pt-5 pb-3 border-b border-gray-100 dark:border-[#1E3020]">
+              <CardHeader className="px-5 pt-5 pb-3 border-b border-gray-100 dark:border-[#111B14]">
                 <div className="flex items-center gap-2">
-                  <FolderKanban size={15} className="text-gray-400 dark:text-[#4A6B52]" />
+                  <FolderKanban size={15} className="text-gray-400 dark:text-[#2A5C3C]" />
                   <CardTitle>Projetos ({projects.length})</CardTitle>
                 </div>
                 <Button size="sm" onClick={openNewProject}><Plus size={13} />Novo projeto</Button>
               </CardHeader>
               {projects.length === 0 ? (
-                <div className="text-center py-10 text-gray-400 dark:text-[#4A6B52] text-sm">Nenhum projeto ainda</div>
+                <div className="text-center py-10 text-gray-400 dark:text-[#2A5C3C] text-sm">Nenhum projeto ainda</div>
               ) : (
-                <div className="divide-y divide-gray-50 dark:divide-[#1E3020]">
+                <div className="divide-y divide-gray-50 dark:divide-[#111B14]">
                   {projects.map(project => (
-                    <div key={project.id} className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 dark:hover:bg-[#1A2C1F] transition-colors">
+                    <div key={project.id} className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 dark:hover:bg-[#0C150E] transition-colors">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1.5">
                           <p className="font-medium text-gray-900 dark:text-[#F8FBF9] text-[13px]">{project.name}</p>
@@ -267,7 +267,7 @@ export default function ClientePage({ params }: { params: { id: string } }) {
                           <Badge color={projectStatusConfig[project.status].color as never} className="text-[10px]">
                             {projectStatusConfig[project.status].label}
                           </Badge>
-                          <span className="text-[11px] text-gray-400 dark:text-[#8BA891]">
+                          <span className="text-[11px] text-gray-400 dark:text-[#3E9E60]">
                             Responsável: {project.responsible === 'isaac' ? 'Isaac' : 'Vinícius'}
                           </span>
                         </div>
@@ -277,14 +277,14 @@ export default function ClientePage({ params }: { params: { id: string } }) {
                           <p className="text-sm font-semibold text-gray-800 dark:text-[#D1FAE5] tabular">{formatCurrency(project.value)}</p>
                         )}
                         {project.start_date && (
-                          <p className="text-[11px] text-gray-400 dark:text-[#8BA891]">Início: {formatDate(project.start_date)}</p>
+                          <p className="text-[11px] text-gray-400 dark:text-[#3E9E60]">Início: {formatDate(project.start_date)}</p>
                         )}
                         {project.deadline && (
-                          <p className="text-[11px] text-gray-400 dark:text-[#8BA891]">Prazo: {formatDate(project.deadline)}</p>
+                          <p className="text-[11px] text-gray-400 dark:text-[#3E9E60]">Prazo: {formatDate(project.deadline)}</p>
                         )}
                         {project.url && (
                           <a href={`https://${project.url}`} target="_blank" rel="noopener noreferrer"
-                            className="text-[11px] text-[#40916C] dark:text-[#52B788] hover:underline flex items-center gap-1 justify-end">
+                            className="text-[11px] text-[#32B86A] dark:text-[#4EE88A] hover:underline flex items-center gap-1 justify-end">
                             <ExternalLink size={10} />
                             Ver site
                           </a>
@@ -297,13 +297,13 @@ export default function ClientePage({ params }: { params: { id: string } }) {
             </Card>
 
             <Card padding="none">
-              <CardHeader className="px-5 pt-5 pb-3 border-b border-gray-100 dark:border-[#1E3020]">
+              <CardHeader className="px-5 pt-5 pb-3 border-b border-gray-100 dark:border-[#111B14]">
                 <div className="flex items-center gap-2">
-                  <FileText size={15} className="text-gray-400 dark:text-[#4A6B52]" />
+                  <FileText size={15} className="text-gray-400 dark:text-[#2A5C3C]" />
                   <CardTitle>Contratos</CardTitle>
                 </div>
               </CardHeader>
-              <div className="text-center py-10 text-gray-400 dark:text-[#4A6B52] text-sm">Nenhum contrato vinculado ainda</div>
+              <div className="text-center py-10 text-gray-400 dark:text-[#2A5C3C] text-sm">Nenhum contrato vinculado ainda</div>
             </Card>
           </div>
         </div>

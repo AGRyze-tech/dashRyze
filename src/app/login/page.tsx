@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState } from 'react'
 import Image from 'next/image'
 import { Eye, EyeOff, ArrowRight } from 'lucide-react'
@@ -36,7 +36,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left panel — branding */}
-      <div className="hidden lg:flex lg:w-[52%] relative bg-[#0A1A0F] flex-col justify-between p-12 overflow-hidden">
+      <div className="hidden lg:flex lg:w-[52%] relative bg-[#040806] flex-col justify-between p-12 overflow-hidden">
         {/* Background geometric pattern */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 opacity-[0.03]"
@@ -49,10 +49,10 @@ export default function LoginPage() {
             }}
           />
           <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full opacity-10"
-            style={{ background: 'radial-gradient(circle, #40916C 0%, transparent 70%)', transform: 'translate(30%, -30%)' }}
+            style={{ background: 'radial-gradient(circle, #32B86A 0%, transparent 70%)', transform: 'translate(30%, -30%)' }}
           />
           <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-8"
-            style={{ background: 'radial-gradient(circle, #1B4332 0%, transparent 70%)', transform: 'translate(-30%, 30%)' }}
+            style={{ background: 'radial-gradient(circle, #0F3A20 0%, transparent 70%)', transform: 'translate(-30%, 30%)' }}
           />
         </div>
 
@@ -69,21 +69,21 @@ export default function LoginPage() {
           </div>
           <div>
             <div className="text-white text-xl font-bold tracking-tight">RYZESYSTEMS</div>
-            <div className="text-[#4A6B52] text-[11px] font-medium tracking-[0.2em] uppercase">Saúde Digital</div>
+            <div className="text-[#2A5C3C] text-[11px] font-medium tracking-[0.2em] uppercase">Saúde Digital</div>
           </div>
         </div>
 
         {/* Center content */}
         <div className="relative">
-          <div className="inline-flex items-center gap-2 bg-[#40916C]/15 border border-[#40916C]/25 rounded-full px-3 py-1 mb-6">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#40916C] animate-pulse" />
-            <span className="text-[#52B788] text-xs font-medium tracking-wide">Dashboard Interno</span>
+          <div className="inline-flex items-center gap-2 bg-[#32B86A]/15 border border-[#32B86A]/25 rounded-full px-3 py-1 mb-6">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#32B86A] animate-pulse" />
+            <span className="text-[#4EE88A] text-xs font-medium tracking-wide">Dashboard Interno</span>
           </div>
           <h2 className="text-4xl font-bold text-white leading-tight mb-4">
             Gestão completa<br />
-            <span className="text-[#40916C]">em um só lugar</span>
+            <span className="text-[#32B86A]">em um só lugar</span>
           </h2>
-          <p className="text-[#8BA891] text-base leading-relaxed max-w-sm">
+          <p className="text-[#3E9E60] text-base leading-relaxed max-w-sm">
             Clientes, projetos, contratos e finanças da agência centralizados para você e Vinícius.
           </p>
 
@@ -91,17 +91,17 @@ export default function LoginPage() {
           <div className="mt-8 space-y-3">
             {['Gestão de clientes e projetos', 'Controle financeiro em tempo real', 'Integração com Meta Ads'].map(feat => (
               <div key={feat} className="flex items-center gap-3">
-                <div className="w-5 h-5 rounded-full bg-[#40916C]/20 border border-[#40916C]/40 flex items-center justify-center flex-shrink-0">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#40916C]" />
+                <div className="w-5 h-5 rounded-full bg-[#32B86A]/20 border border-[#32B86A]/40 flex items-center justify-center flex-shrink-0">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#32B86A]" />
                 </div>
-                <span className="text-[#8BA891] text-[13px]">{feat}</span>
+                <span className="text-[#3E9E60] text-[13px]">{feat}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Footer */}
-        <div className="relative text-[#2A4030] text-[12px]">
+        <div className="relative text-[#192A1D] text-[12px]">
           RyzeSystems · Acesso restrito · v1.0
         </div>
       </div>
@@ -173,7 +173,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-[#40916C] hover:bg-[#2D6A4F] text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
+              className="w-full flex items-center justify-center gap-2 bg-[#32B86A] hover:bg-[#1A5C35] text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
               style={{ boxShadow: '0 4px 16px rgba(64,145,108,0.25)' }}
             >
               {loading ? (

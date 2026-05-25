@@ -1,4 +1,4 @@
-import { Client, Project, Contract, Transaction, Lead } from '@/types'
+﻿import { Client, Project, Contract, Transaction, Lead } from '@/types'
 
 export const mockClients: Client[] = [
   {
@@ -225,9 +225,9 @@ export const monthlyRevenueData = [
 ]
 
 export const categoryDistribution = [
-  { name: 'Contratos', value: 6883, color: '#40916C' },
-  { name: 'Ferramentas', value: 89, color: '#52B788' },
-  { name: 'Infraestrutura', value: 240, color: '#1B4332' },
+  { name: 'Contratos', value: 6883, color: '#32B86A' },
+  { name: 'Ferramentas', value: 89, color: '#4EE88A' },
+  { name: 'Infraestrutura', value: 240, color: '#0F3A20' },
   { name: 'Marketing', value: 350, color: '#F59E0B' },
   { name: 'Pessoal', value: 5500, color: '#EF4444' },
 ]

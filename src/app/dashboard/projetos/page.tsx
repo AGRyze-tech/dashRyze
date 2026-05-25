@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect, useCallback, useMemo, memo } from 'react'
 import { createClient } from '@/lib/supabase'
 import { projectRepository, clientRepository } from '@/lib/repositories'
@@ -15,7 +15,7 @@ import { Project, ProjectStatus, Client } from '@/types'
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[11px] font-medium text-gray-400 dark:text-[#4A6B52] uppercase tracking-wide mb-0.5">{label}</p>
+      <p className="text-[11px] font-medium text-gray-400 dark:text-[#2A5C3C] uppercase tracking-wide mb-0.5">{label}</p>
       {children}
     </div>
   )
@@ -60,21 +60,21 @@ const ProjectCard = memo(function ProjectCard({
   const active = !['concluido', 'entregue'].includes(project.status)
 
   return (
-    <div className="bg-white dark:bg-[#152218] border border-gray-200 dark:border-[#1E3020] rounded-xl p-4 shadow-sm dark:shadow-black/30 hover:shadow-md transition-all duration-200 group">
+    <div className="bg-white dark:bg-[#07100A] border border-gray-200 dark:border-[#111B14] rounded-xl p-4 shadow-sm dark:shadow-black/30 hover:shadow-md transition-all duration-200 group">
       <div className="flex items-start justify-between mb-2.5">
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-gray-900 dark:text-[#F0FDF4] text-[13px] leading-tight mb-1">{project.name}</p>
-          <p className="text-[11px] text-gray-400 dark:text-[#4A6B52] truncate">{project.client?.name ?? '—'}</p>
+          <p className="text-[11px] text-gray-400 dark:text-[#2A5C3C] truncate">{project.client?.name ?? '—'}</p>
         </div>
         <div className="flex items-center gap-1 ml-2 flex-shrink-0">
-          <span className="text-[10px] font-medium text-gray-400 dark:text-[#8BA891] bg-gray-100 dark:bg-[#1A2C1F] px-1.5 py-0.5 rounded">
+          <span className="text-[10px] font-medium text-gray-400 dark:text-[#3E9E60] bg-gray-100 dark:bg-[#0C150E] px-1.5 py-0.5 rounded">
             {projectTypeLabels[project.type]}
           </span>
           <button
             type="button"
             aria-label="Visualizar projeto"
             onClick={e => { e.stopPropagation(); onView(project) }}
-            className="p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-300 dark:text-[#2A4030] hover:text-blue-500 dark:hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100"
+            className="p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-300 dark:text-[#192A1D] hover:text-blue-500 dark:hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100"
           >
             <Eye size={11} />
           </button>
@@ -82,7 +82,7 @@ const ProjectCard = memo(function ProjectCard({
             type="button"
             aria-label="Editar projeto"
             onClick={e => { e.stopPropagation(); onEdit(project) }}
-            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#1A2C1F] text-gray-300 dark:text-[#2A4030] hover:text-gray-600 dark:hover:text-[#8BA891] transition-colors opacity-0 group-hover:opacity-100"
+            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#0C150E] text-gray-300 dark:text-[#192A1D] hover:text-gray-600 dark:hover:text-[#3E9E60] transition-colors opacity-0 group-hover:opacity-100"
           >
             <Pencil size={11} />
           </button>
@@ -90,7 +90,7 @@ const ProjectCard = memo(function ProjectCard({
             type="button"
             aria-label="Excluir projeto"
             onClick={e => { e.stopPropagation(); onDelete(project) }}
-            className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 dark:text-[#2A4030] hover:text-red-500 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+            className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 dark:text-[#192A1D] hover:text-red-500 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
           >
             <Trash2 size={11} />
           </button>
@@ -100,13 +100,13 @@ const ProjectCard = memo(function ProjectCard({
       <div className="flex items-center justify-between mt-3">
         <div className="flex items-center gap-1.5">
           <User size={11} className="text-gray-400" />
-          <span className="text-[11px] text-gray-500 dark:text-[#8BA891] capitalize">{project.responsible}</span>
+          <span className="text-[11px] text-gray-500 dark:text-[#3E9E60] capitalize">{project.responsible}</span>
         </div>
-        <span className="tabular text-[12px] font-semibold text-[#40916C]">{formatCurrency(project.value)}</span>
+        <span className="tabular text-[12px] font-semibold text-[#32B86A]">{formatCurrency(project.value)}</span>
       </div>
 
       {active && (
-        <div className={`flex items-center gap-1.5 mt-3 pt-3 border-t border-gray-100 dark:border-[#1E3020] ${over ? 'text-red-500 dark:text-red-400' : warn ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#4A6B52]'}`}>
+        <div className={`flex items-center gap-1.5 mt-3 pt-3 border-t border-gray-100 dark:border-[#111B14] ${over ? 'text-red-500 dark:text-red-400' : warn ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#2A5C3C]'}`}>
           {(over || warn) ? <AlertTriangle size={11} /> : <Clock size={11} />}
           <span className="text-[11px] font-medium">{deadlineLabel(days)}</span>
           <span className="ml-auto text-[10px]">{formatDate(project.deadline)}</span>
@@ -118,7 +118,7 @@ const ProjectCard = memo(function ProjectCard({
           href={project.url.startsWith('http') ? project.url : `https://${project.url}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1 mt-2 text-[11px] text-[#40916C] hover:underline"
+          className="flex items-center gap-1 mt-2 text-[11px] text-[#32B86A] hover:underline"
           onClick={e => e.stopPropagation()}
         >
           <ExternalLink size={10} />
@@ -284,7 +284,7 @@ export default function ProjetosPage() {
               return (
                 <div key={col.status} className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full" style={{ background: col.color }} />
-                  <span className="text-[12px] text-gray-500 dark:text-[#8BA891]">
+                  <span className="text-[12px] text-gray-500 dark:text-[#3E9E60]">
                     {col.label} <strong className="text-gray-700 dark:text-[#D1FAE5]">{count}</strong>
                   </span>
                 </div>
@@ -304,16 +304,16 @@ export default function ProjetosPage() {
             return (
               <div
                 key={col.status}
-                className={`flex-shrink-0 w-[270px] rounded-xl transition-all duration-150 bg-gray-100 dark:bg-[#0F1A12] ${isOver ? 'ring-2 ring-[#40916C]/40 !bg-[#40916C]/5' : ''}`}
+                className={`flex-shrink-0 w-[270px] rounded-xl transition-all duration-150 bg-gray-100 dark:bg-[#0F1A12] ${isOver ? 'ring-2 ring-[#32B86A]/40 !bg-[#32B86A]/5' : ''}`}
                 onDragOver={e => { e.preventDefault(); setDragOver(col.status) }}
                 onDragLeave={() => setDragOver(null)}
                 onDrop={() => handleDrop(col.status)}
               >
-                <div className="flex items-center justify-between px-3 py-3 border-b border-gray-200/70 dark:border-[#1E3020]">
+                <div className="flex items-center justify-between px-3 py-3 border-b border-gray-200/70 dark:border-[#111B14]">
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full" style={{ background: col.color }} />
                     <span className="text-[12px] font-semibold text-gray-700 dark:text-[#D1FAE5]">{col.label}</span>
-                    <span className="text-[11px] text-gray-400 dark:text-[#4A6B52] bg-white dark:bg-[#152218] border border-gray-200 dark:border-[#2A4030] rounded-full px-1.5 py-px font-medium">
+                    <span className="text-[11px] text-gray-400 dark:text-[#2A5C3C] bg-white dark:bg-[#07100A] border border-gray-200 dark:border-[#192A1D] rounded-full px-1.5 py-px font-medium">
                       {colProjects.length}
                     </span>
                   </div>
@@ -337,8 +337,8 @@ export default function ProjetosPage() {
                     </div>
                   ))}
                   {colProjects.length === 0 && (
-                    <div className="border-2 border-dashed border-gray-200 dark:border-[#1E3020] rounded-xl h-20 flex items-center justify-center">
-                      <span className="text-[11px] text-gray-400 dark:text-[#2A4030]">Soltar aqui</span>
+                    <div className="border-2 border-dashed border-gray-200 dark:border-[#111B14] rounded-xl h-20 flex items-center justify-center">
+                      <span className="text-[11px] text-gray-400 dark:text-[#192A1D]">Soltar aqui</span>
                     </div>
                   )}
                 </div>
@@ -436,13 +436,13 @@ export default function ProjetosPage() {
               <DetailRow label="Tipo"><p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{projectTypeLabels[viewTarget.type]}</p></DetailRow>
               <DetailRow label="Status"><p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{columns.find(c => c.status === viewTarget.status)?.label ?? viewTarget.status}</p></DetailRow>
               <DetailRow label="Responsável"><p className="text-[13px] text-gray-700 dark:text-[#D1FAE5] capitalize">{viewTarget.responsible}</p></DetailRow>
-              <DetailRow label="Valor"><p className="text-[13px] font-semibold text-[#40916C]">{formatCurrency(viewTarget.value)}</p></DetailRow>
+              <DetailRow label="Valor"><p className="text-[13px] font-semibold text-[#32B86A]">{formatCurrency(viewTarget.value)}</p></DetailRow>
               <DetailRow label="Prazo"><p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{formatDate(viewTarget.deadline)}</p></DetailRow>
               <DetailRow label="Início"><p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{formatDate(viewTarget.start_date)}</p></DetailRow>
               {viewTarget.url && (
                 <div className="col-span-2">
                   <DetailRow label="URL">
-                    <a href={viewTarget.url.startsWith('http') ? viewTarget.url : `https://${viewTarget.url}`} target="_blank" rel="noopener noreferrer" className="text-[13px] text-[#40916C] hover:underline flex items-center gap-1">
+                    <a href={viewTarget.url.startsWith('http') ? viewTarget.url : `https://${viewTarget.url}`} target="_blank" rel="noopener noreferrer" className="text-[13px] text-[#32B86A] hover:underline flex items-center gap-1">
                       <ExternalLink size={11} />{viewTarget.url}
                     </a>
                   </DetailRow>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { createContext, useContext, useState } from 'react'
 import { Sidebar } from './Sidebar'
 
@@ -32,7 +32,7 @@ export function DashboardShell({ children, userRole }: Props) {
       toggle: () => setIsOpen(v => !v),
       close: () => setIsOpen(false),
     }}>
-      <div className="flex min-h-screen bg-[#F8FBF9] dark:bg-[#0D1F18]">
+      <div className="flex min-h-screen bg-[#F8FBF9] dark:bg-[#040806]">
         {isOpen && (
           <div
             className="fixed inset-0 bg-black/50 z-20 lg:hidden"

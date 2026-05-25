@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect, useMemo } from 'react'
 import { Header } from '@/components/layout/Header'
 import { Badge } from '@/components/ui/Badge'
@@ -180,7 +180,7 @@ export default function LeadsPage() {
               >
                 {label}
                 <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-                  statusFilter === value ? 'bg-[#40916C]/10 text-[#40916C]' : 'bg-gray-200 text-gray-500'
+                  statusFilter === value ? 'bg-[#32B86A]/10 text-[#32B86A]' : 'bg-gray-200 text-gray-500'
                 }`}>
                   {counts[value]}
                 </span>
@@ -221,8 +221,8 @@ export default function LeadsPage() {
                     <tr key={lead.id}>
                       <td>
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-[#40916C]/10 flex items-center justify-center flex-shrink-0">
-                            <span className="text-[13px] font-bold text-[#40916C]">{lead.name.charAt(0)}</span>
+                          <div className="w-8 h-8 rounded-full bg-[#32B86A]/10 flex items-center justify-center flex-shrink-0">
+                            <span className="text-[13px] font-bold text-[#32B86A]">{lead.name.charAt(0)}</span>
                           </div>
                           <div>
                             <p className="font-medium text-gray-900 text-[13px]">{lead.name}</p>
@@ -270,7 +270,7 @@ export default function LeadsPage() {
                             <div
                               role="listbox"
                               aria-label="Alterar status do lead"
-                              className="absolute z-20 left-0 top-8 bg-white dark:bg-[#152218] border border-gray-200 dark:border-[#1E3020] rounded-lg shadow-lg dark:shadow-black/40 py-1 min-w-[150px]"
+                              className="absolute z-20 left-0 top-8 bg-white dark:bg-[#07100A] border border-gray-200 dark:border-[#111B14] rounded-lg shadow-lg dark:shadow-black/40 py-1 min-w-[150px]"
                             >
                               {(['novo', 'contatado', 'qualificado', 'descartado', 'convertido'] as LeadStatus[]).map(s => (
                                 <button
@@ -280,7 +280,7 @@ export default function LeadsPage() {
                                   aria-selected={lead.status === s ? 'true' : 'false'}
                                   onClick={() => { handleUpdateStatus(lead.id, s); setOpenStatusId(null) }}
                                   onKeyDown={e => { if (e.key === 'Escape') setOpenStatusId(null) }}
-                                  className={`w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 dark:hover:bg-[#1A2C1F] cursor-pointer transition-colors ${lead.status === s ? 'font-semibold text-[#40916C] dark:text-[#52B788]' : 'text-gray-700 dark:text-[#D1FAE5]'}`}
+                                  className={`w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 dark:hover:bg-[#0C150E] cursor-pointer transition-colors ${lead.status === s ? 'font-semibold text-[#32B86A] dark:text-[#4EE88A]' : 'text-gray-700 dark:text-[#D1FAE5]'}`}
                                 >
                                   {leadStatusConfig[s].label}
                                 </button>
@@ -305,7 +305,7 @@ export default function LeadsPage() {
                             </Button>
                           </a>
                           {lead.status !== 'convertido' && lead.status !== 'descartado' && (
-                            <Button variant="ghost" size="sm" className="text-[#40916C] hover:bg-[#40916C]/10" onClick={() => setConvertModal(lead)}>
+                            <Button variant="ghost" size="sm" className="text-[#32B86A] hover:bg-[#32B86A]/10" onClick={() => setConvertModal(lead)}>
                               <UserPlus size={13} />
                             </Button>
                           )}
@@ -383,7 +383,7 @@ export default function LeadsPage() {
             <p className="text-sm text-gray-600">
               Deseja marcar <strong>{convertModal.name}</strong> como convertido? Após isso, cadastre o cliente na seção Clientes.
             </p>
-            <div className="bg-[#F8FBF9] border border-[#40916C]/20 rounded-lg p-3 text-sm space-y-1.5">
+            <div className="bg-[#F8FBF9] border border-[#32B86A]/20 rounded-lg p-3 text-sm space-y-1.5">
               {convertModal.revenue && <div className="flex justify-between"><span className="text-gray-500">Faturamento:</span><span className="font-medium">{convertModal.revenue}</span></div>}
               {convertModal.patients_per_month && <div className="flex justify-between"><span className="text-gray-500">Pacientes/mês:</span><span className="font-medium">{convertModal.patients_per_month}</span></div>}
               <div className="flex justify-between"><span className="text-gray-500">WhatsApp:</span><span className="font-medium">{convertModal.whatsapp}</span></div>
@@ -417,7 +417,7 @@ export default function LeadsPage() {
 
       {toast && (
         <div className="animate-slide-up fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 bg-gray-900 text-white px-4 py-3 rounded-xl shadow-xl text-sm font-medium">
-          <CheckCircle2 size={16} className="text-[#52B788] flex-shrink-0" />
+          <CheckCircle2 size={16} className="text-[#4EE88A] flex-shrink-0" />
           {toast}
         </div>
       )}

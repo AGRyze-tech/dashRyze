@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { Header } from '@/components/layout/Header'
 import { Badge } from '@/components/ui/Badge'
@@ -36,7 +36,7 @@ function monthStart() {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function Skeleton({ className }: { className?: string }) {
-  return <div className={`animate-pulse motion-reduce:animate-none rounded-lg bg-gray-100 dark:bg-[#1A2C1F] ${className}`} />
+  return <div className={`animate-pulse motion-reduce:animate-none rounded-lg bg-gray-100 dark:bg-[#0C150E] ${className}`} />
 }
 
 function pct(value: number, goal: number) {
@@ -45,14 +45,14 @@ function pct(value: number, goal: number) {
 }
 
 function barColor(p: number) {
-  if (p >= 100) return 'bg-[#40916C]'
+  if (p >= 100) return 'bg-[#32B86A]'
   if (p >= 70)  return 'bg-emerald-500'
   if (p >= 40)  return 'bg-amber-500'
   return 'bg-red-500'
 }
 
 function textColor(p: number) {
-  if (p >= 100) return 'text-[#40916C] dark:text-[#52B788]'
+  if (p >= 100) return 'text-[#32B86A] dark:text-[#4EE88A]'
   if (p >= 70)  return 'text-emerald-600 dark:text-emerald-400'
   if (p >= 40)  return 'text-amber-600 dark:text-amber-400'
   return 'text-red-500 dark:text-red-400'
@@ -79,12 +79,12 @@ function ProgressRow({ label, icon: Icon, current, goal, formatValue, loading, o
     <div className="space-y-2.5">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
-          <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${done ? 'bg-[#40916C]/15 dark:bg-[#40916C]/25' : 'bg-gray-100 dark:bg-[#1A2C1F]'}`}>
-            <Icon size={13} className={done ? 'text-[#40916C] dark:text-[#52B788]' : 'text-gray-400 dark:text-[#4A6B52]'} />
+          <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${done ? 'bg-[#32B86A]/15 dark:bg-[#32B86A]/25' : 'bg-gray-100 dark:bg-[#0C150E]'}`}>
+            <Icon size={13} className={done ? 'text-[#32B86A] dark:text-[#4EE88A]' : 'text-gray-400 dark:text-[#2A5C3C]'} />
           </div>
           <span className="text-[12px] font-semibold text-gray-700 dark:text-[#D1FAE5] truncate">{label}</span>
           {done && (
-            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#40916C]/10 dark:bg-[#40916C]/20 text-[#40916C] dark:text-[#52B788] flex-shrink-0">
+            <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#32B86A]/10 dark:bg-[#32B86A]/20 text-[#32B86A] dark:text-[#4EE88A] flex-shrink-0">
               <CheckCircle2 size={9} /> Meta atingida!
             </span>
           )}
@@ -93,9 +93,9 @@ function ProgressRow({ label, icon: Icon, current, goal, formatValue, loading, o
           {loading ? (
             <Skeleton className="h-4 w-24" />
           ) : (
-            <span className="text-[12px] tabular text-gray-500 dark:text-[#8BA891]">
+            <span className="text-[12px] tabular text-gray-500 dark:text-[#3E9E60]">
               <span className={`font-bold ${textColor(p)}`}>{formatValue(current)}</span>
-              <span className="text-gray-300 dark:text-[#2A4030] mx-1">/</span>
+              <span className="text-gray-300 dark:text-[#192A1D] mx-1">/</span>
               <span>{formatValue(goal)}</span>
             </span>
           )}
@@ -103,7 +103,7 @@ function ProgressRow({ label, icon: Icon, current, goal, formatValue, loading, o
             type="button"
             onClick={onEditGoal}
             aria-label={`Editar meta de ${label}`}
-            className="p-2.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#1A2C1F] text-gray-300 dark:text-[#2A4030] hover:text-gray-500 dark:hover:text-[#8BA891] transition-colors"
+            className="p-2.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#0C150E] text-gray-300 dark:text-[#192A1D] hover:text-gray-500 dark:hover:text-[#3E9E60] transition-colors"
           >
             <Pencil size={11} />
           </button>
@@ -111,7 +111,7 @@ function ProgressRow({ label, icon: Icon, current, goal, formatValue, loading, o
       </div>
 
       {/* Bar */}
-      <div className="relative h-2.5 bg-gray-100 dark:bg-[#1A2C1F] rounded-full overflow-hidden">
+      <div className="relative h-2.5 bg-gray-100 dark:bg-[#0C150E] rounded-full overflow-hidden">
         <div
           ref={barRef}
           className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ease-out motion-reduce:transition-none w-[var(--bar-w,0%)] ${barColor(p)}`}
@@ -122,7 +122,7 @@ function ProgressRow({ label, icon: Icon, current, goal, formatValue, loading, o
 
       {/* Footer */}
       <div className="flex items-center justify-between">
-        <p className="text-[11px] text-gray-400 dark:text-[#4A6B52]">
+        <p className="text-[11px] text-gray-400 dark:text-[#2A5C3C]">
           {loading ? '' : done
             ? `🎉 Parabéns! Meta superada`
             : `Faltam ${formatValue(remaining)} para a meta`}
@@ -178,11 +178,11 @@ function GoalsSection({ monthRevenue, salesCount, loading }: GoalsSectionProps) 
     <div className="card-light p-5">
       <div className="flex items-center justify-between mb-5">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52]">Metas do Mês</p>
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C]">Metas do Mês</p>
           <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5 capitalize">{monthLabel}</p>
         </div>
-        <div className="w-9 h-9 rounded-xl bg-[#40916C]/10 dark:bg-[#40916C]/20 flex items-center justify-center">
-          <Target size={16} className="text-[#40916C] dark:text-[#52B788]" />
+        <div className="w-9 h-9 rounded-xl bg-[#32B86A]/10 dark:bg-[#32B86A]/20 flex items-center justify-center">
+          <Target size={16} className="text-[#32B86A] dark:text-[#4EE88A]" />
         </div>
       </div>
 
@@ -210,7 +210,7 @@ function GoalsSection({ monthRevenue, salesCount, loading }: GoalsSectionProps) 
           />
         )}
 
-        <div className="h-px bg-gray-100 dark:bg-[#1E3020]" />
+        <div className="h-px bg-gray-100 dark:bg-[#111B14]" />
 
         {/* Sales goal */}
         {editing === 'sales' ? (
@@ -264,10 +264,10 @@ function EditGoalRow({ label, inputRef, value, onChange, onCommit, onCancel, pla
           step="any"
           onKeyDown={e => { if (e.key === 'Enter') onCommit(); if (e.key === 'Escape') onCancel() }}
         />
-        <button type="button" onClick={onCommit} className="h-9 px-3 rounded-lg bg-[#40916C] hover:bg-[#2D6A4F] text-white text-[12px] font-medium flex items-center gap-1.5 transition-colors flex-shrink-0">
+        <button type="button" onClick={onCommit} className="h-9 px-3 rounded-lg bg-[#32B86A] hover:bg-[#1A5C35] text-white text-[12px] font-medium flex items-center gap-1.5 transition-colors flex-shrink-0">
           <Check size={12} /> Salvar
         </button>
-        <button type="button" onClick={onCancel} aria-label="Cancelar edição" className="h-9 px-2.5 rounded-lg border border-gray-200 dark:border-[#2A4030] hover:bg-gray-50 dark:hover:bg-[#1A2C1F] text-gray-500 dark:text-[#8BA891] transition-colors flex-shrink-0">
+        <button type="button" onClick={onCancel} aria-label="Cancelar edição" className="h-9 px-2.5 rounded-lg border border-gray-200 dark:border-[#192A1D] hover:bg-gray-50 dark:hover:bg-[#0C150E] text-gray-500 dark:text-[#3E9E60] transition-colors flex-shrink-0">
           <XIcon size={12} aria-hidden="true" />
         </button>
       </div>
@@ -283,17 +283,17 @@ function DeadlineRow({ project }: { project: DashProject }) {
   const cfg = projectStatusConfig[project.status]
 
   return (
-    <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-50 dark:border-[#1E3020] last:border-0 hover:bg-gray-50/60 dark:hover:bg-[#1A2C1F] transition-colors">
-      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isOverdue ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-[#40916C]'}`} />
+    <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-50 dark:border-[#111B14] last:border-0 hover:bg-gray-50/60 dark:hover:bg-[#0C150E] transition-colors">
+      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isOverdue ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-[#32B86A]'}`} />
       <div className="flex-1 min-w-0">
         <p className="text-[13px] font-medium text-gray-800 dark:text-[#E2F5EC] truncate">{project.name}</p>
-        <p className="text-[11px] text-gray-400 dark:text-[#4A6B52] truncate">{project.client?.name ?? '—'}</p>
+        <p className="text-[11px] text-gray-400 dark:text-[#2A5C3C] truncate">{project.client?.name ?? '—'}</p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <Badge color={cfg.color as 'green' | 'yellow' | 'red' | 'gray' | 'blue' | 'purple'} dot={false}>
           {cfg.label}
         </Badge>
-        <span className={`flex items-center gap-1 text-[11px] font-medium tabular ${isOverdue ? 'text-red-500 dark:text-red-400' : isWarning ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#4A6B52]'}`}>
+        <span className={`flex items-center gap-1 text-[11px] font-medium tabular ${isOverdue ? 'text-red-500 dark:text-red-400' : isWarning ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#2A5C3C]'}`}>
           {(isOverdue || isWarning) && <AlertTriangle size={9} />}
           {formatDateShort(project.deadline)}
         </span>
@@ -307,13 +307,13 @@ function LeadRow({ lead }: { lead: Lead }) {
   const cfg = leadStatusConfig[lead.status]
   const initials = lead.name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
   return (
-    <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-50 dark:border-[#1E3020] last:border-0 hover:bg-gray-50/60 dark:hover:bg-[#1A2C1F] transition-colors">
-      <div className="w-8 h-8 rounded-full bg-[#F0FBF5] dark:bg-[#1B4332] flex items-center justify-center shrink-0">
-        <span className="text-[11px] font-bold text-[#40916C] dark:text-[#52B788]">{initials}</span>
+    <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-50 dark:border-[#111B14] last:border-0 hover:bg-gray-50/60 dark:hover:bg-[#0C150E] transition-colors">
+      <div className="w-8 h-8 rounded-full bg-[#F0FBF5] dark:bg-[#0F3A20] flex items-center justify-center shrink-0">
+        <span className="text-[11px] font-bold text-[#32B86A] dark:text-[#4EE88A]">{initials}</span>
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[13px] font-medium text-gray-800 dark:text-[#E2F5EC] truncate">{lead.name}</p>
-        <p className="text-[11px] text-gray-400 dark:text-[#4A6B52]">{lead.revenue}</p>
+        <p className="text-[11px] text-gray-400 dark:text-[#2A5C3C]">{lead.revenue}</p>
       </div>
       <Badge color={cfg.color as 'green' | 'yellow' | 'red' | 'gray' | 'blue' | 'purple'} dot={false}>
         {cfg.label}
@@ -342,10 +342,10 @@ function KpiCard({ label, value, sub, icon: Icon, iconCls, accent = 'from-gray-5
           <Icon size={17} />
         </div>
         {href && (
-          <ArrowUpRight size={14} className="text-gray-300 dark:text-[#2A4030] group-hover:text-[#40916C] group-hover:dark:text-[#52B788] transition-colors" />
+          <ArrowUpRight size={14} className="text-gray-300 dark:text-[#192A1D] group-hover:text-[#32B86A] group-hover:dark:text-[#4EE88A] transition-colors" />
         )}
       </div>
-      <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52] mb-1">{label}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C] mb-1">{label}</p>
       {loading ? (
         <>
           <Skeleton className="h-7 w-28 mb-1" />
@@ -354,7 +354,7 @@ function KpiCard({ label, value, sub, icon: Icon, iconCls, accent = 'from-gray-5
       ) : (
         <>
           <p className="tabular text-[26px] font-bold leading-none text-gray-900 dark:text-[#F0FDF4] mb-1.5">{value}</p>
-          {sub && <p className="text-[11px] text-gray-400 dark:text-[#8BA891]">{sub}</p>}
+          {sub && <p className="text-[11px] text-gray-400 dark:text-[#3E9E60]">{sub}</p>}
         </>
       )}
     </div>
@@ -486,8 +486,8 @@ export default function DashboardPage() {
             value={activeClients}
             sub={`${clients.length} total cadastrado${clients.length !== 1 ? 's' : ''}`}
             icon={Users}
-            iconCls="bg-[#F0FBF5] dark:bg-[#1B4332] text-[#40916C] dark:text-[#52B788]"
-            accent="from-[#40916C]/5"
+            iconCls="bg-[#F0FBF5] dark:bg-[#0F3A20] text-[#32B86A] dark:text-[#4EE88A]"
+            accent="from-[#32B86A]/5"
             loading={loading}
             href="/dashboard/clientes"
           />
@@ -521,17 +521,17 @@ export default function DashboardPage() {
           <div className="lg:col-span-2 card-light p-5 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52]">Saldo do mês</p>
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C]">Saldo do mês</p>
                 {loading ? (
                   <Skeleton className="h-8 w-32 mt-1" />
                 ) : (
-                  <p className={`tabular text-[28px] font-bold leading-none mt-1 ${balance >= 0 ? 'text-[#40916C] dark:text-[#52B788]' : 'text-red-500 dark:text-red-400'}`}>
+                  <p className={`tabular text-[28px] font-bold leading-none mt-1 ${balance >= 0 ? 'text-[#32B86A] dark:text-[#4EE88A]' : 'text-red-500 dark:text-red-400'}`}>
                     {formatCurrency(balance)}
                   </p>
                 )}
               </div>
-              <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${balance >= 0 ? 'bg-[#40916C]/10 dark:bg-[#40916C]/20' : 'bg-red-50 dark:bg-red-900/20'}`}>
-                <Wallet size={18} className={balance >= 0 ? 'text-[#40916C] dark:text-[#52B788]' : 'text-red-500 dark:text-red-400'} />
+              <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${balance >= 0 ? 'bg-[#32B86A]/10 dark:bg-[#32B86A]/20' : 'bg-red-50 dark:bg-red-900/20'}`}>
+                <Wallet size={18} className={balance >= 0 ? 'text-[#32B86A] dark:text-[#4EE88A]' : 'text-red-500 dark:text-red-400'} />
               </div>
             </div>
 
@@ -569,7 +569,7 @@ export default function DashboardPage() {
               </div>
             )}
 
-            <Link href="/dashboard/financeiro" className="flex items-center justify-between text-[12px] font-medium text-[#40916C] dark:text-[#52B788] hover:opacity-80 transition-opacity mt-auto pt-1 border-t border-gray-100 dark:border-[#1E3020]">
+            <Link href="/dashboard/financeiro" className="flex items-center justify-between text-[12px] font-medium text-[#32B86A] dark:text-[#4EE88A] hover:opacity-80 transition-opacity mt-auto pt-1 border-t border-gray-100 dark:border-[#111B14]">
               Ver lançamentos completos
               <ArrowRight size={13} />
             </Link>
@@ -578,29 +578,29 @@ export default function DashboardPage() {
           <div className="lg:col-span-3 card-light p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52]">Meta Ads</p>
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C]">Meta Ads</p>
                 <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5">
                   {meta.length === 0 ? 'Sem campanhas cadastradas' : `${metaActive} campanha${metaActive !== 1 ? 's' : ''} ativa${metaActive !== 1 ? 's' : ''}`}
                 </p>
               </div>
-              <Link href="/dashboard/meta" className="flex items-center gap-1 text-[11px] font-medium text-[#40916C] dark:text-[#52B788] hover:opacity-80 transition-opacity">
+              <Link href="/dashboard/meta" className="flex items-center gap-1 text-[11px] font-medium text-[#32B86A] dark:text-[#4EE88A] hover:opacity-80 transition-opacity">
                 Ver detalhes <ArrowRight size={11} />
               </Link>
             </div>
 
             {meta.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-[#1A2C1F] flex items-center justify-center mb-2">
-                  <BarChart2 size={16} className="text-gray-300 dark:text-[#2A4030]" />
+                <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-[#0C150E] flex items-center justify-center mb-2">
+                  <BarChart2 size={16} className="text-gray-300 dark:text-[#192A1D]" />
                 </div>
-                <p className="text-[12px] text-gray-400 dark:text-[#4A6B52]">Adicione campanhas na página de Meta Ads</p>
+                <p className="text-[12px] text-gray-400 dark:text-[#2A5C3C]">Adicione campanhas na página de Meta Ads</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
                   { label: 'Investimento', value: formatCurrency(metaSpend), icon: TrendingDown, cls: 'text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20' },
                   { label: 'Impressões', value: metaImpressions >= 1000 ? `${(metaImpressions / 1000).toFixed(1)}k` : String(metaImpressions), icon: Eye, cls: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' },
-                  { label: 'Cliques', value: metaClicks >= 1000 ? `${(metaClicks / 1000).toFixed(1)}k` : String(metaClicks), icon: MousePointer, cls: 'text-[#40916C] dark:text-[#52B788] bg-[#F0FBF5] dark:bg-[#1B4332]' },
+                  { label: 'Cliques', value: metaClicks >= 1000 ? `${(metaClicks / 1000).toFixed(1)}k` : String(metaClicks), icon: MousePointer, cls: 'text-[#32B86A] dark:text-[#4EE88A] bg-[#F0FBF5] dark:bg-[#0F3A20]' },
                   { label: 'CTR', value: `${metaCTR.toFixed(2)}%`, icon: Target, cls: 'text-amber-500 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/25' },
                 ].map(({ label, value, icon: Icon, cls }) => (
                   <div key={label} className="bg-gray-50/80 dark:bg-[#0F1A12] rounded-xl p-3.5">
@@ -608,7 +608,7 @@ export default function DashboardPage() {
                       <Icon size={13} />
                     </div>
                     <p className="tabular text-[16px] font-bold text-gray-900 dark:text-[#D1FAE5] leading-none">{value}</p>
-                    <p className="text-[10px] text-gray-400 dark:text-[#4A6B52] mt-1">{label}</p>
+                    <p className="text-[10px] text-gray-400 dark:text-[#2A5C3C] mt-1">{label}</p>
                   </div>
                 ))}
               </div>
@@ -618,20 +618,20 @@ export default function DashboardPage() {
 
         {/* ── Prazos ────────────────────────────────────────────────────── */}
         <div className="card-light overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#1E3020]">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#111B14]">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4A6B52]">Prazos próximos</p>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C]">Prazos próximos</p>
               <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5">
                 {loading ? '—' : `${activeProjects.length} projeto${activeProjects.length !== 1 ? 's' : ''} em andamento`}
               </p>
             </div>
-            <Link href="/dashboard/projetos" className="flex items-center gap-1 text-[11px] font-medium text-[#40916C] dark:text-[#52B788] hover:opacity-80 transition-opacity">
+            <Link href="/dashboard/projetos" className="flex items-center gap-1 text-[11px] font-medium text-[#32B86A] dark:text-[#4EE88A] hover:opacity-80 transition-opacity">
               Ver todos <ArrowRight size={11} />
             </Link>
           </div>
 
           {loading ? (
-            <div className="divide-y divide-gray-50 dark:divide-[#1E3020]">
+            <div className="divide-y divide-gray-50 dark:divide-[#111B14]">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3 px-5 py-3.5">
                   <Skeleton className="w-2 h-2 rounded-full" />
@@ -645,10 +645,10 @@ export default function DashboardPage() {
             </div>
           ) : deadlineProjects.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-[#1A2C1F] flex items-center justify-center mb-2">
-                <CheckCircle2 size={16} className="text-gray-300 dark:text-[#2A4030]" />
+              <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-[#0C150E] flex items-center justify-center mb-2">
+                <CheckCircle2 size={16} className="text-gray-300 dark:text-[#192A1D]" />
               </div>
-              <p className="text-[12px] text-gray-400 dark:text-[#4A6B52]">Nenhum projeto em andamento</p>
+              <p className="text-[12px] text-gray-400 dark:text-[#2A5C3C]">Nenhum projeto em andamento</p>
             </div>
           ) : (
             <div>{deadlineProjects.map(p => <DeadlineRow key={p.id} project={p} />)}</div>
