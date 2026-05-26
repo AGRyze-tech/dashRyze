@@ -9,7 +9,7 @@ export type ProjectInput = {
   type: ProjectType
   status: ProjectStatus
   responsible: 'isaac' | 'vinicius'
-  value: number
+  value?: number
   start_date: string
   deadline: string
   url?: string | null

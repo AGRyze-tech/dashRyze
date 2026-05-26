@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { AlertTriangle, Clock, Plus, ExternalLink, User, Pencil, Trash2, Eye } from 'lucide-react'
 import {
-  formatDate, formatCurrency, daysUntil, isDeadlineWarning, isOverdue,
+  formatDate, daysUntil, isDeadlineWarning, isOverdue,
   projectTypeLabels, projectTypeOptions, deadlineLabel,
 } from '@/lib/utils'
 import { Project, ProjectStatus, Client } from '@/types'
@@ -36,7 +36,6 @@ const emptyForm = {
   type: 'site' as Project['type'],
   status: 'briefing' as ProjectStatus,
   responsible: 'isaac' as 'isaac' | 'vinicius',
-  value: '',
   start_date: '',
   deadline: '',
   url: '',
@@ -97,12 +96,9 @@ const ProjectCard = memo(function ProjectCard({
         </div>
       </div>
 
-      <div className="flex items-center justify-between mt-3">
-        <div className="flex items-center gap-1.5">
-          <User size={11} className="text-gray-400" />
-          <span className="text-[11px] text-gray-500 dark:text-[#3E9E60] capitalize">{project.responsible}</span>
-        </div>
-        <span className="tabular text-[12px] font-semibold text-[#32B86A]">{formatCurrency(project.value)}</span>
+      <div className="flex items-center mt-3">
+        <User size={11} className="text-gray-400 mr-1.5" />
+        <span className="text-[11px] text-gray-500 dark:text-[#3E9E60] capitalize">{project.responsible}</span>
       </div>
 
       {active && (
@@ -175,7 +171,6 @@ export default function ProjetosPage() {
       type: project.type,
       status: project.status,
       responsible: project.responsible,
-      value: String(project.value),
       start_date: project.start_date,
       deadline: project.deadline,
       url: project.url ?? '',
@@ -199,7 +194,6 @@ export default function ProjetosPage() {
       type: form.type,
       status: form.status,
       responsible: form.responsible,
-      value: parseFloat(form.value) || 0,
       start_date: form.start_date,
       deadline: form.deadline,
       url: form.url || null,
@@ -259,21 +253,19 @@ export default function ProjetosPage() {
     })
   }
 
-  const { projectsByStatus, totalValue } = useMemo(() => {
+  const projectsByStatus = useMemo(() => {
     const byStatus: Partial<Record<ProjectStatus, Project[]>> = {}
-    let total = 0
     for (const p of projects) {
       ;(byStatus[p.status] ??= []).push(p)
-      if (p.status !== 'concluido' && p.status !== 'entregue') total += p.value
     }
-    return { projectsByStatus: byStatus, totalValue: total }
+    return byStatus
   }, [projects])
 
   return (
     <div>
       <Header
         title="Projetos"
-        subtitle={loading ? 'Carregando...' : `${projects.length} projetos · ${formatCurrency(totalValue)} em aberto`}
+        subtitle={loading ? 'Carregando...' : `${projects.length} projeto${projects.length !== 1 ? 's' : ''}`}
       />
 
       <div className="p-4 sm:p-6">
@@ -436,7 +428,6 @@ export default function ProjetosPage() {
               <DetailRow label="Tipo"><p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{projectTypeLabels[viewTarget.type]}</p></DetailRow>
               <DetailRow label="Status"><p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{columns.find(c => c.status === viewTarget.status)?.label ?? viewTarget.status}</p></DetailRow>
               <DetailRow label="Responsável"><p className="text-[13px] text-gray-700 dark:text-[#D1FAE5] capitalize">{viewTarget.responsible}</p></DetailRow>
-              <DetailRow label="Valor"><p className="text-[13px] font-semibold text-[#32B86A]">{formatCurrency(viewTarget.value)}</p></DetailRow>
               <DetailRow label="Prazo"><p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{formatDate(viewTarget.deadline)}</p></DetailRow>
               <DetailRow label="Início"><p className="text-[13px] text-gray-700 dark:text-[#D1FAE5]">{formatDate(viewTarget.start_date)}</p></DetailRow>
               {viewTarget.url && (
