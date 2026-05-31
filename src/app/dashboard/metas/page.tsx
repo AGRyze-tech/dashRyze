@@ -12,13 +12,7 @@ import { createClient } from '@/lib/supabase'
 type GoalKey = 'revenue' | 'sales'
 type Goals = Record<GoalKey, number>
 
-const GOALS_KEY = 'ryze_dashboard_goals'
 const DEFAULT_GOALS: Goals = { revenue: 10000, sales: 10 }
-
-function loadGoals(): Goals {
-  if (typeof window === 'undefined') return DEFAULT_GOALS
-  try { return { ...DEFAULT_GOALS, ...JSON.parse(localStorage.getItem(GOALS_KEY) ?? 'null') } } catch { return DEFAULT_GOALS }
-}
 
 function monthStart() {
   const d = new Date()
@@ -202,7 +196,7 @@ function SalesCard({ current, loading }: { current: number; loading: boolean }) 
 // ─── Page ──────────────────────────────────────────────────────────────────────
 export default function MetasPage() {
   const [loading, setLoading] = useState(true)
-  const [goals, setGoals] = useState<Goals>(loadGoals)
+  const [goals, setGoals] = useState<Goals>(DEFAULT_GOALS)
   const [editing, setEditing] = useState<GoalKey | null>(null)
   const [inputVal, setInputVal] = useState('')
   const [monthRevenue, setMonthRevenue] = useState(0)
@@ -214,10 +208,10 @@ export default function MetasPage() {
   useEffect(() => {
     async function load() {
       try {
-        const { data: txn } = await supabase
-          .from('transactions')
-          .select('type, amount')
-          .gte('date', monthStart())
+        const [{ data: txn }, { data: settings }] = await Promise.all([
+          supabase.from('transactions').select('type, amount').gte('date', monthStart()),
+          supabase.from('settings').select('value').eq('key', 'goals').single(),
+        ])
         if (txn) {
           let revenue = 0, sales = 0
           for (const t of txn) {
@@ -226,12 +220,13 @@ export default function MetasPage() {
           setMonthRevenue(revenue)
           setSalesCount(sales)
         }
+        if (settings?.value) setGoals({ ...DEFAULT_GOALS, ...settings.value })
       } finally {
         setLoading(false)
       }
     }
     load()
-  }, [])
+  }, [supabase])
 
   const revenuePct = pct(monthRevenue, goals.revenue)
   const overallPct = revenuePct
@@ -241,13 +236,15 @@ export default function MetasPage() {
     setEditing(key)
   }
 
-  function commitEdit() {
+  async function commitEdit() {
     if (!editing) return
     const val = parseFloat(inputVal.replace(',', '.'))
     if (val > 0) {
       const next = { ...goals, [editing]: val }
       setGoals(next)
-      localStorage.setItem(GOALS_KEY, JSON.stringify(next))
+      await supabase
+        .from('settings')
+        .upsert({ key: 'goals', value: next, updated_at: new Date().toISOString() })
     }
     setEditing(null)
   }

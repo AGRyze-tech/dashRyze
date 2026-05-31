@@ -11,7 +11,6 @@ import {
 import { formatCurrency, formatDateShort, daysUntil, projectStatusConfig, leadStatusConfig } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
 import { clientRepository, projectRepository, transactionRepository, leadRepository } from '@/lib/repositories'
-import { loadMetaCampaigns } from '@/lib/meta'
 import Link from 'next/link'
 import { Transaction, Lead, MetaCampaign } from '@/types'
 import type { ClientStatus, ProjectStatus } from '@/types'
@@ -21,13 +20,7 @@ type DashClient  = { id: string; name: string; status: ClientStatus; total_value
 type DashProject = { id: string; name: string; status: ProjectStatus; deadline: string; client_id: string; client?: { name: string } }
 
 type Goals = { revenue: number; sales: number }
-const GOALS_KEY = 'ryze_dashboard_goals'
 const DEFAULT_GOALS: Goals = { revenue: 10000, sales: 10 }
-
-function loadGoals(): Goals {
-  if (typeof window === 'undefined') return DEFAULT_GOALS
-  try { return { ...DEFAULT_GOALS, ...JSON.parse(localStorage.getItem(GOALS_KEY) ?? 'null') } } catch { return DEFAULT_GOALS }
-}
 
 function monthStart() {
   const d = new Date()
@@ -140,12 +133,19 @@ interface GoalsSectionProps {
   loading: boolean
 }
 function GoalsSection({ monthRevenue, salesCount, loading }: GoalsSectionProps) {
-  const [goals, setGoals] = useState<Goals>(loadGoals)
+  const [goals, setGoals] = useState<Goals>(DEFAULT_GOALS)
   const [editing, setEditing] = useState<keyof Goals | null>(null)
   const [inputVal, setInputVal] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const supabase = useMemo(() => createClient(), [])
 
   const monthLabel = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+
+  useEffect(() => {
+    supabase.from('settings').select('value').eq('key', 'goals').single().then(({ data }) => {
+      if (data?.value) setGoals({ ...DEFAULT_GOALS, ...data.value })
+    })
+  }, [supabase])
 
   useEffect(() => {
     if (editing) {
@@ -159,13 +159,15 @@ function GoalsSection({ monthRevenue, salesCount, loading }: GoalsSectionProps) 
     setEditing(key)
   }
 
-  function commitEdit() {
+  async function commitEdit() {
     if (!editing) return
     const val = parseFloat(inputVal.replace(',', '.'))
     if (val > 0) {
       const next = { ...goals, [editing]: val }
       setGoals(next)
-      localStorage.setItem(GOALS_KEY, JSON.stringify(next))
+      await supabase
+        .from('settings')
+        .upsert({ key: 'goals', value: next, updated_at: new Date().toISOString() })
     }
     setEditing(null)
   }
@@ -370,7 +372,7 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState<DashProject[]>([])
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
-  const [meta] = useState<MetaCampaign[]>(loadMetaCampaigns)
+  const [meta, setMeta] = useState<MetaCampaign[]>([])
 
   useEffect(() => {
     const now = new Date()
@@ -383,16 +385,18 @@ export default function DashboardPage() {
 
     async function load() {
       try {
-        const [cli, proj, txn, lds] = await Promise.all([
+        const [cli, proj, txn, lds, campaigns] = await Promise.all([
           clientRepository(db).findSummary(),
           projectRepository(db).findDashboard(),
           transactionRepository(db).findSince(monthStart()),
           leadRepository(db).findAll(),
+          db.from('meta_campaigns').select('*').order('created_at'),
         ])
         setClients(cli as DashClient[])
         setProjects(proj as DashProject[])
         setTransactions(txn as Transaction[])
         setLeads(lds)
+        setMeta((campaigns.data ?? []) as MetaCampaign[])
       } finally {
         setLoading(false)
       }

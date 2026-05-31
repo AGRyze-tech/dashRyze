@@ -1,12 +1,20 @@
 import { MetaCampaign } from '@/types'
+import { createClient } from '@/lib/supabase'
 
-export const META_STORAGE_KEY = 'ryze_meta_campaigns'
-
-export function loadMetaCampaigns(): MetaCampaign[] {
-  if (typeof window === 'undefined') return []
-  try { return JSON.parse(localStorage.getItem(META_STORAGE_KEY) ?? '[]') } catch { return [] }
+export async function loadMetaCampaigns(): Promise<MetaCampaign[]> {
+  const supabase = createClient()
+  const { data } = await supabase.from('meta_campaigns').select('*').order('created_at')
+  return (data ?? []) as MetaCampaign[]
 }
 
-export function saveMetaCampaigns(campaigns: MetaCampaign[]): void {
-  localStorage.setItem(META_STORAGE_KEY, JSON.stringify(campaigns))
+export async function saveMetaCampaign(campaign: MetaCampaign): Promise<void> {
+  const supabase = createClient()
+  await supabase
+    .from('meta_campaigns')
+    .upsert({ ...campaign, updated_at: new Date().toISOString() })
+}
+
+export async function deleteMetaCampaign(id: string): Promise<void> {
+  const supabase = createClient()
+  await supabase.from('meta_campaigns').delete().eq('id', id)
 }

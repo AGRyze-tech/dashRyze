@@ -10,7 +10,7 @@ import { BarChart2, Eye, MousePointer, DollarSign, TrendingUp, Plus, Pencil, Tra
 import { formatCurrency } from '@/lib/utils'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { MetaCampaign } from '@/types'
-import { META_STORAGE_KEY, loadMetaCampaigns, saveMetaCampaigns } from '@/lib/meta'
+import { loadMetaCampaigns, saveMetaCampaign, deleteMetaCampaign } from '@/lib/meta'
 
 const emptyForm = {
   name: '',
@@ -39,7 +39,6 @@ function ChartTooltip({ active, payload, label, isDark }: { active?: boolean; pa
 
 export default function MetaPage() {
   const [campaigns, setCampaigns] = useState<MetaCampaign[]>([])
-  const [hydrated, setHydrated] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [editTarget, setEditTarget] = useState<MetaCampaign | null>(null)
   const [form, setForm] = useState(emptyForm)
@@ -51,14 +50,8 @@ export default function MetaPage() {
   const isDark = theme === 'dark'
 
   useEffect(() => {
-    setCampaigns(loadMetaCampaigns())
-    setHydrated(true)
+    loadMetaCampaigns().then(setCampaigns)
   }, [])
-
-  useEffect(() => {
-    if (!hydrated) return
-    saveMetaCampaigns(campaigns)
-  }, [campaigns, hydrated])
 
   useEffect(() => {
     if (!toast) return
@@ -99,37 +92,44 @@ export default function MetaPage() {
     setShowModal(true)
   }
 
-  function handleSave(e: React.FormEvent) {
+  async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     if (!form.name.trim()) { setSaveError('Informe o nome da campanha.'); return }
     setSaving(true)
     setSaveError('')
-    const impressions = parseInt(form.impressions) || 0
-    const spend = parseFloat(form.spend) || 0
-    const payload: MetaCampaign = {
-      id: editTarget?.id ?? crypto.randomUUID(),
-      name: form.name.trim(),
-      status: form.status,
-      daily_budget: parseFloat(form.daily_budget) || 0,
-      spend,
-      impressions,
-      clicks: parseInt(form.clicks) || 0,
-      cpm: impressions > 0 ? (spend / impressions) * 1000 : 0,
-      reach: parseInt(form.reach) || 0,
+    try {
+      const impressions = parseInt(form.impressions) || 0
+      const spend = parseFloat(form.spend) || 0
+      const payload: MetaCampaign = {
+        id: editTarget?.id ?? crypto.randomUUID(),
+        name: form.name.trim(),
+        status: form.status,
+        daily_budget: parseFloat(form.daily_budget) || 0,
+        spend,
+        impressions,
+        clicks: parseInt(form.clicks) || 0,
+        cpm: impressions > 0 ? (spend / impressions) * 1000 : 0,
+        reach: parseInt(form.reach) || 0,
+      }
+      await saveMetaCampaign(payload)
+      if (editTarget) {
+        setCampaigns(prev => prev.map(c => c.id === editTarget.id ? payload : c))
+        setToast(`${payload.name} atualizada!`)
+      } else {
+        setCampaigns(prev => [payload, ...prev])
+        setToast(`${payload.name} adicionada!`)
+      }
+      setShowModal(false)
+    } catch {
+      setSaveError('Erro ao salvar. Tente novamente.')
+    } finally {
+      setSaving(false)
     }
-    if (editTarget) {
-      setCampaigns(prev => prev.map(c => c.id === editTarget.id ? payload : c))
-      setToast(`${payload.name} atualizada!`)
-    } else {
-      setCampaigns(prev => [payload, ...prev])
-      setToast(`${payload.name} adicionada!`)
-    }
-    setShowModal(false)
-    setSaving(false)
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!deleteModal) return
+    await deleteMetaCampaign(deleteModal.id)
     setCampaigns(prev => prev.filter(c => c.id !== deleteModal.id))
     setToast(`${deleteModal.name} removida.`)
     setDeleteModal(null)
