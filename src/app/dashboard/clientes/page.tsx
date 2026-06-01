@@ -14,6 +14,7 @@ import { createClient } from '@/lib/supabase'
 import { clientRepository, ClientInput } from '@/lib/repositories'
 import { transactionRepository, projectRepository } from '@/lib/repositories'
 import { clientStatusConfig, activeClientStatuses, formatDate, formatCurrency, specialties } from '@/lib/utils'
+import { useDateFilter } from '@/contexts/DateFilterContext'
 import { Client, ClientStatus } from '@/types'
 import type { ProjectType } from '@/types'
 
@@ -111,6 +112,8 @@ export default function ClientesPage() {
     return () => clearTimeout(t)
   }, [toast])
 
+  const { range } = useDateFilter()
+
   const filtered = useMemo(() => {
     const lower = search.toLowerCase()
     return clients.filter(c => {
@@ -119,9 +122,11 @@ export default function ClientesPage() {
         (c.email ?? '').toLowerCase().includes(lower)
       const matchStatus = statusFilter === 'todos' || c.status === statusFilter
       const matchSpec = specialtyFilter === 'todas' || c.specialty === specialtyFilter
-      return matchSearch && matchStatus && matchSpec
+      const matchDate = !range.from || !range.to || !c.closed_at ||
+        (c.closed_at >= range.from && c.closed_at <= range.to)
+      return matchSearch && matchStatus && matchSpec && matchDate
     })
-  }, [clients, search, statusFilter, specialtyFilter])
+  }, [clients, search, statusFilter, specialtyFilter, range.from, range.to])
 
   const statusCounts = useMemo(() =>
     clients.reduce(

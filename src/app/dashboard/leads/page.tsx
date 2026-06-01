@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase'
 import { leadRepository } from '@/lib/repositories'
 import { leadStatusConfig, formatDate } from '@/lib/utils'
 import { Lead, LeadStatus } from '@/types'
+import { useDateFilter } from '@/contexts/DateFilterContext'
 
 const statusOptions: { value: LeadStatus | 'todos'; label: string }[] = [
   { value: 'todos', label: 'Todos' },
@@ -85,8 +86,11 @@ export default function LeadsPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [openStatusId])
 
+  const { range } = useDateFilter()
+
   const filtered = leads
     .filter(l => statusFilter === 'todos' || l.status === statusFilter)
+    .filter(l => !range.from || !range.to || (l.created_at >= range.from && l.created_at <= range.to + 'T23:59:59'))
 
   const counts = leads.reduce(
     (acc, l) => { acc[l.status]++; acc.todos++; return acc },

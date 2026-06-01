@@ -11,6 +11,7 @@ import {
   projectTypeLabels, projectTypeOptions, deadlineLabel,
 } from '@/lib/utils'
 import { Project, ProjectStatus, Client } from '@/types'
+import { useDateFilter } from '@/contexts/DateFilterContext'
 
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -253,13 +254,18 @@ export default function ProjetosPage() {
     })
   }
 
+  const { range } = useDateFilter()
+
   const projectsByStatus = useMemo(() => {
     const byStatus: Partial<Record<ProjectStatus, Project[]>> = {}
     for (const p of projects) {
-      ;(byStatus[p.status] ??= []).push(p)
+      const inRange = !range.from || !range.to ||
+        (p.deadline >= range.from && p.deadline <= range.to) ||
+        (p.start_date >= range.from && p.start_date <= range.to)
+      if (inRange) { (byStatus[p.status] ??= []).push(p) }
     }
     return byStatus
-  }, [projects])
+  }, [projects, range.from, range.to])
 
   return (
     <div>

@@ -16,6 +16,7 @@ import { createClient } from '@/lib/supabase'
 import { transactionRepository, clientRepository } from '@/lib/repositories'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { Transaction, TransactionType, TransactionCategory, Client } from '@/types'
+import { useDateFilter } from '@/contexts/DateFilterContext'
 
 const categoryLabels: Record<TransactionCategory, string> = {
   clientes:      'Clientes',
@@ -141,16 +142,19 @@ export default function FinanceiroPage() {
   const repo = useMemo(() => transactionRepository(createClient()), [])
   const { theme } = useTheme()
   const isDark = theme === 'dark'
+  const { range } = useDateFilter()
 
   useEffect(() => {
+    if (!range.from || !range.to) return
+    setLoading(true)
     async function load() {
       try {
         const db = createClient()
         const [txns, clients] = await Promise.all([
-          repo.findAll(),
+          db.from('transactions').select('*').gte('date', range.from).lte('date', range.to).order('date', { ascending: false }),
           clientRepository(db).findAll(),
         ])
-        setTransactions(txns)
+        setTransactions((txns.data ?? []) as Transaction[])
         setPendingClients(
           clients.filter(c => (c.total_value ?? 0) > 0 && (c.paid_value ?? 0) < (c.total_value ?? 0))
         )
@@ -159,7 +163,7 @@ export default function FinanceiroPage() {
       }
     }
     load()
-  }, [repo])
+  }, [range.from, range.to])
 
   useEffect(() => {
     if (!toast) return

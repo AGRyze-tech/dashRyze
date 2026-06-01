@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
+import { useDateFilter } from '@/contexts/DateFilterContext'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type GoalKey = 'revenue' | 'sales'
@@ -203,13 +204,15 @@ export default function MetasPage() {
   const [salesCount, setSalesCount] = useState(0)
 
   const supabase   = useMemo(() => createClient(), [])
-  const monthLabel = useMemo(() => new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }), [])
+  const { range, label: rangeLabel } = useDateFilter()
+  const monthLabel = rangeLabel
 
   useEffect(() => {
+    if (!range.from || !range.to) return
     async function load() {
       try {
         const [{ data: txn }, { data: settings }] = await Promise.all([
-          supabase.from('transactions').select('type, amount').gte('date', monthStart()),
+          supabase.from('transactions').select('type, amount').gte('date', range.from).lte('date', range.to),
           supabase.from('settings').select('value').eq('key', 'goals').single(),
         ])
         if (txn) {
@@ -226,7 +229,7 @@ export default function MetasPage() {
       }
     }
     load()
-  }, [supabase])
+  }, [supabase, range.from, range.to])
 
   const revenuePct = pct(monthRevenue, goals.revenue)
   const overallPct = revenuePct

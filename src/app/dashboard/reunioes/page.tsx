@@ -11,6 +11,7 @@ import {
 import { createClient } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
 import { Meeting, MeetingType, MeetingStatus } from '@/types'
+import { useDateFilter } from '@/contexts/DateFilterContext'
 
 const typeConfig: Record<MeetingType, { label: string; color: 'green' | 'blue' | 'purple'; icon: React.ElementType; bgClass: string; iconClass: string; activeClass: string }> = {
   reuniao:    { label: 'Reunião',    color: 'blue',   icon: Calendar,  bgClass: 'bg-blue-50 dark:bg-blue-900/25',        iconClass: 'text-blue-600 dark:text-blue-400',     activeClass: 'bg-blue-500 dark:bg-blue-600 text-white' },
@@ -50,12 +51,8 @@ export default function ReunioesPage() {
   const [deleteModal, setDeleteModal] = useState<Meeting | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [toast, setToast] = useState('')
-  const [monthFilter, setMonthFilter] = useState(() => {
-    const d = new Date()
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-  })
-
   const db = useMemo(() => createClient(), [])
+  const { range } = useDateFilter()
 
   useEffect(() => {
     async function load() {
@@ -83,8 +80,8 @@ export default function ReunioesPage() {
   }, [toast])
 
   const filtered = useMemo(() =>
-    meetings.filter(m => m.date.startsWith(monthFilter)),
-    [meetings, monthFilter]
+    meetings.filter(m => (!range.from || m.date >= range.from) && (!range.to || m.date <= range.to)),
+    [meetings, range.from, range.to]
   )
 
   const { total, concluidas, fechamentos, churned, taxaNoShow } = useMemo(() => {
@@ -99,17 +96,6 @@ export default function ReunioesPage() {
     return { total: filtered.length, concluidas, fechamentos, churned, taxaNoShow }
   }, [filtered])
 
-  const monthOptions = useMemo(() => {
-    const opts: { value: string; label: string }[] = []
-    const now = new Date()
-    for (let i = 0; i < 6; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-      const label = d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
-      opts.push({ value, label })
-    }
-    return opts
-  }, [])
 
   function handleOpenModal() {
     setEditingMeeting(null)
@@ -305,16 +291,6 @@ create policy "allow all" on meetings
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <select
-                value={monthFilter}
-                onChange={e => setMonthFilter(e.target.value)}
-                className="input-field w-auto py-1.5 text-[12px] cursor-pointer"
-                aria-label="Filtrar por mês"
-              >
-                {monthOptions.map(o => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
               <Button size="sm" onClick={handleOpenModal}><Plus size={13} /> Registrar</Button>
             </div>
           </div>

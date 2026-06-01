@@ -11,6 +11,7 @@ import {
 import { formatCurrency, formatDateShort, daysUntil, projectStatusConfig, leadStatusConfig } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
 import { clientRepository, projectRepository, transactionRepository, leadRepository } from '@/lib/repositories'
+import { useDateFilter } from '@/contexts/DateFilterContext'
 import Link from 'next/link'
 import { Transaction, Lead, MetaCampaign } from '@/types'
 import type { ClientStatus, ProjectStatus } from '@/types'
@@ -373,6 +374,7 @@ export default function DashboardPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
   const [meta, setMeta] = useState<MetaCampaign[]>([])
+  const { range } = useDateFilter()
 
   useEffect(() => {
     const now = new Date()
@@ -380,21 +382,25 @@ export default function DashboardPage() {
     const period = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'
     const date = now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
     setGreeting(`${period}, Isaac · ${date}`)
+  }, [])
 
+  useEffect(() => {
+    if (!range.from || !range.to) return
     const db = createClient()
+    setLoading(true)
 
     async function load() {
       try {
         const [cli, proj, txn, lds, campaigns] = await Promise.all([
           clientRepository(db).findSummary(),
           projectRepository(db).findDashboard(),
-          transactionRepository(db).findSince(monthStart()),
+          db.from('transactions').select('type, amount').gte('date', range.from).lte('date', range.to),
           leadRepository(db).findAll(),
           db.from('meta_campaigns').select('*').order('created_at'),
         ])
         setClients(cli as DashClient[])
         setProjects(proj as DashProject[])
-        setTransactions(txn as Transaction[])
+        setTransactions((txn.data ?? []) as Transaction[])
         setLeads(lds)
         setMeta((campaigns.data ?? []) as MetaCampaign[])
       } finally {
@@ -403,7 +409,7 @@ export default function DashboardPage() {
     }
 
     load()
-  }, [])
+  }, [range.from, range.to])
 
   // ── Derived stats ─────────────────────────────────────────────────────────
   const activeClients = useMemo(() => {
