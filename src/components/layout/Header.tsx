@@ -74,7 +74,7 @@ export function Header({ title, subtitle }: HeaderProps) {
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
 
           {/* ── Date filter ─────────────────────────────────── */}
-          <div className="relative hidden sm:block" ref={dropdownRef}>
+          <div className="relative" ref={dropdownRef}>
             <button
               type="button"
               onClick={() => setOpen(v => !v)}
