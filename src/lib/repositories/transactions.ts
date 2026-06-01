@@ -9,6 +9,7 @@ export type TransactionInput = {
   description: string
   amount: number
   date: string
+  client_id?: string | null
 }
 
 export function transactionRepository(db: Db) {
@@ -50,6 +51,18 @@ export function transactionRepository(db: Db) {
         .single()
       if (error) throw error
       return data
+    },
+
+    async findClientReceipt(clientId: string): Promise<Transaction | null> {
+      const { data } = await db
+        .from('transactions')
+        .select('*')
+        .eq('client_id', clientId)
+        .eq('type', 'entrada')
+        .order('created_at')
+        .limit(1)
+        .maybeSingle()
+      return data as Transaction | null
     },
 
     async remove(id: string): Promise<void> {

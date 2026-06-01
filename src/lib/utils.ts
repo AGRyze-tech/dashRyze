@@ -78,7 +78,6 @@ export const installmentStatusConfig: Record<InstallmentStatus, { label: string;
 export const projectTypeLabels: Record<string, string> = {
   site: 'Site',
   landing: 'Landing Page',
-  smartpage: 'SmartPage',
   sistema: 'Sistema',
   outro: 'Outro',
 }

@@ -12,9 +12,10 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { clientRepository, ClientInput } from '@/lib/repositories'
-import { transactionRepository } from '@/lib/repositories'
+import { transactionRepository, projectRepository } from '@/lib/repositories'
 import { clientStatusConfig, activeClientStatuses, formatDate, formatCurrency, specialties } from '@/lib/utils'
 import { Client, ClientStatus } from '@/types'
+import type { ProjectType } from '@/types'
 
 const statusOptions: { value: ClientStatus | 'todos'; label: string }[] = [
   { value: 'todos', label: 'Todos' },
@@ -35,6 +36,13 @@ function computePaidValue(mode: '' | '50%' | '100%', total: number | null, custo
   return custom ? parseFloat(custom) : null
 }
 
+const PROJECT_TYPE_OPTIONS: { value: ProjectType; label: string }[] = [
+  { value: 'site',    label: 'Site' },
+  { value: 'landing', label: 'Landing Page' },
+  { value: 'sistema', label: 'Sistema' },
+  { value: 'outro',   label: 'Outro' },
+]
+
 const emptyForm = {
   name: '', specialty: '', email: '', whatsapp: '',
   status: 'prospecto' as ClientStatus, notes: '',
@@ -43,6 +51,8 @@ const emptyForm = {
   payment_mode: '' as '' | '50%' | '100%',
   custom_paid_value: '',
   domain_included: false,
+  project_type: 'site' as ProjectType,
+  responsible: 'isaac' as 'isaac' | 'vinicius',
 }
 
 function SkeletonRow() {
@@ -128,9 +138,20 @@ export default function ClientesPage() {
     setShowModal(true)
   }
 
-  function handleOpenEdit(client: Client) {
+  async function handleOpenEdit(client: Client) {
     setEditingClient(client)
     const detectedMode = detectPaymentMode(client)
+
+    // Load project to pre-fill type and responsible
+    const db = createClient()
+    const { data: projects } = await db
+      .from('projects')
+      .select('type, responsible')
+      .eq('client_id', client.id)
+      .order('created_at')
+      .limit(1)
+    const proj = projects?.[0]
+
     setForm({
       name: client.name,
       specialty: client.specialty,
@@ -144,6 +165,8 @@ export default function ClientesPage() {
       payment_mode: detectedMode,
       custom_paid_value: detectedMode === '' && client.paid_value ? String(client.paid_value) : '',
       domain_included: client.domain_included ?? false,
+      project_type: (proj?.type as ProjectType) ?? 'site',
+      responsible: (proj?.responsible as 'isaac' | 'vinicius') ?? 'isaac',
     })
     setSaveError('')
     setContractFile(null)
@@ -196,18 +219,22 @@ export default function ClientesPage() {
       const fullPayload = contractUrl ? { ...payload, contract_url: contractUrl } : payload
 
       const wasNotDomain = !editingClient?.domain_included
+      let savedClient: typeof editingClient
       if (editingClient) {
         const data = await repo.update(editingClient.id, fullPayload)
+        savedClient = data
         setClients(prev => prev.map(c => c.id === editingClient.id ? data : c))
         setToast(`${data.name} atualizado com sucesso!`)
       } else {
         const data = await repo.create(fullPayload)
+        savedClient = data
         setClients(prev => [data, ...prev])
         setToast(`${data.name} adicionado com sucesso!`)
       }
 
+      // ── Domínio ──────────────────────────────────────────────────────────
+      const txRepo = transactionRepository(db)
       if (form.domain_included && wasNotDomain) {
-        const txRepo = transactionRepository(db)
         await txRepo.create({
           type: 'saida',
           category: 'dominio',
@@ -215,6 +242,53 @@ export default function ClientesPage() {
           amount: 40,
           date: new Date().toISOString().split('T')[0],
         })
+      }
+
+      // ── Projeto (sempre cria ou atualiza) ────────────────────────────────
+      const projRepo = projectRepository(db)
+      const today = new Date().toISOString().split('T')[0]
+      const deadline30 = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]
+      const projectBase = {
+        client_id: savedClient!.id,
+        name: form.name,
+        type: form.project_type,
+        responsible: form.responsible,
+        start_date: form.closed_at || today,
+        deadline: form.delivery_date || deadline30,
+        notes: form.notes || null,
+      }
+
+      const { data: existingProjs } = await db
+        .from('projects')
+        .select('id, status')
+        .eq('client_id', savedClient!.id)
+        .order('created_at')
+        .limit(1)
+
+      if (existingProjs && existingProjs.length > 0) {
+        // Update preserving the project status (don't reset to briefing)
+        await projRepo.update(existingProjs[0].id, projectBase)
+      } else {
+        await projRepo.create({ ...projectBase, status: 'briefing' })
+      }
+
+      // ── Transação de recebimento (só clientes ativos com valor pago) ──────
+      if (form.status === 'ativo' && paidVal && paidVal > 0) {
+        const txDate = form.closed_at || today
+        const txPayload = {
+          type: 'entrada' as const,
+          category: 'clientes' as const,
+          description: `Recebimento - ${form.name}`,
+          amount: paidVal,
+          date: txDate,
+          client_id: savedClient!.id,
+        }
+        const existing = await txRepo.findClientReceipt(savedClient!.id)
+        if (existing) {
+          await txRepo.update(existing.id, txPayload)
+        } else {
+          await txRepo.create(txPayload)
+        }
       }
       setForm(emptyForm)
       setContractFile(null)
@@ -512,6 +586,29 @@ export default function ClientesPage() {
             <div>
               <label htmlFor="cli-delivery" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Data de entrega</label>
               <input id="cli-delivery" type="date" className="input-field" value={form.delivery_date} onChange={set('delivery_date')} />
+            </div>
+
+            {/* ── Projeto ───────────────────────────────────────────────── */}
+            <div className="col-span-2">
+              <div className="h-px bg-gray-100 dark:bg-[#111B14] mb-4" />
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C] mb-3">Projeto</p>
+            </div>
+
+            <div>
+              <label htmlFor="cli-proj-type" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Tipo de projeto *</label>
+              <select id="cli-proj-type" className="input-field cursor-pointer" value={form.project_type} onChange={set('project_type')}>
+                {PROJECT_TYPE_OPTIONS.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="cli-responsible" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Responsável *</label>
+              <select id="cli-responsible" className="input-field cursor-pointer" value={form.responsible} onChange={set('responsible')}>
+                <option value="isaac">Isaac</option>
+                <option value="vinicius">Vinicius</option>
+              </select>
             </div>
 
             {/* ── Financeiro do cliente ──────────────────────────────────── */}
