@@ -307,7 +307,7 @@ export default function AgendaPage() {
               const isToday = key === todayKey
               return (
                 <div key={key} className="py-3 text-center border-r border-gray-100 dark:border-[#181819] last:border-r-0">
-                  <p className="text-[10px] font-semibold tracking-widest text-gray-400 dark:text-[#006620] uppercase">
+                  <p className="text-[10px] font-semibold tracking-widest text-gray-400 dark:text-[#00a02a] uppercase">
                     {DAY_LABELS[day.getDay()]}
                   </p>
                   <div className={cn(
@@ -333,7 +333,7 @@ export default function AgendaPage() {
             return (
               <div className="grid border-b border-gray-100 dark:border-[#181819]" style={{ gridTemplateColumns: '52px repeat(7, 1fr)' }}>
                 <div className="flex items-center justify-end pr-2 border-r border-gray-100 dark:border-[#181819]">
-                  <span className="text-[9px] font-semibold text-gray-300 dark:text-[#28282d] uppercase tracking-wider">dia todo</span>
+                  <span className="text-[9px] font-semibold text-gray-300 dark:text-[#00a02a] uppercase tracking-wider">dia todo</span>
                 </div>
                 {days.map(day => {
                   const key = toDateKey(day)
@@ -375,7 +375,7 @@ export default function AgendaPage() {
               {timeLabels.map((label, i) => (
                 <div
                   key={label}
-                  className="absolute right-2 text-[10px] tabular text-gray-300 dark:text-[#28282d] select-none"
+                  className="absolute right-2 text-[10px] tabular text-gray-300 dark:text-[#00a02a] select-none"
                   style={{ top: i * SLOT_H * 2 - 6 }}
                 >
                   {label}
@@ -457,7 +457,7 @@ export default function AgendaPage() {
         </div>
 
         {loading && (
-          <p className="text-center text-[12px] text-gray-400 dark:text-[#006620] py-2">Carregando reuniões...</p>
+          <p className="text-center text-[12px] text-gray-400 dark:text-[#00a02a] py-2">Carregando reuniões...</p>
         )}
       </div>
 
@@ -491,7 +491,7 @@ export default function AgendaPage() {
                         'flex-1 py-2 text-[11px] font-semibold transition-all cursor-pointer flex items-center justify-center gap-1',
                         form.type === type
                           ? activeMap[type]
-                          : 'bg-white dark:bg-[#0c0c0e] text-gray-500 dark:text-[#006620] hover:bg-gray-50 dark:hover:bg-[#181819]'
+                          : 'bg-white dark:bg-[#0c0c0e] text-gray-500 dark:text-[#00a02a] hover:bg-gray-50 dark:hover:bg-[#181819]'
                       )}
                     >
                       <Icon size={13} /> {cfg.label}
@@ -524,7 +524,7 @@ export default function AgendaPage() {
                     <option key={s} value={s}>{sc.label}</option>
                   ))}
                 </select>
-                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 dark:text-[#006620]" />
+                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 dark:text-[#00a02a]" />
               </div>
             </div>
 

@@ -374,14 +374,14 @@ export default function ClientesPage() {
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all cursor-pointer ${
                   statusFilter === value
                     ? 'bg-white dark:bg-[#181819] text-gray-900 dark:text-[#F8FBF9] shadow-sm'
-                    : 'text-gray-500 dark:text-[#006620] hover:text-gray-700 dark:hover:text-[#00a02a]'
+                    : 'text-gray-500 dark:text-[#00a02a] hover:text-gray-700 dark:hover:text-[#00a02a]'
                 }`}
               >
                 {label}
                 <span className={`text-[11px] px-1.5 py-0.5 rounded-full font-semibold ${
                   statusFilter === value
                     ? 'bg-[#00FF41]/10 text-[#00FF41] dark:text-[#00FF41]'
-                    : 'bg-gray-200 dark:bg-[#181819] text-gray-500 dark:text-[#006620]'
+                    : 'bg-gray-200 dark:bg-[#181819] text-gray-500 dark:text-[#00a02a]'
                 }`}>
                   {statusCounts[value]}
                 </span>
@@ -430,7 +430,7 @@ export default function ClientesPage() {
                             </div>
                             <div>
                               <p className="font-medium text-gray-900 dark:text-[#F8FBF9] text-[13px]">{client.name}</p>
-                              {client.email && <p className="text-[11px] text-gray-400 dark:text-[#006620]">{client.email}</p>}
+                              {client.email && <p className="text-[11px] text-gray-400 dark:text-[#00a02a]">{client.email}</p>}
                             </div>
                           </div>
                         </td>
@@ -439,25 +439,25 @@ export default function ClientesPage() {
                           <div className="flex items-center gap-2">
                             {client.whatsapp && (
                               <a href={`https://wa.me/55${client.whatsapp}`} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"
-                                className="p-1.5 rounded-md hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-gray-400 dark:text-[#006620] hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+                                className="p-1.5 rounded-md hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-gray-400 dark:text-[#00a02a] hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
                                 <Phone size={13} />
                               </a>
                             )}
                             {client.email && (
                               <a href={`mailto:${client.email}`} aria-label="Email"
-                                className="p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-400 dark:text-[#006620] hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                className="p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-[#00FF41]/8 text-gray-400 dark:text-[#00a02a] hover:text-blue-600 dark:hover:text-[#00FF41] transition-colors">
                                 <Mail size={13} />
                               </a>
                             )}
                             {client.instagram && (
                               <a href={`https://instagram.com/${client.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" aria-label="Instagram"
-                                className="p-1.5 rounded-md hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-400 dark:text-[#006620] hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
+                                className="p-1.5 rounded-md hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-400 dark:text-[#00a02a] hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
                                 <Instagram size={13} />
                               </a>
                             )}
                             {client.website && (
                               <a href={`https://${client.website}`} target="_blank" rel="noopener noreferrer" aria-label="Site"
-                                className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#181819] text-gray-400 dark:text-[#006620] hover:text-gray-600 dark:hover:text-[#00a02a] transition-colors">
+                                className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#181819] text-gray-400 dark:text-[#00a02a] hover:text-gray-600 dark:hover:text-[#00a02a] transition-colors">
                                 <ExternalLink size={13} />
                               </a>
                             )}
@@ -469,12 +469,12 @@ export default function ClientesPage() {
                           </Badge>
                         </td>
                         <td>
-                          <span className="text-[12px] text-gray-400 dark:text-[#006620]">
+                          <span className="text-[12px] text-gray-400 dark:text-[#00a02a]">
                             {client.closed_at ? formatDate(client.closed_at) : '—'}
                           </span>
                         </td>
                         <td>
-                          <span className="text-[12px] text-gray-400 dark:text-[#006620]">
+                          <span className="text-[12px] text-gray-400 dark:text-[#00a02a]">
                             {client.delivery_date ? formatDate(client.delivery_date) : '—'}
                           </span>
                         </td>
@@ -495,7 +495,7 @@ export default function ClientesPage() {
                               )}
                             </div>
                           ) : (
-                            <span className="text-[12px] text-gray-300 dark:text-[#28282d]">—</span>
+                            <span className="text-[12px] text-gray-300 dark:text-[#00a02a]">—</span>
                           )}
                         </td>
                         <td>
@@ -504,7 +504,7 @@ export default function ClientesPage() {
                               type="button"
                               onClick={() => handleOpenEdit(client)}
                               aria-label="Editar"
-                              className="p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-400 dark:text-[#006620] hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                              className="p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-[#00FF41]/8 text-gray-400 dark:text-[#00a02a] hover:text-blue-600 dark:hover:text-[#00FF41] transition-colors"
                             >
                               <Pencil size={13} />
                             </button>
@@ -512,12 +512,12 @@ export default function ClientesPage() {
                               type="button"
                               onClick={() => setDeleteModal(client)}
                               aria-label="Remover"
-                              className="p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 dark:text-[#006620] hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                              className="p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 dark:text-[#00a02a] hover:text-red-500 dark:hover:text-red-400 transition-colors"
                             >
                               <Trash2 size={13} />
                             </button>
                             <Link href={`/dashboard/clientes/${client.id}`} aria-label="Ver perfil"
-                              className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#181819] text-gray-400 dark:text-[#006620] hover:text-gray-600 dark:hover:text-[#00a02a] transition-colors inline-flex cursor-pointer">
+                              className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#181819] text-gray-400 dark:text-[#00a02a] hover:text-gray-600 dark:hover:text-[#00a02a] transition-colors inline-flex cursor-pointer">
                               <ChevronRight size={15} />
                             </Link>
                           </div>
@@ -591,7 +591,7 @@ export default function ClientesPage() {
             {/* ── Projeto ───────────────────────────────────────────────── */}
             <div className="col-span-2">
               <div className="h-px bg-gray-100 dark:bg-[#181819] mb-4" />
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620] mb-3">Projeto</p>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a] mb-3">Projeto</p>
             </div>
 
             <div>
@@ -614,13 +614,13 @@ export default function ClientesPage() {
             {/* ── Financeiro do cliente ──────────────────────────────────── */}
             <div className="col-span-2">
               <div className="h-px bg-gray-100 dark:bg-[#181819] mb-4" />
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620] mb-3">Financeiro do contrato</p>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a] mb-3">Financeiro do contrato</p>
             </div>
 
             <div>
               <label htmlFor="cli-total" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Total da venda (R$)</label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#006620] text-sm font-medium select-none">R$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#00a02a] text-sm font-medium select-none">R$</span>
                 <input id="cli-total" type="number" className="input-field pl-10" placeholder="0,00" min="0" step="0.01" value={form.total_value} onChange={set('total_value')} />
               </div>
             </div>
@@ -644,7 +644,7 @@ export default function ClientesPage() {
                           : opt.value === '50%'
                           ? 'bg-amber-500 dark:bg-amber-600 text-white'
                           : 'bg-blue-500 dark:bg-blue-600 text-white'
-                        : 'bg-white dark:bg-[#111114] text-gray-400 dark:text-[#006620] hover:bg-gray-50 dark:hover:bg-[#181819]'
+                        : 'bg-white dark:bg-[#111114] text-gray-400 dark:text-[#00a02a] hover:bg-gray-50 dark:hover:bg-[#181819]'
                     }`}
                   >
                     {opt.label}
@@ -658,7 +658,7 @@ export default function ClientesPage() {
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Valor já pago (R$)</label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#006620] text-sm font-medium select-none">R$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#00a02a] text-sm font-medium select-none">R$</span>
                   <input
                     type="number"
                     className="input-field pl-10"
@@ -708,7 +708,7 @@ export default function ClientesPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-700 dark:text-[#A7C4AF]">Domínio incluso</p>
-                  <p className="text-[11px] text-gray-400 dark:text-[#006620] mt-0.5">Gera saída de R$40 automaticamente</p>
+                  <p className="text-[11px] text-gray-400 dark:text-[#00a02a] mt-0.5">Gera saída de R$40 automaticamente</p>
                 </div>
                 <div className="flex rounded-lg border border-gray-200 dark:border-[#28282d] overflow-hidden">
                   {([{ v: false, l: 'Não' }, { v: true, l: 'Sim' }] as { v: boolean; l: string }[]).map(opt => (
@@ -721,7 +721,7 @@ export default function ClientesPage() {
                           ? opt.v
                             ? 'bg-[#00FF41] dark:bg-[#003810] text-white'
                             : 'bg-gray-200 dark:bg-[#28282d] text-gray-700 dark:text-[#D1FAE5]'
-                          : 'bg-white dark:bg-[#111114] text-gray-400 dark:text-[#006620] hover:bg-gray-50 dark:hover:bg-[#181819]'
+                          : 'bg-white dark:bg-[#111114] text-gray-400 dark:text-[#00a02a] hover:bg-gray-50 dark:hover:bg-[#181819]'
                       }`}
                     >
                       {opt.l}
@@ -753,7 +753,7 @@ export default function ClientesPage() {
                   <Paperclip size={18} className="text-gray-400" />
                   <div className="text-center">
                     <span className="text-[13px] font-medium text-[#00FF41] dark:text-[#00FF41]">Clique para anexar</span>
-                    <p className="text-[11px] text-gray-400 dark:text-[#006620] mt-0.5">PDF, DOC, DOCX — até 10MB</p>
+                    <p className="text-[11px] text-gray-400 dark:text-[#00a02a] mt-0.5">PDF, DOC, DOCX — até 10MB</p>
                   </div>
                   <input
                     type="file"

@@ -146,7 +146,7 @@ export default function MetaPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Badge color="purple" dot={false}>Modo Manual</Badge>
-            <span className="text-[12px] text-gray-400 dark:text-[#006620]">Dados inseridos manualmente</span>
+            <span className="text-[12px] text-gray-400 dark:text-[#00a02a]">Dados inseridos manualmente</span>
           </div>
           <Button onClick={handleOpenCreate}><Plus size={14} /> Nova campanha</Button>
         </div>
@@ -165,7 +165,7 @@ export default function MetaPage() {
                 <Icon size={15} className={iconCls} />
               </div>
               <div className="tabular text-lg font-bold text-gray-900 dark:text-[#F0FDF4]">{value}</div>
-              <div className="text-[11px] text-gray-500 dark:text-[#006620] mt-0.5">{label}</div>
+              <div className="text-[11px] text-gray-500 dark:text-[#00a02a] mt-0.5">{label}</div>
             </div>
           ))}
         </div>
@@ -181,10 +181,10 @@ export default function MetaPage() {
                 {campaigns.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-[220px] gap-2">
                     <div className="w-10 h-10 rounded-2xl bg-gray-100 dark:bg-[#181819] flex items-center justify-center">
-                      <BarChart2 size={18} className="text-gray-300 dark:text-[#28282d]" />
+                      <BarChart2 size={18} className="text-gray-300 dark:text-[#00a02a]" />
                     </div>
-                    <p className="text-[13px] text-gray-400 dark:text-[#006620]">Nenhuma campanha ainda</p>
-                    <p className="text-[12px] text-gray-300 dark:text-[#28282d]">Adicione campanhas para ver o gráfico</p>
+                    <p className="text-[13px] text-gray-400 dark:text-[#00a02a]">Nenhuma campanha ainda</p>
+                    <p className="text-[12px] text-gray-300 dark:text-[#00a02a]">Adicione campanhas para ver o gráfico</p>
                   </div>
                 ) : (
                   <ResponsiveContainer width="100%" height={220}>
@@ -209,7 +209,7 @@ export default function MetaPage() {
             <div className="divide-y divide-gray-50 dark:divide-[#181819] overflow-y-auto max-h-[300px]">
               {campaigns.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-24 gap-1">
-                  <p className="text-[13px] text-gray-400 dark:text-[#006620]">Nenhuma campanha</p>
+                  <p className="text-[13px] text-gray-400 dark:text-[#00a02a]">Nenhuma campanha</p>
                 </div>
               ) : campaigns.map(c => (
                 <div key={c.id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-[#181819] transition-colors group">
@@ -224,7 +224,7 @@ export default function MetaPage() {
                         type="button"
                         onClick={() => handleOpenEdit(c)}
                         aria-label={`Editar ${c.name}`}
-                        className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-300 dark:text-[#28282d] hover:text-blue-600 dark:hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100"
+                        className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-[#00FF41]/8 text-gray-300 dark:text-[#00a02a] hover:text-blue-600 dark:hover:text-[#00FF41] transition-colors opacity-0 group-hover:opacity-100"
                       >
                         <Pencil size={12} />
                       </button>
@@ -232,7 +232,7 @@ export default function MetaPage() {
                         type="button"
                         onClick={() => setDeleteModal(c)}
                         aria-label={`Remover ${c.name}`}
-                        className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 dark:text-[#28282d] hover:text-red-500 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                        className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 dark:text-[#00a02a] hover:text-red-500 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
                       >
                         <Trash2 size={12} />
                       </button>
@@ -240,24 +240,24 @@ export default function MetaPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-x-3 gap-y-1 mt-2">
                     <div>
-                      <span className="text-[10px] text-gray-400 dark:text-[#006620]">Gasto</span>
+                      <span className="text-[10px] text-gray-400 dark:text-[#00a02a]">Gasto</span>
                       <div className="text-[12px] font-semibold tabular text-red-500 dark:text-red-400">{formatCurrency(c.spend)}</div>
                     </div>
                     <div>
-                      <span className="text-[10px] text-gray-400 dark:text-[#006620]">CPM</span>
+                      <span className="text-[10px] text-gray-400 dark:text-[#00a02a]">CPM</span>
                       <div className="text-[12px] font-semibold tabular text-gray-700 dark:text-[#A7C4AF]">{formatCurrency(c.cpm)}</div>
                     </div>
                     <div>
-                      <span className="text-[10px] text-gray-400 dark:text-[#006620]">Impressões</span>
+                      <span className="text-[10px] text-gray-400 dark:text-[#00a02a]">Impressões</span>
                       <div className="text-[12px] font-semibold tabular text-gray-700 dark:text-[#A7C4AF]">{c.impressions.toLocaleString('pt-BR')}</div>
                     </div>
                     <div>
-                      <span className="text-[10px] text-gray-400 dark:text-[#006620]">Cliques</span>
+                      <span className="text-[10px] text-gray-400 dark:text-[#00a02a]">Cliques</span>
                       <div className="text-[12px] font-semibold tabular text-gray-700 dark:text-[#A7C4AF]">{c.clicks.toLocaleString('pt-BR')}</div>
                     </div>
                   </div>
                   <div className="mt-1.5">
-                    <span className="text-[10px] text-gray-400 dark:text-[#006620]">Budget/dia: {formatCurrency(c.daily_budget)}</span>
+                    <span className="text-[10px] text-gray-400 dark:text-[#00a02a]">Budget/dia: {formatCurrency(c.daily_budget)}</span>
                   </div>
                 </div>
               ))}

@@ -117,11 +117,11 @@ function RevenueCard({ current, goal, loading, editing, editValue, onEditChange,
               <TrendingUp size={19} className={done ? 'text-[#00FF41] dark:text-[#00FF41]' : 'text-emerald-600 dark:text-emerald-400'} />
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620]">Meta Principal</p>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a]">Meta Principal</p>
               <p className="text-[15px] font-bold text-gray-800 dark:text-[#D1FAE5] mt-0.5">Faturamento</p>
             </div>
           </div>
-          <button type="button" onClick={onEdit} aria-label="Editar meta de faturamento" className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#181819] text-gray-300 dark:text-[#28282d] hover:text-gray-500 dark:hover:text-[#00a02a] transition-colors">
+          <button type="button" onClick={onEdit} aria-label="Editar meta de faturamento" className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#181819] text-gray-300 dark:text-[#00a02a] hover:text-gray-500 dark:hover:text-[#00a02a] transition-colors">
             <Pencil size={13} />
           </button>
         </div>
@@ -154,9 +154,9 @@ function RevenueCard({ current, goal, loading, editing, editValue, onEditChange,
             <div className="flex items-center justify-between">
               {done
                 ? <span className="text-[12px] text-[#00FF41] dark:text-[#00FF41] font-medium">Meta do mês superada!</span>
-                : <span className="text-[12px] text-gray-400 dark:text-[#006620]">Faltam <span className="font-semibold text-gray-700 dark:text-[#D1FAE5]">{formatCurrency(remaining)}</span> para a meta</span>
+                : <span className="text-[12px] text-gray-400 dark:text-[#00a02a]">Faltam <span className="font-semibold text-gray-700 dark:text-[#D1FAE5]">{formatCurrency(remaining)}</span> para a meta</span>
               }
-              <span className="text-[12px] text-gray-400 dark:text-[#006620]">Meta: <span className="font-semibold text-gray-700 dark:text-[#D1FAE5]">{formatCurrency(goal)}</span></span>
+              <span className="text-[12px] text-gray-400 dark:text-[#00a02a]">Meta: <span className="font-semibold text-gray-700 dark:text-[#D1FAE5]">{formatCurrency(goal)}</span></span>
             </div>
           </div>
         )}
@@ -176,7 +176,7 @@ function SalesCard({ current, loading }: { current: number; loading: boolean }) 
         </div>
         <div>
           <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5]">Número de Vendas</p>
-          <p className="text-[11px] text-gray-400 dark:text-[#006620] mt-0.5">Transações de entrada este mês</p>
+          <p className="text-[11px] text-gray-400 dark:text-[#00a02a] mt-0.5">Transações de entrada este mês</p>
         </div>
       </div>
       {loading ? (
@@ -184,7 +184,7 @@ function SalesCard({ current, loading }: { current: number; loading: boolean }) 
       ) : (
         <p className="tabular text-[32px] font-bold leading-none text-amber-600 dark:text-amber-400">
           {Math.round(current)}
-          <span className="text-[16px] font-medium text-gray-400 dark:text-[#006620] ml-2">
+          <span className="text-[16px] font-medium text-gray-400 dark:text-[#00a02a] ml-2">
             venda{Math.round(current) !== 1 ? 's' : ''}
           </span>
         </p>
@@ -262,7 +262,7 @@ export default function MetasPage() {
             <div className="w-10 h-10 rounded-xl bg-[#00FF41]/10 dark:bg-[#00FF41]/20 flex items-center justify-center mb-3">
               <Target size={17} className="text-[#00FF41] dark:text-[#00FF41]" />
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620] mb-1">Progresso Geral</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a] mb-1">Progresso Geral</p>
             <p className={`tabular text-[28px] font-bold leading-none ${textColor(overallPct)}`}>{overallPct.toFixed(0)}%</p>
             <div className="mt-3 h-1.5 bg-gray-100 dark:bg-[#181819] rounded-full overflow-hidden">
               <div className={`h-full rounded-full transition-all duration-500 motion-reduce:transition-none ${barColor(overallPct)}`} style={{ width: `${overallPct}%` }} />
@@ -272,9 +272,9 @@ export default function MetasPage() {
           <div className="stat-card p-5 overflow-hidden relative">
             <div className={`absolute inset-0 bg-gradient-to-br ${overallPct >= 70 ? 'from-amber-500/5' : 'from-gray-500/3'} via-transparent to-transparent pointer-events-none`} />
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${overallPct >= 70 ? 'bg-amber-50 dark:bg-amber-900/25' : 'bg-gray-100 dark:bg-[#181819]'}`}>
-              <Flame size={17} className={overallPct >= 70 ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#28282d]'} />
+              <Flame size={17} className={overallPct >= 70 ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#00a02a]'} />
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620] mb-1">Ritmo do Mês</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a] mb-1">Ritmo do Mês</p>
             <p className={`tabular text-[28px] font-bold leading-none ${overallPct >= 70 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500 dark:text-[#00a02a]'}`}>
               {overallPct >= 100 ? 'Ótimo' : overallPct >= 70 ? 'Bom' : overallPct >= 40 ? 'Ok' : 'Baixo'}
             </p>
@@ -285,10 +285,10 @@ export default function MetasPage() {
         <div>
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620]">Objetivos do Mês</p>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a]">Objetivos do Mês</p>
               <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5 capitalize">{monthLabel}</p>
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-gray-400 dark:text-[#006620]">
+            <div className="flex items-center gap-1.5 text-[11px] text-gray-400 dark:text-[#00a02a]">
               <Pencil size={11} />
               <span>Clique no lápis para editar</span>
             </div>

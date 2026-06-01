@@ -307,7 +307,7 @@ export default function FinanceiroPage() {
                 <TrendingUp size={17} className="text-emerald-600 dark:text-emerald-400" />
               </div>
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620] mb-1">Entradas totais</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a] mb-1">Entradas totais</p>
             <p className="tabular text-[26px] font-bold leading-none text-emerald-600 dark:text-emerald-400">{formatCurrency(totalEntradas)}</p>
           </div>
 
@@ -319,7 +319,7 @@ export default function FinanceiroPage() {
                 <TrendingDown size={17} className="text-red-500 dark:text-red-400" />
               </div>
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620] mb-1">Saídas totais</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a] mb-1">Saídas totais</p>
             <p className="tabular text-[26px] font-bold leading-none text-red-500 dark:text-red-400">{formatCurrency(totalSaidas)}</p>
           </div>
 
@@ -331,7 +331,7 @@ export default function FinanceiroPage() {
                 <Wallet size={17} className={saldo >= 0 ? 'text-[#00FF41] dark:text-[#00FF41]' : 'text-red-500 dark:text-red-400'} />
               </div>
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620] mb-1">Saldo atual</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a] mb-1">Saldo atual</p>
             <p className={`tabular text-[26px] font-bold leading-none ${saldo >= 0 ? 'text-[#00FF41] dark:text-[#00FF41]' : 'text-red-500 dark:text-red-400'}`}>
               {formatCurrency(saldo)}
             </p>
@@ -346,10 +346,10 @@ export default function FinanceiroPage() {
             <div className="lg:col-span-2 card-light overflow-hidden">
               <div className="flex items-center justify-between px-5 pt-5 pb-3">
                 <div>
-                  <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620]">Evolução mensal</h3>
+                  <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a]">Evolução mensal</h3>
                   <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5">Receita vs Despesa</p>
                 </div>
-                <Activity size={16} className="text-gray-300 dark:text-[#28282d]" />
+                <Activity size={16} className="text-gray-300 dark:text-[#00a02a]" />
               </div>
               <div className="px-1 pb-4">
                 <ResponsiveContainer width="100%" height={220}>
@@ -368,11 +368,11 @@ export default function FinanceiroPage() {
             {/* Donut chart */}
             <div className="card-light overflow-hidden">
               <div className="px-5 pt-5 pb-3">
-                <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620]">Despesas por categoria</h3>
+                <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a]">Despesas por categoria</h3>
                 <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5">Distribuição de custos</p>
               </div>
               {categoryData.length === 0 ? (
-                <div className="flex items-center justify-center py-12 text-gray-300 dark:text-[#28282d] text-sm">Sem despesas registradas</div>
+                <div className="flex items-center justify-center py-12 text-gray-300 dark:text-[#00a02a] text-sm">Sem despesas registradas</div>
               ) : (
                 <div className="pb-3">
                   <ResponsiveContainer width="100%" height={160}>
@@ -405,7 +405,7 @@ export default function FinanceiroPage() {
           {/* Toolbar */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#181819]">
             <div>
-              <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620]">Lançamentos</h3>
+              <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a]">Lançamentos</h3>
               <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5">
                 {typeFilter === 'pendentes'
                   ? `${pendingClients.length} cliente${pendingClients.length !== 1 ? 's' : ''} com pagamento pendente`
@@ -429,7 +429,7 @@ export default function FinanceiroPage() {
                         ? key === 'pendentes'
                           ? 'bg-amber-500 dark:bg-amber-600 text-white shadow-sm'
                           : 'bg-white dark:bg-[#181819] shadow-sm text-gray-900 dark:text-[#F8FBF9]'
-                        : 'text-gray-500 dark:text-[#006620] hover:text-gray-700 dark:hover:text-[#00a02a]'
+                        : 'text-gray-500 dark:text-[#00a02a] hover:text-gray-700 dark:hover:text-[#00a02a]'
                     }`}
                   >
                     {label}
@@ -460,8 +460,8 @@ export default function FinanceiroPage() {
                 <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center mb-3">
                   <Wallet size={18} className="text-emerald-500 dark:text-emerald-400" />
                 </div>
-                <p className="text-[13px] font-medium text-gray-400 dark:text-[#006620]">Nenhum pagamento pendente</p>
-                <p className="text-[12px] text-gray-300 dark:text-[#28282d] mt-0.5">Todos os clientes estão com pagamento em dia</p>
+                <p className="text-[13px] font-medium text-gray-400 dark:text-[#00a02a]">Nenhum pagamento pendente</p>
+                <p className="text-[12px] text-gray-300 dark:text-[#00a02a] mt-0.5">Todos os clientes estão com pagamento em dia</p>
               </div>
             ) : (
               <>
@@ -489,14 +489,14 @@ export default function FinanceiroPage() {
                             <div className="flex-1 h-1.5 bg-gray-100 dark:bg-[#181819] rounded-full overflow-hidden max-w-[120px]">
                               <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${pct}%` }} />
                             </div>
-                            <span className="text-[11px] text-gray-400 dark:text-[#006620]">
+                            <span className="text-[11px] text-gray-400 dark:text-[#00a02a]">
                               {formatCurrency(paid)} pago de {formatCurrency(total)}
                             </span>
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0">
                           <p className="text-[14px] font-bold text-amber-600 dark:text-amber-400 tabular">{formatCurrency(remaining)}</p>
-                          <p className="text-[11px] text-gray-400 dark:text-[#006620]">a receber</p>
+                          <p className="text-[11px] text-gray-400 dark:text-[#00a02a]">a receber</p>
                         </div>
                       </div>
                     )
@@ -523,10 +523,10 @@ export default function FinanceiroPage() {
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-[#181819] flex items-center justify-center mb-3">
-                <Wallet size={18} className="text-gray-300 dark:text-[#28282d]" />
+                <Wallet size={18} className="text-gray-300 dark:text-[#00a02a]" />
               </div>
-              <p className="text-[13px] font-medium text-gray-400 dark:text-[#006620]">Nenhum lançamento</p>
-              <p className="text-[12px] text-gray-300 dark:text-[#28282d] mt-0.5">Registre entradas e saídas para ver o histórico</p>
+              <p className="text-[13px] font-medium text-gray-400 dark:text-[#00a02a]">Nenhum lançamento</p>
+              <p className="text-[12px] text-gray-300 dark:text-[#00a02a] mt-0.5">Registre entradas e saídas para ver o histórico</p>
             </div>
           ) : (
             <div>
@@ -534,11 +534,11 @@ export default function FinanceiroPage() {
                 <div key={date}>
                   {/* Date separator */}
                   <div className="flex items-center gap-3 px-5 py-2 bg-gray-50/70 dark:bg-[#181819] border-y border-gray-100 dark:border-[#181819]">
-                    <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620]">
+                    <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a]">
                       {formatDate(date)}
                     </span>
                     <div className="flex-1 h-px bg-gray-100 dark:bg-[#181819]" />
-                    <span className="text-[11px] text-gray-300 dark:text-[#28282d]">{items.length} registro{items.length !== 1 ? 's' : ''}</span>
+                    <span className="text-[11px] text-gray-300 dark:text-[#00a02a]">{items.length} registro{items.length !== 1 ? 's' : ''}</span>
                   </div>
 
                   {/* Transactions for that date */}
@@ -556,7 +556,7 @@ export default function FinanceiroPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[13px] font-medium text-gray-800 dark:text-[#D1FAE5] truncate">{t.description}</p>
-                        <p className="text-[11px] text-gray-400 dark:text-[#006620]">{categoryLabels[t.category]}</p>
+                        <p className="text-[11px] text-gray-400 dark:text-[#00a02a]">{categoryLabels[t.category]}</p>
                       </div>
                       <span className={`tabular text-[14px] font-bold ${
                         t.type === 'entrada' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'
@@ -568,7 +568,7 @@ export default function FinanceiroPage() {
                           type="button"
                           onClick={() => handleOpenEdit(t)}
                           aria-label="Editar lançamento"
-                          className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-200 dark:text-[#181819] hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+                          className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-[#00FF41]/8 text-gray-200 dark:text-[#181819] hover:text-blue-500 dark:hover:text-[#00FF41] transition-colors"
                         >
                           <Pencil size={13} />
                         </button>
@@ -609,7 +609,7 @@ export default function FinanceiroPage() {
                         ? t === 'entrada'
                           ? 'bg-emerald-500 dark:bg-emerald-600 text-white'
                           : 'bg-red-500 dark:bg-red-600 text-white'
-                        : 'bg-white dark:bg-[#111114] text-gray-500 dark:text-[#006620] hover:bg-gray-50 dark:hover:bg-[#181819]'
+                        : 'bg-white dark:bg-[#111114] text-gray-500 dark:text-[#00a02a] hover:bg-gray-50 dark:hover:bg-[#181819]'
                     }`}
                   >
                     {t === 'entrada'
@@ -693,7 +693,7 @@ export default function FinanceiroPage() {
             <div className="col-span-2">
               <label htmlFor="fin-amount" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Valor *</label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#006620] text-sm font-medium select-none">R$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#00a02a] text-sm font-medium select-none">R$</span>
                 <input id="fin-amount" type="number" className="input-field pl-10" placeholder="0,00" min="0" step="0.01" value={form.amount} onChange={set('amount')} required />
               </div>
             </div>

@@ -248,7 +248,7 @@ create policy "allow all" on meetings
             <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-900/25 flex items-center justify-center mb-3">
               <Calendar size={16} className="text-blue-600 dark:text-blue-400" />
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620] mb-1">Total</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a] mb-1">Total</p>
             {loading ? <Skeleton className="h-7 w-12" /> : (
               <p className="text-[28px] font-bold leading-none text-gray-900 dark:text-[#F0FDF4]">{total}</p>
             )}
@@ -258,7 +258,7 @@ create policy "allow all" on meetings
             <div className="w-9 h-9 rounded-xl bg-[#00FF41]/10 dark:bg-[#00FF41]/20 flex items-center justify-center mb-3">
               <CheckCircle2 size={16} className="text-[#00FF41] dark:text-[#00FF41]" />
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620] mb-1">Concluídas</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a] mb-1">Concluídas</p>
             {loading ? <Skeleton className="h-7 w-12" /> : (
               <p className="text-[28px] font-bold leading-none text-[#00FF41] dark:text-[#00FF41]">{concluidas}</p>
             )}
@@ -268,7 +268,7 @@ create policy "allow all" on meetings
             <div className="w-9 h-9 rounded-xl bg-[#00FF41]/10 dark:bg-[#00FF41]/20 flex items-center justify-center mb-3">
               <Handshake size={16} className="text-[#00FF41] dark:text-[#00FF41]" />
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620] mb-1">Fechamentos</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a] mb-1">Fechamentos</p>
             {loading ? <Skeleton className="h-7 w-12" /> : (
               <p className="text-[28px] font-bold leading-none text-[#00FF41] dark:text-[#00FF41]">{fechamentos}</p>
             )}
@@ -278,7 +278,7 @@ create policy "allow all" on meetings
             <div className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-3">
               <XCircle size={16} className="text-red-500 dark:text-red-400" />
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620] mb-1">Churned</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a] mb-1">Churned</p>
             {loading ? <Skeleton className="h-7 w-12" /> : (
               <p className="text-[28px] font-bold leading-none text-red-600 dark:text-red-400">{churned}</p>
             )}
@@ -288,7 +288,7 @@ create policy "allow all" on meetings
             <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-900/25 flex items-center justify-center mb-3">
               <XCircle size={16} className="text-amber-600 dark:text-amber-400" />
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620] mb-1">Taxa No-show</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a] mb-1">Taxa No-show</p>
             {loading ? <Skeleton className="h-7 w-16" /> : (
               <p className="text-[28px] font-bold leading-none text-amber-700 dark:text-amber-300">{taxaNoShow}%</p>
             )}
@@ -299,7 +299,7 @@ create policy "allow all" on meetings
         <div className="card-light overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#181819]">
             <div>
-              <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620]">Histórico</h3>
+              <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a]">Histórico</h3>
               <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5">
                 {filtered.length} registro{filtered.length !== 1 ? 's' : ''}
               </p>
@@ -335,10 +335,10 @@ create policy "allow all" on meetings
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-[#181819] flex items-center justify-center mb-3">
-                <Calendar size={18} className="text-gray-300 dark:text-[#28282d]" />
+                <Calendar size={18} className="text-gray-300 dark:text-[#00a02a]" />
               </div>
-              <p className="text-[13px] font-medium text-gray-400 dark:text-[#006620]">Nenhuma reunião neste mês</p>
-              <p className="text-[12px] text-gray-300 dark:text-[#28282d] mt-0.5">Clique em "Registrar" para adicionar</p>
+              <p className="text-[13px] font-medium text-gray-400 dark:text-[#00a02a]">Nenhuma reunião neste mês</p>
+              <p className="text-[12px] text-gray-300 dark:text-[#00a02a] mt-0.5">Clique em "Registrar" para adicionar</p>
             </div>
           ) : (
             <div>
@@ -355,7 +355,7 @@ create policy "allow all" on meetings
                       <p className="text-[13px] font-medium text-gray-800 dark:text-[#D1FAE5] truncate">
                         {m.client_name || '—'}
                       </p>
-                      <p className="text-[11px] text-gray-400 dark:text-[#006620]">
+                      <p className="text-[11px] text-gray-400 dark:text-[#00a02a]">
                         {m.scheduled_time ? m.scheduled_time.slice(0, 5) : formatDate(m.date)}
                         {!m.scheduled_time && ''}
                         {m.scheduled_time && <span className="ml-1 opacity-70">· {formatDate(m.date)}</span>}
@@ -382,7 +382,7 @@ create policy "allow all" on meetings
                         type="button"
                         onClick={() => handleOpenEdit(m)}
                         aria-label="Editar"
-                        className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-200 dark:text-[#181819] hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-[#00FF41]/8 text-gray-200 dark:text-[#181819] hover:text-blue-500 dark:hover:text-[#00FF41] transition-colors"
                       >
                         <Pencil size={13} />
                       </button>
@@ -420,7 +420,7 @@ create policy "allow all" on meetings
                       type="button"
                       onClick={() => setForm(f => ({ ...f, type }))}
                       className={`flex-1 py-2 text-[11px] font-semibold transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                        form.type === type ? cfg.activeClass : 'bg-white dark:bg-[#111114] text-gray-500 dark:text-[#006620] hover:bg-gray-50 dark:hover:bg-[#181819]'
+                        form.type === type ? cfg.activeClass : 'bg-white dark:bg-[#111114] text-gray-500 dark:text-[#00a02a] hover:bg-gray-50 dark:hover:bg-[#181819]'
                       }`}
                     >
                       <Icon size={13} /> {cfg.label}

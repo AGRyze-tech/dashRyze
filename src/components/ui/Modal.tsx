@@ -87,7 +87,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             type="button"
             onClick={onClose}
             aria-label="Fechar"
-            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#181819] text-gray-400 dark:text-[#006620] hover:text-gray-600 dark:hover:text-[#00a02a] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#181819] text-gray-400 dark:text-[#00a02a] hover:text-gray-600 dark:hover:text-[#00a02a] transition-colors"
           >
             <X size={18} aria-hidden="true" />
           </button>

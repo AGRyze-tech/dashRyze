@@ -15,7 +15,7 @@ import { Project, ProjectStatus, Client } from '@/types'
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[11px] font-medium text-gray-400 dark:text-[#006620] uppercase tracking-wide mb-0.5">{label}</p>
+      <p className="text-[11px] font-medium text-gray-400 dark:text-[#00a02a] uppercase tracking-wide mb-0.5">{label}</p>
       {children}
     </div>
   )
@@ -63,7 +63,7 @@ const ProjectCard = memo(function ProjectCard({
       <div className="flex items-start justify-between mb-2.5">
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-gray-900 dark:text-[#F0FDF4] text-[13px] leading-tight mb-1">{project.name}</p>
-          <p className="text-[11px] text-gray-400 dark:text-[#006620] truncate">{project.client?.name ?? '—'}</p>
+          <p className="text-[11px] text-gray-400 dark:text-[#00a02a] truncate">{project.client?.name ?? '—'}</p>
         </div>
         <div className="flex items-center gap-1 ml-2 flex-shrink-0">
           <span className="text-[10px] font-medium text-gray-400 dark:text-[#00a02a] bg-gray-100 dark:bg-[#181819] px-1.5 py-0.5 rounded">
@@ -73,7 +73,7 @@ const ProjectCard = memo(function ProjectCard({
             type="button"
             aria-label="Visualizar projeto"
             onClick={e => { e.stopPropagation(); onView(project) }}
-            className="p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-300 dark:text-[#28282d] hover:text-blue-500 dark:hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100"
+            className="p-1 rounded hover:bg-blue-50 dark:hover:bg-[#00FF41]/8 text-gray-300 dark:text-[#00a02a] hover:text-blue-500 dark:hover:text-[#00FF41] transition-colors opacity-0 group-hover:opacity-100"
           >
             <Eye size={11} />
           </button>
@@ -81,7 +81,7 @@ const ProjectCard = memo(function ProjectCard({
             type="button"
             aria-label="Editar projeto"
             onClick={e => { e.stopPropagation(); onEdit(project) }}
-            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#181819] text-gray-300 dark:text-[#28282d] hover:text-gray-600 dark:hover:text-[#00a02a] transition-colors opacity-0 group-hover:opacity-100"
+            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#181819] text-gray-300 dark:text-[#00a02a] hover:text-gray-600 dark:hover:text-[#00a02a] transition-colors opacity-0 group-hover:opacity-100"
           >
             <Pencil size={11} />
           </button>
@@ -89,7 +89,7 @@ const ProjectCard = memo(function ProjectCard({
             type="button"
             aria-label="Excluir projeto"
             onClick={e => { e.stopPropagation(); onDelete(project) }}
-            className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 dark:text-[#28282d] hover:text-red-500 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+            className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 dark:text-[#00a02a] hover:text-red-500 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
           >
             <Trash2 size={11} />
           </button>
@@ -102,7 +102,7 @@ const ProjectCard = memo(function ProjectCard({
       </div>
 
       {active && (
-        <div className={`flex items-center gap-1.5 mt-3 pt-3 border-t border-gray-100 dark:border-[#181819] ${over ? 'text-red-500 dark:text-red-400' : warn ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#006620]'}`}>
+        <div className={`flex items-center gap-1.5 mt-3 pt-3 border-t border-gray-100 dark:border-[#181819] ${over ? 'text-red-500 dark:text-red-400' : warn ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#00a02a]'}`}>
           {(over || warn) ? <AlertTriangle size={11} /> : <Clock size={11} />}
           <span className="text-[11px] font-medium">{deadlineLabel(days)}</span>
           <span className="ml-auto text-[10px]">{formatDate(project.deadline)}</span>
@@ -305,7 +305,7 @@ export default function ProjetosPage() {
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full" style={{ background: col.color }} />
                     <span className="text-[12px] font-semibold text-gray-700 dark:text-[#D1FAE5]">{col.label}</span>
-                    <span className="text-[11px] text-gray-400 dark:text-[#006620] bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#28282d] rounded-full px-1.5 py-px font-medium">
+                    <span className="text-[11px] text-gray-400 dark:text-[#00a02a] bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#28282d] rounded-full px-1.5 py-px font-medium">
                       {colProjects.length}
                     </span>
                   </div>
@@ -330,7 +330,7 @@ export default function ProjetosPage() {
                   ))}
                   {colProjects.length === 0 && (
                     <div className="border-2 border-dashed border-gray-200 dark:border-[#181819] rounded-xl h-20 flex items-center justify-center">
-                      <span className="text-[11px] text-gray-400 dark:text-[#28282d]">Soltar aqui</span>
+                      <span className="text-[11px] text-gray-400 dark:text-[#00a02a]">Soltar aqui</span>
                     </div>
                   )}
                 </div>
