@@ -36,7 +36,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left panel — branding */}
-      <div className="hidden lg:flex lg:w-[52%] relative bg-[#040806] flex-col justify-between p-12 overflow-hidden">
+      <div className="hidden lg:flex lg:w-[52%] relative bg-[#121212] flex-col justify-between p-12 overflow-hidden">
         {/* Background geometric pattern */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 opacity-[0.03]"
@@ -69,7 +69,7 @@ export default function LoginPage() {
           </div>
           <div>
             <div className="text-white text-xl font-bold tracking-tight">RYZESYSTEMS</div>
-            <div className="text-[#2A5C3C] text-[11px] font-medium tracking-[0.2em] uppercase">Saúde Digital</div>
+            <div className="text-[#4d7a60] text-[11px] font-medium tracking-[0.2em] uppercase">Saúde Digital</div>
           </div>
         </div>
 
@@ -101,7 +101,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <div className="relative text-[#192A1D] text-[12px]">
+        <div className="relative text-[#333333] text-[12px]">
           RyzeSystems · Acesso restrito · v1.0
         </div>
       </div>

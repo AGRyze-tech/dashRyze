@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/Button'
@@ -271,21 +271,21 @@ export default function AgendaPage() {
           <div className="flex items-center gap-1.5">
             <button
               onClick={goToday}
-              className="px-3 py-1.5 rounded-lg text-[12px] font-semibold border border-gray-200 dark:border-[#192A1D] text-gray-600 dark:text-[#3E9E60] hover:bg-gray-50 dark:hover:bg-[#0C150E] transition-colors"
+              className="px-3 py-1.5 rounded-lg text-[12px] font-semibold border border-gray-200 dark:border-[#333333] text-gray-600 dark:text-[#3E9E60] hover:bg-gray-50 dark:hover:bg-[#252525] transition-colors"
             >
               Hoje
             </button>
             <button
               onClick={prevWeek}
               aria-label="Semana anterior"
-              className="p-1.5 rounded-lg border border-gray-200 dark:border-[#192A1D] text-gray-500 dark:text-[#3E9E60] hover:bg-gray-50 dark:hover:bg-[#0C150E] transition-colors"
+              className="p-1.5 rounded-lg border border-gray-200 dark:border-[#333333] text-gray-500 dark:text-[#3E9E60] hover:bg-gray-50 dark:hover:bg-[#252525] transition-colors"
             >
               <ChevronLeft size={16} />
             </button>
             <button
               onClick={nextWeek}
               aria-label="Próxima semana"
-              className="p-1.5 rounded-lg border border-gray-200 dark:border-[#192A1D] text-gray-500 dark:text-[#3E9E60] hover:bg-gray-50 dark:hover:bg-[#0C150E] transition-colors"
+              className="p-1.5 rounded-lg border border-gray-200 dark:border-[#333333] text-gray-500 dark:text-[#3E9E60] hover:bg-gray-50 dark:hover:bg-[#252525] transition-colors"
             >
               <ChevronRight size={16} />
             </button>
@@ -300,14 +300,14 @@ export default function AgendaPage() {
         <div className="card-light overflow-hidden">
 
           {/* Day headers */}
-          <div className="grid border-b border-gray-100 dark:border-[#111B14]" style={{ gridTemplateColumns: '52px repeat(7, 1fr)' }}>
-            <div className="border-r border-gray-100 dark:border-[#111B14]" />
+          <div className="grid border-b border-gray-100 dark:border-[#2a2a2a]" style={{ gridTemplateColumns: '52px repeat(7, 1fr)' }}>
+            <div className="border-r border-gray-100 dark:border-[#2a2a2a]" />
             {days.map(day => {
               const key = toDateKey(day)
               const isToday = key === todayKey
               return (
-                <div key={key} className="py-3 text-center border-r border-gray-100 dark:border-[#111B14] last:border-r-0">
-                  <p className="text-[10px] font-semibold tracking-widest text-gray-400 dark:text-[#2A5C3C] uppercase">
+                <div key={key} className="py-3 text-center border-r border-gray-100 dark:border-[#2a2a2a] last:border-r-0">
+                  <p className="text-[10px] font-semibold tracking-widest text-gray-400 dark:text-[#4d7a60] uppercase">
                     {DAY_LABELS[day.getDay()]}
                   </p>
                   <div className={cn(
@@ -331,15 +331,15 @@ export default function AgendaPage() {
             })
             if (!hasAnyAllDay) return null
             return (
-              <div className="grid border-b border-gray-100 dark:border-[#111B14]" style={{ gridTemplateColumns: '52px repeat(7, 1fr)' }}>
-                <div className="flex items-center justify-end pr-2 border-r border-gray-100 dark:border-[#111B14]">
-                  <span className="text-[9px] font-semibold text-gray-300 dark:text-[#192A1D] uppercase tracking-wider">dia todo</span>
+              <div className="grid border-b border-gray-100 dark:border-[#2a2a2a]" style={{ gridTemplateColumns: '52px repeat(7, 1fr)' }}>
+                <div className="flex items-center justify-end pr-2 border-r border-gray-100 dark:border-[#2a2a2a]">
+                  <span className="text-[9px] font-semibold text-gray-300 dark:text-[#333333] uppercase tracking-wider">dia todo</span>
                 </div>
                 {days.map(day => {
                   const key = toDateKey(day)
                   const allDay = (meetingsByDay[key] ?? []).filter(m => !m.scheduled_time)
                   return (
-                    <div key={key} className="px-1 py-1.5 min-h-[32px] border-r border-gray-100 dark:border-[#111B14] last:border-r-0 flex flex-wrap gap-1">
+                    <div key={key} className="px-1 py-1.5 min-h-[32px] border-r border-gray-100 dark:border-[#2a2a2a] last:border-r-0 flex flex-wrap gap-1">
                       {allDay.map(m => {
                         const cfg = typeConfig[m.type]
                         return (
@@ -371,11 +371,11 @@ export default function AgendaPage() {
             style={{ gridTemplateColumns: '52px repeat(7, 1fr)', maxHeight: '600px' }}
           >
             {/* Time labels */}
-            <div className="relative border-r border-gray-100 dark:border-[#111B14]" style={{ height: GRID_H }}>
+            <div className="relative border-r border-gray-100 dark:border-[#2a2a2a]" style={{ height: GRID_H }}>
               {timeLabels.map((label, i) => (
                 <div
                   key={label}
-                  className="absolute right-2 text-[10px] tabular text-gray-300 dark:text-[#192A1D] select-none"
+                  className="absolute right-2 text-[10px] tabular text-gray-300 dark:text-[#333333] select-none"
                   style={{ top: i * SLOT_H * 2 - 6 }}
                 >
                   {label}
@@ -392,7 +392,7 @@ export default function AgendaPage() {
               return (
                 <div
                   key={key}
-                  className="relative border-r border-gray-100 dark:border-[#111B14] last:border-r-0 cursor-pointer hover:bg-gray-50/40 dark:hover:bg-[#0C150E]/40 transition-colors"
+                  className="relative border-r border-gray-100 dark:border-[#2a2a2a] last:border-r-0 cursor-pointer hover:bg-gray-50/40 dark:hover:bg-[#252525]/40 transition-colors"
                   style={{ height: GRID_H }}
                   onClick={e => handleSlotClick(key, e)}
                 >
@@ -403,8 +403,8 @@ export default function AgendaPage() {
                       className={cn(
                         'absolute w-full pointer-events-none',
                         i % 2 === 0
-                          ? 'border-t border-gray-100 dark:border-[#111B14]'
-                          : 'border-t border-dashed border-gray-50 dark:border-[#0C150E]'
+                          ? 'border-t border-gray-100 dark:border-[#2a2a2a]'
+                          : 'border-t border-dashed border-gray-50 dark:border-[#252525]'
                       )}
                       style={{ top: i * SLOT_H }}
                     />
@@ -457,7 +457,7 @@ export default function AgendaPage() {
         </div>
 
         {loading && (
-          <p className="text-center text-[12px] text-gray-400 dark:text-[#2A5C3C] py-2">Carregando reuniões...</p>
+          <p className="text-center text-[12px] text-gray-400 dark:text-[#4d7a60] py-2">Carregando reuniões...</p>
         )}
       </div>
 
@@ -474,7 +474,7 @@ export default function AgendaPage() {
             {/* Type toggle */}
             <div className="col-span-2">
               <label className="block text-[12px] font-medium text-gray-700 dark:text-[#3E9E60] mb-1.5">Tipo *</label>
-              <div className="flex rounded-xl border border-gray-200 dark:border-[#192A1D] overflow-hidden">
+              <div className="flex rounded-xl border border-gray-200 dark:border-[#333333] overflow-hidden">
                 {(Object.entries(typeConfig) as [MeetingType, typeof typeConfig[MeetingType]][]).map(([type, cfg]) => {
                   const Icon = cfg.icon
                   const activeMap: Record<MeetingType, string> = {
@@ -491,7 +491,7 @@ export default function AgendaPage() {
                         'flex-1 py-2 text-[11px] font-semibold transition-all cursor-pointer flex items-center justify-center gap-1',
                         form.type === type
                           ? activeMap[type]
-                          : 'bg-white dark:bg-[#050908] text-gray-500 dark:text-[#2A5C3C] hover:bg-gray-50 dark:hover:bg-[#0C150E]'
+                          : 'bg-white dark:bg-[#121212] text-gray-500 dark:text-[#4d7a60] hover:bg-gray-50 dark:hover:bg-[#252525]'
                       )}
                     >
                       <Icon size={13} /> {cfg.label}
@@ -524,7 +524,7 @@ export default function AgendaPage() {
                     <option key={s} value={s}>{sc.label}</option>
                   ))}
                 </select>
-                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 dark:text-[#2A5C3C]" />
+                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 dark:text-[#4d7a60]" />
               </div>
             </div>
 
@@ -577,7 +577,7 @@ export default function AgendaPage() {
 
       {/* ── Toast ───────────────────────────────────────────────────── */}
       {toast && (
-        <div className="animate-slide-up fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 bg-gray-900 dark:bg-[#07100A] dark:border dark:border-[#192A1D] text-white px-5 py-3 rounded-xl shadow-xl text-sm font-medium">
+        <div className="animate-slide-up fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 bg-gray-900 dark:bg-[#1c1c1c] dark:border dark:border-[#333333] text-white px-5 py-3 rounded-xl shadow-xl text-sm font-medium">
           <CheckCircle2 size={16} className="text-[#4EE88A] flex-shrink-0" />
           {toast}
         </div>

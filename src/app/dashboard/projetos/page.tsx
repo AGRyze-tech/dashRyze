@@ -15,7 +15,7 @@ import { Project, ProjectStatus, Client } from '@/types'
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[11px] font-medium text-gray-400 dark:text-[#2A5C3C] uppercase tracking-wide mb-0.5">{label}</p>
+      <p className="text-[11px] font-medium text-gray-400 dark:text-[#4d7a60] uppercase tracking-wide mb-0.5">{label}</p>
       {children}
     </div>
   )
@@ -59,21 +59,21 @@ const ProjectCard = memo(function ProjectCard({
   const active = !['concluido', 'entregue'].includes(project.status)
 
   return (
-    <div className="bg-white dark:bg-[#07100A] border border-gray-200 dark:border-[#111B14] rounded-xl p-4 shadow-sm dark:shadow-black/30 hover:shadow-md transition-all duration-200 group">
+    <div className="bg-white dark:bg-[#1c1c1c] border border-gray-200 dark:border-[#2a2a2a] rounded-xl p-4 shadow-sm dark:shadow-black/30 hover:shadow-md transition-all duration-200 group">
       <div className="flex items-start justify-between mb-2.5">
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-gray-900 dark:text-[#F0FDF4] text-[13px] leading-tight mb-1">{project.name}</p>
-          <p className="text-[11px] text-gray-400 dark:text-[#2A5C3C] truncate">{project.client?.name ?? '—'}</p>
+          <p className="text-[11px] text-gray-400 dark:text-[#4d7a60] truncate">{project.client?.name ?? '—'}</p>
         </div>
         <div className="flex items-center gap-1 ml-2 flex-shrink-0">
-          <span className="text-[10px] font-medium text-gray-400 dark:text-[#3E9E60] bg-gray-100 dark:bg-[#0C150E] px-1.5 py-0.5 rounded">
+          <span className="text-[10px] font-medium text-gray-400 dark:text-[#3E9E60] bg-gray-100 dark:bg-[#252525] px-1.5 py-0.5 rounded">
             {projectTypeLabels[project.type]}
           </span>
           <button
             type="button"
             aria-label="Visualizar projeto"
             onClick={e => { e.stopPropagation(); onView(project) }}
-            className="p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-300 dark:text-[#192A1D] hover:text-blue-500 dark:hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100"
+            className="p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-300 dark:text-[#333333] hover:text-blue-500 dark:hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100"
           >
             <Eye size={11} />
           </button>
@@ -81,7 +81,7 @@ const ProjectCard = memo(function ProjectCard({
             type="button"
             aria-label="Editar projeto"
             onClick={e => { e.stopPropagation(); onEdit(project) }}
-            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#0C150E] text-gray-300 dark:text-[#192A1D] hover:text-gray-600 dark:hover:text-[#3E9E60] transition-colors opacity-0 group-hover:opacity-100"
+            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#252525] text-gray-300 dark:text-[#333333] hover:text-gray-600 dark:hover:text-[#3E9E60] transition-colors opacity-0 group-hover:opacity-100"
           >
             <Pencil size={11} />
           </button>
@@ -89,7 +89,7 @@ const ProjectCard = memo(function ProjectCard({
             type="button"
             aria-label="Excluir projeto"
             onClick={e => { e.stopPropagation(); onDelete(project) }}
-            className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 dark:text-[#192A1D] hover:text-red-500 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+            className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 dark:text-[#333333] hover:text-red-500 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
           >
             <Trash2 size={11} />
           </button>
@@ -102,7 +102,7 @@ const ProjectCard = memo(function ProjectCard({
       </div>
 
       {active && (
-        <div className={`flex items-center gap-1.5 mt-3 pt-3 border-t border-gray-100 dark:border-[#111B14] ${over ? 'text-red-500 dark:text-red-400' : warn ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#2A5C3C]'}`}>
+        <div className={`flex items-center gap-1.5 mt-3 pt-3 border-t border-gray-100 dark:border-[#2a2a2a] ${over ? 'text-red-500 dark:text-red-400' : warn ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#4d7a60]'}`}>
           {(over || warn) ? <AlertTriangle size={11} /> : <Clock size={11} />}
           <span className="text-[11px] font-medium">{deadlineLabel(days)}</span>
           <span className="ml-auto text-[10px]">{formatDate(project.deadline)}</span>
@@ -296,16 +296,16 @@ export default function ProjetosPage() {
             return (
               <div
                 key={col.status}
-                className={`flex-shrink-0 w-[270px] rounded-xl transition-all duration-150 bg-gray-100 dark:bg-[#0F1A12] ${isOver ? 'ring-2 ring-[#32B86A]/40 !bg-[#32B86A]/5' : ''}`}
+                className={`flex-shrink-0 w-[270px] rounded-xl transition-all duration-150 bg-gray-100 dark:bg-[#1e1e1e] ${isOver ? 'ring-2 ring-[#32B86A]/40 !bg-[#32B86A]/5' : ''}`}
                 onDragOver={e => { e.preventDefault(); setDragOver(col.status) }}
                 onDragLeave={() => setDragOver(null)}
                 onDrop={() => handleDrop(col.status)}
               >
-                <div className="flex items-center justify-between px-3 py-3 border-b border-gray-200/70 dark:border-[#111B14]">
+                <div className="flex items-center justify-between px-3 py-3 border-b border-gray-200/70 dark:border-[#2a2a2a]">
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full" style={{ background: col.color }} />
                     <span className="text-[12px] font-semibold text-gray-700 dark:text-[#D1FAE5]">{col.label}</span>
-                    <span className="text-[11px] text-gray-400 dark:text-[#2A5C3C] bg-white dark:bg-[#07100A] border border-gray-200 dark:border-[#192A1D] rounded-full px-1.5 py-px font-medium">
+                    <span className="text-[11px] text-gray-400 dark:text-[#4d7a60] bg-white dark:bg-[#1c1c1c] border border-gray-200 dark:border-[#333333] rounded-full px-1.5 py-px font-medium">
                       {colProjects.length}
                     </span>
                   </div>
@@ -329,8 +329,8 @@ export default function ProjetosPage() {
                     </div>
                   ))}
                   {colProjects.length === 0 && (
-                    <div className="border-2 border-dashed border-gray-200 dark:border-[#111B14] rounded-xl h-20 flex items-center justify-center">
-                      <span className="text-[11px] text-gray-400 dark:text-[#192A1D]">Soltar aqui</span>
+                    <div className="border-2 border-dashed border-gray-200 dark:border-[#2a2a2a] rounded-xl h-20 flex items-center justify-center">
+                      <span className="text-[11px] text-gray-400 dark:text-[#333333]">Soltar aqui</span>
                     </div>
                   )}
                 </div>

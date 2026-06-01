@@ -12,9 +12,9 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 const variantMap = {
   primary: 'bg-gradient-to-b from-[#4DA37A] to-[#32B86A] hover:from-[#32B86A] hover:to-[#1A5C35] text-white shadow-sm shadow-[#32B86A]/20 active:scale-[0.98]',
   secondary: 'bg-[#0F3A20] hover:bg-[#1A5C35] text-[#95D5B2] hover:text-white',
-  ghost: 'bg-transparent hover:bg-gray-100 dark:hover:bg-[#111B14] text-gray-600 dark:text-[#3E9E60] hover:text-gray-900 dark:hover:text-[#F8FBF9]',
+  ghost: 'bg-transparent hover:bg-gray-100 dark:hover:bg-[#2a2a2a] text-gray-600 dark:text-[#3E9E60] hover:text-gray-900 dark:hover:text-[#F8FBF9]',
   danger: 'bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800',
-  outline: 'bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-[#111B14] text-gray-700 dark:text-[#A7C4AF] border border-gray-200 dark:border-[#192A1D] shadow-sm',
+  outline: 'bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-[#2a2a2a] text-gray-700 dark:text-[#A7C4AF] border border-gray-200 dark:border-[#333333] shadow-sm',
 }
 
 const sizeMap = {

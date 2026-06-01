@@ -29,7 +29,7 @@ function monthStart() {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function Skeleton({ className }: { className?: string }) {
-  return <div className={`animate-pulse motion-reduce:animate-none rounded-lg bg-gray-100 dark:bg-[#0C150E] ${className}`} />
+  return <div className={`animate-pulse motion-reduce:animate-none rounded-lg bg-gray-100 dark:bg-[#252525] ${className}`} />
 }
 
 function pct(value: number, goal: number) {
@@ -72,8 +72,8 @@ function ProgressRow({ label, icon: Icon, current, goal, formatValue, loading, o
     <div className="space-y-2.5">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
-          <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${done ? 'bg-[#32B86A]/15 dark:bg-[#32B86A]/25' : 'bg-gray-100 dark:bg-[#0C150E]'}`}>
-            <Icon size={13} className={done ? 'text-[#32B86A] dark:text-[#4EE88A]' : 'text-gray-400 dark:text-[#2A5C3C]'} />
+          <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${done ? 'bg-[#32B86A]/15 dark:bg-[#32B86A]/25' : 'bg-gray-100 dark:bg-[#252525]'}`}>
+            <Icon size={13} className={done ? 'text-[#32B86A] dark:text-[#4EE88A]' : 'text-gray-400 dark:text-[#4d7a60]'} />
           </div>
           <span className="text-[12px] font-semibold text-gray-700 dark:text-[#D1FAE5] truncate">{label}</span>
           {done && (
@@ -88,7 +88,7 @@ function ProgressRow({ label, icon: Icon, current, goal, formatValue, loading, o
           ) : (
             <span className="text-[12px] tabular text-gray-500 dark:text-[#3E9E60]">
               <span className={`font-bold ${textColor(p)}`}>{formatValue(current)}</span>
-              <span className="text-gray-300 dark:text-[#192A1D] mx-1">/</span>
+              <span className="text-gray-300 dark:text-[#333333] mx-1">/</span>
               <span>{formatValue(goal)}</span>
             </span>
           )}
@@ -96,7 +96,7 @@ function ProgressRow({ label, icon: Icon, current, goal, formatValue, loading, o
             type="button"
             onClick={onEditGoal}
             aria-label={`Editar meta de ${label}`}
-            className="p-2.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#0C150E] text-gray-300 dark:text-[#192A1D] hover:text-gray-500 dark:hover:text-[#3E9E60] transition-colors"
+            className="p-2.5 rounded-md hover:bg-gray-100 dark:hover:bg-[#252525] text-gray-300 dark:text-[#333333] hover:text-gray-500 dark:hover:text-[#3E9E60] transition-colors"
           >
             <Pencil size={11} />
           </button>
@@ -104,7 +104,7 @@ function ProgressRow({ label, icon: Icon, current, goal, formatValue, loading, o
       </div>
 
       {/* Bar */}
-      <div className="relative h-2.5 bg-gray-100 dark:bg-[#0C150E] rounded-full overflow-hidden">
+      <div className="relative h-2.5 bg-gray-100 dark:bg-[#252525] rounded-full overflow-hidden">
         <div
           ref={barRef}
           className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ease-out motion-reduce:transition-none w-[var(--bar-w,0%)] ${barColor(p)}`}
@@ -115,7 +115,7 @@ function ProgressRow({ label, icon: Icon, current, goal, formatValue, loading, o
 
       {/* Footer */}
       <div className="flex items-center justify-between">
-        <p className="text-[11px] text-gray-400 dark:text-[#2A5C3C]">
+        <p className="text-[11px] text-gray-400 dark:text-[#4d7a60]">
           {loading ? '' : done
             ? `🎉 Parabéns! Meta superada`
             : `Faltam ${formatValue(remaining)} para a meta`}
@@ -180,7 +180,7 @@ function GoalsSection({ monthRevenue, salesCount, loading }: GoalsSectionProps) 
     <div className="card-light p-5">
       <div className="flex items-center justify-between mb-5">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C]">Metas do Mês</p>
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4d7a60]">Metas do Mês</p>
           <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5 capitalize">{monthLabel}</p>
         </div>
         <div className="w-9 h-9 rounded-xl bg-[#32B86A]/10 dark:bg-[#32B86A]/20 flex items-center justify-center">
@@ -212,7 +212,7 @@ function GoalsSection({ monthRevenue, salesCount, loading }: GoalsSectionProps) 
           />
         )}
 
-        <div className="h-px bg-gray-100 dark:bg-[#111B14]" />
+        <div className="h-px bg-gray-100 dark:bg-[#2a2a2a]" />
 
         {/* Sales goal */}
         {editing === 'sales' ? (
@@ -269,7 +269,7 @@ function EditGoalRow({ label, inputRef, value, onChange, onCommit, onCancel, pla
         <button type="button" onClick={onCommit} className="h-9 px-3 rounded-lg bg-[#32B86A] hover:bg-[#1A5C35] text-white text-[12px] font-medium flex items-center gap-1.5 transition-colors flex-shrink-0">
           <Check size={12} /> Salvar
         </button>
-        <button type="button" onClick={onCancel} aria-label="Cancelar edição" className="h-9 px-2.5 rounded-lg border border-gray-200 dark:border-[#192A1D] hover:bg-gray-50 dark:hover:bg-[#0C150E] text-gray-500 dark:text-[#3E9E60] transition-colors flex-shrink-0">
+        <button type="button" onClick={onCancel} aria-label="Cancelar edição" className="h-9 px-2.5 rounded-lg border border-gray-200 dark:border-[#333333] hover:bg-gray-50 dark:hover:bg-[#252525] text-gray-500 dark:text-[#3E9E60] transition-colors flex-shrink-0">
           <XIcon size={12} aria-hidden="true" />
         </button>
       </div>
@@ -285,17 +285,17 @@ function DeadlineRow({ project }: { project: DashProject }) {
   const cfg = projectStatusConfig[project.status]
 
   return (
-    <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-50 dark:border-[#111B14] last:border-0 hover:bg-gray-50/60 dark:hover:bg-[#0C150E] transition-colors">
+    <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-50 dark:border-[#2a2a2a] last:border-0 hover:bg-gray-50/60 dark:hover:bg-[#252525] transition-colors">
       <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isOverdue ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-[#32B86A]'}`} />
       <div className="flex-1 min-w-0">
         <p className="text-[13px] font-medium text-gray-800 dark:text-[#E2F5EC] truncate">{project.name}</p>
-        <p className="text-[11px] text-gray-400 dark:text-[#2A5C3C] truncate">{project.client?.name ?? '—'}</p>
+        <p className="text-[11px] text-gray-400 dark:text-[#4d7a60] truncate">{project.client?.name ?? '—'}</p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <Badge color={cfg.color as 'green' | 'yellow' | 'red' | 'gray' | 'blue' | 'purple'} dot={false}>
           {cfg.label}
         </Badge>
-        <span className={`flex items-center gap-1 text-[11px] font-medium tabular ${isOverdue ? 'text-red-500 dark:text-red-400' : isWarning ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#2A5C3C]'}`}>
+        <span className={`flex items-center gap-1 text-[11px] font-medium tabular ${isOverdue ? 'text-red-500 dark:text-red-400' : isWarning ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#4d7a60]'}`}>
           {(isOverdue || isWarning) && <AlertTriangle size={9} />}
           {formatDateShort(project.deadline)}
         </span>
@@ -309,13 +309,13 @@ function LeadRow({ lead }: { lead: Lead }) {
   const cfg = leadStatusConfig[lead.status]
   const initials = lead.name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
   return (
-    <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-50 dark:border-[#111B14] last:border-0 hover:bg-gray-50/60 dark:hover:bg-[#0C150E] transition-colors">
+    <div className="flex items-center gap-3 px-5 py-3 border-b border-gray-50 dark:border-[#2a2a2a] last:border-0 hover:bg-gray-50/60 dark:hover:bg-[#252525] transition-colors">
       <div className="w-8 h-8 rounded-full bg-[#F0FBF5] dark:bg-[#0F3A20] flex items-center justify-center shrink-0">
         <span className="text-[11px] font-bold text-[#32B86A] dark:text-[#4EE88A]">{initials}</span>
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[13px] font-medium text-gray-800 dark:text-[#E2F5EC] truncate">{lead.name}</p>
-        <p className="text-[11px] text-gray-400 dark:text-[#2A5C3C]">{lead.revenue}</p>
+        <p className="text-[11px] text-gray-400 dark:text-[#4d7a60]">{lead.revenue}</p>
       </div>
       <Badge color={cfg.color as 'green' | 'yellow' | 'red' | 'gray' | 'blue' | 'purple'} dot={false}>
         {cfg.label}
@@ -344,10 +344,10 @@ function KpiCard({ label, value, sub, icon: Icon, iconCls, accent = 'from-gray-5
           <Icon size={17} />
         </div>
         {href && (
-          <ArrowUpRight size={14} className="text-gray-300 dark:text-[#192A1D] group-hover:text-[#32B86A] group-hover:dark:text-[#4EE88A] transition-colors" />
+          <ArrowUpRight size={14} className="text-gray-300 dark:text-[#333333] group-hover:text-[#32B86A] group-hover:dark:text-[#4EE88A] transition-colors" />
         )}
       </div>
-      <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C] mb-1">{label}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4d7a60] mb-1">{label}</p>
       {loading ? (
         <>
           <Skeleton className="h-7 w-28 mb-1" />
@@ -525,7 +525,7 @@ export default function DashboardPage() {
           <div className="lg:col-span-2 card-light p-5 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C]">Saldo do mês</p>
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4d7a60]">Saldo do mês</p>
                 {loading ? (
                   <Skeleton className="h-8 w-32 mt-1" />
                 ) : (
@@ -573,7 +573,7 @@ export default function DashboardPage() {
               </div>
             )}
 
-            <Link href="/dashboard/financeiro" className="flex items-center justify-between text-[12px] font-medium text-[#32B86A] dark:text-[#4EE88A] hover:opacity-80 transition-opacity mt-auto pt-1 border-t border-gray-100 dark:border-[#111B14]">
+            <Link href="/dashboard/financeiro" className="flex items-center justify-between text-[12px] font-medium text-[#32B86A] dark:text-[#4EE88A] hover:opacity-80 transition-opacity mt-auto pt-1 border-t border-gray-100 dark:border-[#2a2a2a]">
               Ver lançamentos completos
               <ArrowRight size={13} />
             </Link>
@@ -582,7 +582,7 @@ export default function DashboardPage() {
           <div className="lg:col-span-3 card-light p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C]">Meta Ads</p>
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4d7a60]">Meta Ads</p>
                 <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5">
                   {meta.length === 0 ? 'Sem campanhas cadastradas' : `${metaActive} campanha${metaActive !== 1 ? 's' : ''} ativa${metaActive !== 1 ? 's' : ''}`}
                 </p>
@@ -594,10 +594,10 @@ export default function DashboardPage() {
 
             {meta.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-[#0C150E] flex items-center justify-center mb-2">
-                  <BarChart2 size={16} className="text-gray-300 dark:text-[#192A1D]" />
+                <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-[#252525] flex items-center justify-center mb-2">
+                  <BarChart2 size={16} className="text-gray-300 dark:text-[#333333]" />
                 </div>
-                <p className="text-[12px] text-gray-400 dark:text-[#2A5C3C]">Adicione campanhas na página de Meta Ads</p>
+                <p className="text-[12px] text-gray-400 dark:text-[#4d7a60]">Adicione campanhas na página de Meta Ads</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -607,12 +607,12 @@ export default function DashboardPage() {
                   { label: 'Cliques', value: metaClicks >= 1000 ? `${(metaClicks / 1000).toFixed(1)}k` : String(metaClicks), icon: MousePointer, cls: 'text-[#32B86A] dark:text-[#4EE88A] bg-[#F0FBF5] dark:bg-[#0F3A20]' },
                   { label: 'CTR', value: `${metaCTR.toFixed(2)}%`, icon: Target, cls: 'text-amber-500 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/25' },
                 ].map(({ label, value, icon: Icon, cls }) => (
-                  <div key={label} className="bg-gray-50/80 dark:bg-[#0F1A12] rounded-xl p-3.5">
+                  <div key={label} className="bg-gray-50/80 dark:bg-[#1e1e1e] rounded-xl p-3.5">
                     <div className={`w-7 h-7 rounded-lg flex items-center justify-center mb-2 ${cls}`}>
                       <Icon size={13} />
                     </div>
                     <p className="tabular text-[16px] font-bold text-gray-900 dark:text-[#D1FAE5] leading-none">{value}</p>
-                    <p className="text-[10px] text-gray-400 dark:text-[#2A5C3C] mt-1">{label}</p>
+                    <p className="text-[10px] text-gray-400 dark:text-[#4d7a60] mt-1">{label}</p>
                   </div>
                 ))}
               </div>
@@ -622,9 +622,9 @@ export default function DashboardPage() {
 
         {/* ── Prazos ────────────────────────────────────────────────────── */}
         <div className="card-light overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#111B14]">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#2a2a2a]">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C]">Prazos próximos</p>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4d7a60]">Prazos próximos</p>
               <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5">
                 {loading ? '—' : `${activeProjects.length} projeto${activeProjects.length !== 1 ? 's' : ''} em andamento`}
               </p>
@@ -635,7 +635,7 @@ export default function DashboardPage() {
           </div>
 
           {loading ? (
-            <div className="divide-y divide-gray-50 dark:divide-[#111B14]">
+            <div className="divide-y divide-gray-50 dark:divide-[#2a2a2a]">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3 px-5 py-3.5">
                   <Skeleton className="w-2 h-2 rounded-full" />
@@ -649,10 +649,10 @@ export default function DashboardPage() {
             </div>
           ) : deadlineProjects.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-[#0C150E] flex items-center justify-center mb-2">
-                <CheckCircle2 size={16} className="text-gray-300 dark:text-[#192A1D]" />
+              <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-[#252525] flex items-center justify-center mb-2">
+                <CheckCircle2 size={16} className="text-gray-300 dark:text-[#333333]" />
               </div>
-              <p className="text-[12px] text-gray-400 dark:text-[#2A5C3C]">Nenhum projeto em andamento</p>
+              <p className="text-[12px] text-gray-400 dark:text-[#4d7a60]">Nenhum projeto em andamento</p>
             </div>
           ) : (
             <div>{deadlineProjects.map(p => <DeadlineRow key={p.id} project={p} />)}</div>

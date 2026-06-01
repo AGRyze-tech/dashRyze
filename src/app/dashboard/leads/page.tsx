@@ -270,7 +270,7 @@ export default function LeadsPage() {
                             <div
                               role="listbox"
                               aria-label="Alterar status do lead"
-                              className="absolute z-20 left-0 top-8 bg-white dark:bg-[#07100A] border border-gray-200 dark:border-[#111B14] rounded-lg shadow-lg dark:shadow-black/40 py-1 min-w-[150px]"
+                              className="absolute z-20 left-0 top-8 bg-white dark:bg-[#1c1c1c] border border-gray-200 dark:border-[#2a2a2a] rounded-lg shadow-lg dark:shadow-black/40 py-1 min-w-[150px]"
                             >
                               {(['novo', 'contatado', 'qualificado', 'descartado', 'convertido'] as LeadStatus[]).map(s => (
                                 <button
@@ -280,7 +280,7 @@ export default function LeadsPage() {
                                   aria-selected={lead.status === s ? 'true' : 'false'}
                                   onClick={() => { handleUpdateStatus(lead.id, s); setOpenStatusId(null) }}
                                   onKeyDown={e => { if (e.key === 'Escape') setOpenStatusId(null) }}
-                                  className={`w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 dark:hover:bg-[#0C150E] cursor-pointer transition-colors ${lead.status === s ? 'font-semibold text-[#32B86A] dark:text-[#4EE88A]' : 'text-gray-700 dark:text-[#D1FAE5]'}`}
+                                  className={`w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 dark:hover:bg-[#252525] cursor-pointer transition-colors ${lead.status === s ? 'font-semibold text-[#32B86A] dark:text-[#4EE88A]' : 'text-gray-700 dark:text-[#D1FAE5]'}`}
                                 >
                                   {leadStatusConfig[s].label}
                                 </button>

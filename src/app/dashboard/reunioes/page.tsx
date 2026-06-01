@@ -35,7 +35,7 @@ const emptyForm = {
 }
 
 function Skeleton({ className }: { className?: string }) {
-  return <div className={`animate-pulse rounded-lg bg-gray-100 dark:bg-[#0C150E] ${className}`} />
+  return <div className={`animate-pulse rounded-lg bg-gray-100 dark:bg-[#252525] ${className}`} />
 }
 
 export default function ReunioesPage() {
@@ -248,7 +248,7 @@ create policy "allow all" on meetings
             <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-900/25 flex items-center justify-center mb-3">
               <Calendar size={16} className="text-blue-600 dark:text-blue-400" />
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C] mb-1">Total</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4d7a60] mb-1">Total</p>
             {loading ? <Skeleton className="h-7 w-12" /> : (
               <p className="text-[28px] font-bold leading-none text-gray-900 dark:text-[#F0FDF4]">{total}</p>
             )}
@@ -258,7 +258,7 @@ create policy "allow all" on meetings
             <div className="w-9 h-9 rounded-xl bg-[#32B86A]/10 dark:bg-[#32B86A]/20 flex items-center justify-center mb-3">
               <CheckCircle2 size={16} className="text-[#32B86A] dark:text-[#4EE88A]" />
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C] mb-1">Concluídas</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4d7a60] mb-1">Concluídas</p>
             {loading ? <Skeleton className="h-7 w-12" /> : (
               <p className="text-[28px] font-bold leading-none text-[#32B86A] dark:text-[#4EE88A]">{concluidas}</p>
             )}
@@ -268,7 +268,7 @@ create policy "allow all" on meetings
             <div className="w-9 h-9 rounded-xl bg-[#32B86A]/10 dark:bg-[#32B86A]/20 flex items-center justify-center mb-3">
               <Handshake size={16} className="text-[#32B86A] dark:text-[#4EE88A]" />
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C] mb-1">Fechamentos</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4d7a60] mb-1">Fechamentos</p>
             {loading ? <Skeleton className="h-7 w-12" /> : (
               <p className="text-[28px] font-bold leading-none text-[#32B86A] dark:text-[#4EE88A]">{fechamentos}</p>
             )}
@@ -278,7 +278,7 @@ create policy "allow all" on meetings
             <div className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-3">
               <XCircle size={16} className="text-red-500 dark:text-red-400" />
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C] mb-1">Churned</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4d7a60] mb-1">Churned</p>
             {loading ? <Skeleton className="h-7 w-12" /> : (
               <p className="text-[28px] font-bold leading-none text-red-600 dark:text-red-400">{churned}</p>
             )}
@@ -288,7 +288,7 @@ create policy "allow all" on meetings
             <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-900/25 flex items-center justify-center mb-3">
               <XCircle size={16} className="text-amber-600 dark:text-amber-400" />
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C] mb-1">Taxa No-show</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4d7a60] mb-1">Taxa No-show</p>
             {loading ? <Skeleton className="h-7 w-16" /> : (
               <p className="text-[28px] font-bold leading-none text-amber-700 dark:text-amber-300">{taxaNoShow}%</p>
             )}
@@ -297,9 +297,9 @@ create policy "allow all" on meetings
 
         {/* ── Ledger ────────────────────────────────────────────────────── */}
         <div className="card-light overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#111B14]">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#2a2a2a]">
             <div>
-              <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#2A5C3C]">Histórico</h3>
+              <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4d7a60]">Histórico</h3>
               <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5">
                 {filtered.length} registro{filtered.length !== 1 ? 's' : ''}
               </p>
@@ -320,7 +320,7 @@ create policy "allow all" on meetings
           </div>
 
           {loading ? (
-            <div className="divide-y divide-gray-50 dark:divide-[#111B14]">
+            <div className="divide-y divide-gray-50 dark:divide-[#2a2a2a]">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3 px-5 py-3.5">
                   <Skeleton className="w-8 h-8 rounded-xl flex-shrink-0" />
@@ -334,11 +334,11 @@ create policy "allow all" on meetings
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-[#0C150E] flex items-center justify-center mb-3">
-                <Calendar size={18} className="text-gray-300 dark:text-[#192A1D]" />
+              <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-[#252525] flex items-center justify-center mb-3">
+                <Calendar size={18} className="text-gray-300 dark:text-[#333333]" />
               </div>
-              <p className="text-[13px] font-medium text-gray-400 dark:text-[#2A5C3C]">Nenhuma reunião neste mês</p>
-              <p className="text-[12px] text-gray-300 dark:text-[#192A1D] mt-0.5">Clique em "Registrar" para adicionar</p>
+              <p className="text-[13px] font-medium text-gray-400 dark:text-[#4d7a60]">Nenhuma reunião neste mês</p>
+              <p className="text-[12px] text-gray-300 dark:text-[#333333] mt-0.5">Clique em "Registrar" para adicionar</p>
             </div>
           ) : (
             <div>
@@ -347,7 +347,7 @@ create policy "allow all" on meetings
                 const Icon = cfg.icon
                 const sCfg = statusConfig[m.status]
                 return (
-                  <div key={m.id} className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-50 dark:border-[#111B14] last:border-0 hover:bg-gray-50/70 dark:hover:bg-[#0C150E] transition-colors group">
+                  <div key={m.id} className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-50 dark:border-[#2a2a2a] last:border-0 hover:bg-gray-50/70 dark:hover:bg-[#252525] transition-colors group">
                     <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${cfg.bgClass}`}>
                       <Icon size={14} className={cfg.iconClass} />
                     </div>
@@ -355,7 +355,7 @@ create policy "allow all" on meetings
                       <p className="text-[13px] font-medium text-gray-800 dark:text-[#D1FAE5] truncate">
                         {m.client_name || '—'}
                       </p>
-                      <p className="text-[11px] text-gray-400 dark:text-[#2A5C3C]">
+                      <p className="text-[11px] text-gray-400 dark:text-[#4d7a60]">
                         {m.scheduled_time ? m.scheduled_time.slice(0, 5) : formatDate(m.date)}
                         {!m.scheduled_time && ''}
                         {m.scheduled_time && <span className="ml-1 opacity-70">· {formatDate(m.date)}</span>}
@@ -382,7 +382,7 @@ create policy "allow all" on meetings
                         type="button"
                         onClick={() => handleOpenEdit(m)}
                         aria-label="Editar"
-                        className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-200 dark:text-[#111B14] hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-200 dark:text-[#2a2a2a] hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
                       >
                         <Pencil size={13} />
                       </button>
@@ -390,7 +390,7 @@ create policy "allow all" on meetings
                         type="button"
                         onClick={() => setDeleteModal(m)}
                         aria-label="Remover"
-                        className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-200 dark:text-[#111B14] hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-200 dark:text-[#2a2a2a] hover:text-red-500 dark:hover:text-red-400 transition-colors"
                       >
                         <Trash2 size={13} />
                       </button>
@@ -411,7 +411,7 @@ create policy "allow all" on meetings
             {/* Type toggle */}
             <div className="col-span-2">
               <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Tipo *</label>
-              <div className="flex rounded-xl border border-gray-200 dark:border-[#192A1D] overflow-hidden">
+              <div className="flex rounded-xl border border-gray-200 dark:border-[#333333] overflow-hidden">
                 {(Object.entries(typeConfig) as [MeetingType, typeof typeConfig[MeetingType]][]).map(([type, cfg]) => {
                   const Icon = cfg.icon
                   return (
@@ -420,7 +420,7 @@ create policy "allow all" on meetings
                       type="button"
                       onClick={() => setForm(f => ({ ...f, type }))}
                       className={`flex-1 py-2 text-[11px] font-semibold transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                        form.type === type ? cfg.activeClass : 'bg-white dark:bg-[#07100A] text-gray-500 dark:text-[#2A5C3C] hover:bg-gray-50 dark:hover:bg-[#0C150E]'
+                        form.type === type ? cfg.activeClass : 'bg-white dark:bg-[#1c1c1c] text-gray-500 dark:text-[#4d7a60] hover:bg-gray-50 dark:hover:bg-[#252525]'
                       }`}
                     >
                       <Icon size={13} /> {cfg.label}
@@ -492,7 +492,7 @@ create policy "allow all" on meetings
 
       {/* ── Toast ─────────────────────────────────────────────────────── */}
       {toast && (
-        <div className="animate-slide-up fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 bg-gray-900 dark:bg-[#07100A] dark:border dark:border-[#192A1D] text-white px-5 py-3 rounded-xl shadow-xl text-sm font-medium">
+        <div className="animate-slide-up fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 bg-gray-900 dark:bg-[#1c1c1c] dark:border dark:border-[#333333] text-white px-5 py-3 rounded-xl shadow-xl text-sm font-medium">
           <CheckCircle2 size={16} className="text-[#4EE88A] flex-shrink-0" />
           {toast}
         </div>

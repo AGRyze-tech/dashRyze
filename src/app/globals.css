@@ -3,14 +3,14 @@
 @tailwind utilities;
 
 :root {
-  --ryze-bg: #050908;
-  --ryze-surface: #07100A;
-  --ryze-surface-2: #0C150E;
-  --ryze-border: #111B14;
-  --ryze-border-light: #192A1D;
+  --ryze-bg: #121212;
+  --ryze-surface: #1c1c1c;
+  --ryze-surface-2: #252525;
+  --ryze-border: #2a2a2a;
+  --ryze-border-light: #333333;
   --ryze-text: #E6F2EB;
   --ryze-text-muted: #3E9E60;
-  --ryze-text-dim: #2A5C3C;
+  --ryze-text-dim: #4d7a60;
   --ryze-green: #32B86A;
   --ryze-green-dark: #0F3A20;
   --ryze-green-accent: #4EE88A;
@@ -72,7 +72,7 @@ body {
 
 /* Sidebar — always dark */
 .sidebar {
-  background: linear-gradient(180deg, #070C09 0%, #040806 55%, #060B08 100%);
+  background: linear-gradient(180deg, #0d0d0d 0%, #0a0a0a 55%, #0d0d0d 100%);
   border-right: 1px solid var(--ryze-border);
 }
 
@@ -287,34 +287,34 @@ select option {
 /* ── Dark mode overrides ──────────────────────────────────────────── */
 
 .dark .page-content {
-  background-color: #050908;
-  background-image: radial-gradient(rgba(78, 232, 138, 0.04) 1px, transparent 1px);
+  background-color: #121212;
+  background-image: radial-gradient(rgba(78, 232, 138, 0.035) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
 .dark .card-light,
 .dark .stat-card {
-  background: #07100A;
-  border-color: #111B14;
+  background: #1c1c1c;
+  border-color: #2a2a2a;
 }
 
 .dark .card-light {
-  box-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.4);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.6), 0 4px 12px rgba(0,0,0,0.5);
 }
 
 .dark .card-light:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.6), 0 8px 32px rgba(0,0,0,0.4);
-  border-color: rgba(78, 232, 138, 0.18);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.7), 0 8px 32px rgba(0,0,0,0.5);
+  border-color: rgba(78, 232, 138, 0.22);
 }
 
 .dark .stat-card:hover {
-  border-color: rgba(78, 232, 138, 0.28);
-  box-shadow: 0 4px 20px rgba(78,232,138,0.10), 0 -2px 0 #32B86A inset;
+  border-color: rgba(78, 232, 138, 0.32);
+  box-shadow: 0 4px 20px rgba(78,232,138,0.12), 0 -2px 0 #32B86A inset;
 }
 
 .dark .input-field {
-  background: #07100A;
-  border-color: #192A1D;
+  background: #1c1c1c;
+  border-color: #333333;
   color: #E6F2EB;
 }
 
@@ -324,31 +324,31 @@ select option {
 }
 
 .dark .input-field::placeholder {
-  color: #2A5C3C;
+  color: #4d7a60;
 }
 
 .dark .data-table th {
   color: #3E9E60;
-  border-bottom-color: #111B14;
-  background: #07100A;
+  border-bottom-color: #2a2a2a;
+  background: #1c1c1c;
 }
 
 .dark .data-table td {
   color: #D1FAE5;
-  border-bottom-color: #050908;
+  border-bottom-color: #121212;
 }
 
 .dark .data-table tr:hover td {
-  background: #0C150E;
+  background: #252525;
 }
 
 .dark .kanban-column {
-  background: #07100A;
+  background: #1c1c1c;
 }
 
 .dark select option {
   color: #E6F2EB;
-  background-color: #07100A;
+  background-color: #1c1c1c;
 }
 
 /* Chart color classes */
