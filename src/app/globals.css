@@ -70,10 +70,10 @@ body {
   min-height: 100vh;
 }
 
-/* Sidebar — always dark */
+/* Sidebar — carbon flat */
 .sidebar {
-  background: linear-gradient(180deg, #0d0d0d 0%, #0a0a0a 55%, #0d0d0d 100%);
-  border-right: 1px solid var(--ryze-border);
+  background: #121212;
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .sidebar::before {
@@ -82,8 +82,8 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 200px;
-  background: radial-gradient(ellipse at 50% -10%, rgba(78, 232, 138, 0.14) 0%, transparent 68%);
+  height: 220px;
+  background: radial-gradient(ellipse at 50% -10%, rgba(78, 232, 138, 0.22) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -228,25 +228,27 @@ select option {
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
-  color: #3E9E60;
+  color: #52aa78;
   cursor: pointer;
   transition: all 0.15s ease;
   text-decoration: none;
+  border-left: 2px solid transparent;
 }
 
 .nav-item:hover {
-  background: rgba(78, 232, 138, 0.08);
-  color: #E6F2EB;
+  background: rgba(78, 232, 138, 0.10);
+  color: #d0f5e0;
 }
 
 .nav-item.active {
-  background: rgba(78, 232, 138, 0.12);
+  background: rgba(78, 232, 138, 0.16);
   color: #4EE88A;
+  border-left-color: #4EE88A;
 }
 
 .nav-item.active svg {
   color: #4EE88A;
-  filter: drop-shadow(0 0 5px rgba(78, 232, 138, 0.45));
+  filter: drop-shadow(0 0 6px rgba(78, 232, 138, 0.65));
 }
 
 /* Animate stagger children */
@@ -304,12 +306,12 @@ select option {
 
 .dark .card-light:hover {
   box-shadow: 0 4px 16px rgba(0,0,0,0.7), 0 8px 32px rgba(0,0,0,0.5);
-  border-color: rgba(78, 232, 138, 0.22);
+  border-color: rgba(78, 232, 138, 0.35);
 }
 
 .dark .stat-card:hover {
-  border-color: rgba(78, 232, 138, 0.32);
-  box-shadow: 0 4px 20px rgba(78,232,138,0.12), 0 -2px 0 #32B86A inset;
+  border-color: rgba(78, 232, 138, 0.45);
+  box-shadow: 0 4px 24px rgba(78,232,138,0.18), 0 -2px 0 #4EE88A inset;
 }
 
 .dark .input-field {
