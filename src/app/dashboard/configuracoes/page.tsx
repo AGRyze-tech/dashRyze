@@ -167,7 +167,7 @@ export default function ConfiguracoesPage() {
             <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
               {profiles.map(profile => (
                 <div key={profile.id} className="flex items-center gap-4 px-5 py-4">
-                  <div className="w-9 h-9 rounded-full bg-[#32B86A] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-[#01CA3C] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                     {(profile.name ?? '?').charAt(0).toUpperCase()}
                   </div>
 
@@ -177,7 +177,7 @@ export default function ConfiguracoesPage() {
                         {profile.name ?? 'Sem nome'}
                       </span>
                       {profile.id === currentUser?.id && (
-                        <span className="text-[10px] font-medium bg-[#F0FBF5] text-[#32B86A] px-2 py-0.5 rounded-full">
+                        <span className="text-[10px] font-medium bg-[#F0FBF5] text-[#01CA3C] px-2 py-0.5 rounded-full">
                           Você
                         </span>
                       )}
@@ -189,7 +189,7 @@ export default function ConfiguracoesPage() {
                     <select
                       value={profile.role}
                       onChange={e => handleRoleChange(profile.id, e.target.value as Role)}
-                      className="text-[13px] border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#32B86A] bg-white cursor-pointer"
+                      className="text-[13px] border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#01CA3C] bg-white cursor-pointer"
                     >
                       <option value="admin">Admin</option>
                       <option value="gerente">Gerente</option>
@@ -242,7 +242,7 @@ export default function ConfiguracoesPage() {
                   type="text"
                   value={profileName}
                   onChange={e => setProfileName(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#32B86A] focus:ring-2 focus:ring-[#32B86A]/10"
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#01CA3C] focus:ring-2 focus:ring-[#01CA3C]/10"
                   placeholder="Seu nome"
                 />
               </div>
@@ -290,7 +290,7 @@ export default function ConfiguracoesPage() {
         {inviteSuccess ? (
           <div className="py-6 text-center">
             <div className="w-12 h-12 rounded-full bg-[#F0FBF5] flex items-center justify-center mx-auto mb-3">
-              <Mail size={20} className="text-[#32B86A]" />
+              <Mail size={20} className="text-[#01CA3C]" />
             </div>
             <p className="text-[14px] font-medium text-gray-900">Convite enviado!</p>
             <p className="text-[12px] text-gray-500 mt-1">{inviteSuccess}</p>
@@ -303,7 +303,7 @@ export default function ConfiguracoesPage() {
                 type="text"
                 value={inviteName}
                 onChange={e => setInviteName(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#32B86A] focus:ring-2 focus:ring-[#32B86A]/10"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#01CA3C] focus:ring-2 focus:ring-[#01CA3C]/10"
                 placeholder="Nome do colaborador"
               />
             </div>
@@ -313,7 +313,7 @@ export default function ConfiguracoesPage() {
                 type="email"
                 value={inviteEmail}
                 onChange={e => setInviteEmail(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#32B86A] focus:ring-2 focus:ring-[#32B86A]/10"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#01CA3C] focus:ring-2 focus:ring-[#01CA3C]/10"
                 placeholder="email@exemplo.com"
               />
             </div>
@@ -322,7 +322,7 @@ export default function ConfiguracoesPage() {
               <select
                 value={inviteRole}
                 onChange={e => setInviteRole(e.target.value as Role)}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#32B86A] bg-white"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#01CA3C] bg-white"
               >
                 <option value="gerente">Gerente</option>
                 <option value="visualizador">Visualizador</option>

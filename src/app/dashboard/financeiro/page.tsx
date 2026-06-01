@@ -35,20 +35,20 @@ const entradaCategories: TransactionCategory[] = ['clientes']
 const saidaCategories: TransactionCategory[] = ['meta_ads', 'imposto']
 
 const PIE_COLORS = [
-  '#32B86A', '#3B82F6', '#F59E0B', '#EF4444',
+  '#01CA3C', '#3B82F6', '#F59E0B', '#EF4444',
   '#8B5CF6', '#EC4899', '#06B6D4', '#F97316',
-  '#4EE88A', '#6B7280',
+  '#01CA3C', '#6B7280',
 ]
 
 const COLOR_CLASS_MAP: Record<string, string> = {
-  '#32B86A': 'chart-border-entry',
+  '#01CA3C': 'chart-border-entry',
   '#FCA5A5': 'chart-border-exit-light',
   '#7F1D1D': 'chart-border-exit-dark',
-  '#4EE88A': 'chart-border-1',
+  '#01a832': 'chart-border-1',
   '#74C69D': 'chart-border-2',
   '#95D5B2': 'chart-border-3',
-  '#1A5C35': 'chart-border-4',
-  '#0F3A20': 'chart-border-5',
+  '#014e18': 'chart-border-4',
+  '#012a10': 'chart-border-5',
 }
 
 const serviceOptions = [
@@ -113,11 +113,11 @@ function groupByDate(transactions: Transaction[]) {
 function ChartTooltip({ active, payload, label, isDark }: { active?: boolean; payload?: { name: string; value: number; color: string }[]; label?: string; isDark: boolean }) {
   if (!active || !payload?.length) return null
   return (
-    <div className={`rounded-xl border px-3 py-2.5 shadow-xl text-[12px] ${isDark ? 'bg-[#1c1c1c] border-[#333333] text-[#D1FAE5]' : 'bg-white border-gray-100 text-gray-700'}`}>
-      {label && <p className={`font-semibold mb-1.5 ${isDark ? 'text-[#3E9E60]' : 'text-gray-500'}`}>{label}</p>}
+    <div className={`rounded-xl border px-3 py-2.5 shadow-xl text-[12px] ${isDark ? 'bg-[#1c1c1f] border-[#33333a] text-[#D1FAE5]' : 'bg-white border-gray-100 text-gray-700'}`}>
+      {label && <p className={`font-semibold mb-1.5 ${isDark ? 'text-[#01992e]' : 'text-gray-500'}`}>{label}</p>}
       {payload.map(p => (
         <div key={p.name} className={`flex items-center gap-2 pl-2 border-l-2 ${COLOR_CLASS_MAP[p.color] ?? 'chart-border-entry'}`}>
-          <span className={isDark ? 'text-[#3E9E60]' : 'text-gray-500'}>{p.name}:</span>
+          <span className={isDark ? 'text-[#01992e]' : 'text-gray-500'}>{p.name}:</span>
           <span className="font-semibold">{formatCurrency(p.value)}</span>
         </div>
       ))}
@@ -287,8 +287,8 @@ export default function FinanceiroPage() {
   }
 
   // Chart theme
-  const gridColor  = isDark ? '#2a2a2a' : '#F3F4F6'
-  const tickColor  = isDark ? '#4d7a60' : '#9CA3AF'
+  const gridColor  = isDark ? '#2a2a2e' : '#F3F4F6'
+  const tickColor  = isDark ? '#017e26' : '#9CA3AF'
 
   return (
     <div>
@@ -307,7 +307,7 @@ export default function FinanceiroPage() {
                 <TrendingUp size={17} className="text-emerald-600 dark:text-emerald-400" />
               </div>
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4d7a60] mb-1">Entradas totais</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#017e26] mb-1">Entradas totais</p>
             <p className="tabular text-[26px] font-bold leading-none text-emerald-600 dark:text-emerald-400">{formatCurrency(totalEntradas)}</p>
           </div>
 
@@ -319,20 +319,20 @@ export default function FinanceiroPage() {
                 <TrendingDown size={17} className="text-red-500 dark:text-red-400" />
               </div>
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4d7a60] mb-1">Saídas totais</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#017e26] mb-1">Saídas totais</p>
             <p className="tabular text-[26px] font-bold leading-none text-red-500 dark:text-red-400">{formatCurrency(totalSaidas)}</p>
           </div>
 
           {/* Saldo */}
           <div className="stat-card p-5 overflow-hidden relative">
-            <div className={`absolute inset-0 bg-gradient-to-br ${saldo >= 0 ? 'from-[#32B86A]/8' : 'from-red-500/5'} via-transparent to-transparent pointer-events-none`} />
+            <div className={`absolute inset-0 bg-gradient-to-br ${saldo >= 0 ? 'from-[#01CA3C]/8' : 'from-red-500/5'} via-transparent to-transparent pointer-events-none`} />
             <div className="mb-4">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${saldo >= 0 ? 'bg-[#32B86A]/10 dark:bg-[#32B86A]/20' : 'bg-red-50 dark:bg-red-900/30'}`}>
-                <Wallet size={17} className={saldo >= 0 ? 'text-[#32B86A] dark:text-[#4EE88A]' : 'text-red-500 dark:text-red-400'} />
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${saldo >= 0 ? 'bg-[#01CA3C]/10 dark:bg-[#01CA3C]/20' : 'bg-red-50 dark:bg-red-900/30'}`}>
+                <Wallet size={17} className={saldo >= 0 ? 'text-[#01CA3C] dark:text-[#01CA3C]' : 'text-red-500 dark:text-red-400'} />
               </div>
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4d7a60] mb-1">Saldo atual</p>
-            <p className={`tabular text-[26px] font-bold leading-none ${saldo >= 0 ? 'text-[#32B86A] dark:text-[#4EE88A]' : 'text-red-500 dark:text-red-400'}`}>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#017e26] mb-1">Saldo atual</p>
+            <p className={`tabular text-[26px] font-bold leading-none ${saldo >= 0 ? 'text-[#01CA3C] dark:text-[#01CA3C]' : 'text-red-500 dark:text-red-400'}`}>
               {formatCurrency(saldo)}
             </p>
           </div>
@@ -346,10 +346,10 @@ export default function FinanceiroPage() {
             <div className="lg:col-span-2 card-light overflow-hidden">
               <div className="flex items-center justify-between px-5 pt-5 pb-3">
                 <div>
-                  <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4d7a60]">Evolução mensal</h3>
+                  <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#017e26]">Evolução mensal</h3>
                   <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5">Receita vs Despesa</p>
                 </div>
-                <Activity size={16} className="text-gray-300 dark:text-[#333333]" />
+                <Activity size={16} className="text-gray-300 dark:text-[#33333a]" />
               </div>
               <div className="px-1 pb-4">
                 <ResponsiveContainer width="100%" height={220}>
@@ -358,7 +358,7 @@ export default function FinanceiroPage() {
                     <XAxis dataKey="month" tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} tickFormatter={v => `R$${(v / 1000).toFixed(0)}k`} />
                     <Tooltip content={<ChartTooltip isDark={isDark} />} cursor={{ fill: isDark ? 'rgba(64,145,108,0.06)' : 'rgba(0,0,0,0.03)' }} />
-                    <Bar dataKey="receita" name="Receita" fill="#32B86A" radius={[5, 5, 0, 0]} maxBarSize={32} />
+                    <Bar dataKey="receita" name="Receita" fill="#01CA3C" radius={[5, 5, 0, 0]} maxBarSize={32} />
                     <Bar dataKey="despesa" name="Despesa" fill={isDark ? '#7F1D1D' : '#FCA5A5'} radius={[5, 5, 0, 0]} maxBarSize={32} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -368,11 +368,11 @@ export default function FinanceiroPage() {
             {/* Donut chart */}
             <div className="card-light overflow-hidden">
               <div className="px-5 pt-5 pb-3">
-                <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4d7a60]">Despesas por categoria</h3>
+                <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#017e26]">Despesas por categoria</h3>
                 <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5">Distribuição de custos</p>
               </div>
               {categoryData.length === 0 ? (
-                <div className="flex items-center justify-center py-12 text-gray-300 dark:text-[#333333] text-sm">Sem despesas registradas</div>
+                <div className="flex items-center justify-center py-12 text-gray-300 dark:text-[#33333a] text-sm">Sem despesas registradas</div>
               ) : (
                 <div className="pb-3">
                   <ResponsiveContainer width="100%" height={160}>
@@ -388,7 +388,7 @@ export default function FinanceiroPage() {
                       <div key={cat.name} className="flex items-center justify-between text-[11px]">
                         <div className="flex items-center gap-1.5">
                           <span className={`w-2 h-2 rounded-full flex-shrink-0 pie-dot-${i % PIE_COLORS.length}`} />
-                          <span className="text-gray-500 dark:text-[#3E9E60]">{cat.name}</span>
+                          <span className="text-gray-500 dark:text-[#01992e]">{cat.name}</span>
                         </div>
                         <span className="font-semibold tabular text-gray-700 dark:text-[#D1FAE5]">{formatCurrency(cat.value)}</span>
                       </div>
@@ -403,9 +403,9 @@ export default function FinanceiroPage() {
         {/* ── Transaction Ledger ────────────────────────────────────────── */}
         <div className="card-light overflow-hidden">
           {/* Toolbar */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#2a2a2a]">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#2a2a2e]">
             <div>
-              <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4d7a60]">Lançamentos</h3>
+              <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#017e26]">Lançamentos</h3>
               <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5">
                 {typeFilter === 'pendentes'
                   ? `${pendingClients.length} cliente${pendingClients.length !== 1 ? 's' : ''} com pagamento pendente`
@@ -413,7 +413,7 @@ export default function FinanceiroPage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex bg-gray-100 dark:bg-[#1c1c1c] rounded-lg p-0.5">
+              <div className="flex bg-gray-100 dark:bg-[#1c1c1f] rounded-lg p-0.5">
                 {([
                   { key: 'todos',     label: 'Todos' },
                   { key: 'entrada',   label: 'Entradas' },
@@ -428,8 +428,8 @@ export default function FinanceiroPage() {
                       typeFilter === key
                         ? key === 'pendentes'
                           ? 'bg-amber-500 dark:bg-amber-600 text-white shadow-sm'
-                          : 'bg-white dark:bg-[#252525] shadow-sm text-gray-900 dark:text-[#F8FBF9]'
-                        : 'text-gray-500 dark:text-[#4d7a60] hover:text-gray-700 dark:hover:text-[#3E9E60]'
+                          : 'bg-white dark:bg-[#252528] shadow-sm text-gray-900 dark:text-[#F8FBF9]'
+                        : 'text-gray-500 dark:text-[#017e26] hover:text-gray-700 dark:hover:text-[#01992e]'
                     }`}
                   >
                     {label}
@@ -443,13 +443,13 @@ export default function FinanceiroPage() {
           {/* ── Pendentes body ─────────────────────────────────────────── */}
           {typeFilter === 'pendentes' ? (
             loading ? (
-              <div className="divide-y divide-gray-50 dark:divide-[#2a2a2a]">
+              <div className="divide-y divide-gray-50 dark:divide-[#2a2a2e]">
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="flex items-center gap-3 px-5 py-3.5">
-                    <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#252525] animate-pulse flex-shrink-0" />
+                    <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#252528] animate-pulse flex-shrink-0" />
                     <div className="flex-1 space-y-1.5">
-                      <div className="h-3 w-36 bg-gray-200 dark:bg-[#2a2a2a] animate-pulse rounded" />
-                      <div className="h-2.5 w-24 bg-gray-100 dark:bg-[#1c1c1c] animate-pulse rounded" />
+                      <div className="h-3 w-36 bg-gray-200 dark:bg-[#2a2a2e] animate-pulse rounded" />
+                      <div className="h-2.5 w-24 bg-gray-100 dark:bg-[#1c1c1f] animate-pulse rounded" />
                     </div>
                     <div className="h-4 w-24 bg-amber-100 dark:bg-amber-900/20 animate-pulse rounded" />
                   </div>
@@ -460,8 +460,8 @@ export default function FinanceiroPage() {
                 <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center mb-3">
                   <Wallet size={18} className="text-emerald-500 dark:text-emerald-400" />
                 </div>
-                <p className="text-[13px] font-medium text-gray-400 dark:text-[#4d7a60]">Nenhum pagamento pendente</p>
-                <p className="text-[12px] text-gray-300 dark:text-[#333333] mt-0.5">Todos os clientes estão com pagamento em dia</p>
+                <p className="text-[13px] font-medium text-gray-400 dark:text-[#017e26]">Nenhum pagamento pendente</p>
+                <p className="text-[12px] text-gray-300 dark:text-[#33333a] mt-0.5">Todos os clientes estão com pagamento em dia</p>
               </div>
             ) : (
               <>
@@ -479,24 +479,24 @@ export default function FinanceiroPage() {
                     const remaining = total - paid
                     const pct = total > 0 ? Math.round((paid / total) * 100) : 0
                     return (
-                      <div key={c.id} className="flex items-center gap-3 px-5 py-4 border-b border-gray-50 dark:border-[#2a2a2a] last:border-0 hover:bg-gray-50/70 dark:hover:bg-[#252525] transition-colors">
+                      <div key={c.id} className="flex items-center gap-3 px-5 py-4 border-b border-gray-50 dark:border-[#2a2a2e] last:border-0 hover:bg-gray-50/70 dark:hover:bg-[#252528] transition-colors">
                         <div className="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center flex-shrink-0">
                           <span className="text-[12px] font-bold text-amber-600 dark:text-amber-400">{c.name.charAt(0)}</span>
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-[13px] font-medium text-gray-800 dark:text-[#D1FAE5] truncate">{c.name}</p>
                           <div className="flex items-center gap-2 mt-1">
-                            <div className="flex-1 h-1.5 bg-gray-100 dark:bg-[#252525] rounded-full overflow-hidden max-w-[120px]">
+                            <div className="flex-1 h-1.5 bg-gray-100 dark:bg-[#252528] rounded-full overflow-hidden max-w-[120px]">
                               <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${pct}%` }} />
                             </div>
-                            <span className="text-[11px] text-gray-400 dark:text-[#4d7a60]">
+                            <span className="text-[11px] text-gray-400 dark:text-[#017e26]">
                               {formatCurrency(paid)} pago de {formatCurrency(total)}
                             </span>
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0">
                           <p className="text-[14px] font-bold text-amber-600 dark:text-amber-400 tabular">{formatCurrency(remaining)}</p>
-                          <p className="text-[11px] text-gray-400 dark:text-[#4d7a60]">a receber</p>
+                          <p className="text-[11px] text-gray-400 dark:text-[#017e26]">a receber</p>
                         </div>
                       </div>
                     )
@@ -508,42 +508,42 @@ export default function FinanceiroPage() {
 
           {/* ── Normal ledger body ─────────────────────────────────────── */}
           {typeFilter !== 'pendentes' && loading ? (
-            <div className="divide-y divide-gray-50 dark:divide-[#2a2a2a]">
+            <div className="divide-y divide-gray-50 dark:divide-[#2a2a2e]">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3 px-5 py-3.5">
-                  <div className="w-8 h-8 rounded-xl bg-gray-100 dark:bg-[#252525] animate-pulse flex-shrink-0" />
+                  <div className="w-8 h-8 rounded-xl bg-gray-100 dark:bg-[#252528] animate-pulse flex-shrink-0" />
                   <div className="flex-1 space-y-1.5">
-                    <div className="h-3 w-40 bg-gray-200 dark:bg-[#2a2a2a] animate-pulse rounded" />
-                    <div className="h-2.5 w-24 bg-gray-100 dark:bg-[#1c1c1c] animate-pulse rounded" />
+                    <div className="h-3 w-40 bg-gray-200 dark:bg-[#2a2a2e] animate-pulse rounded" />
+                    <div className="h-2.5 w-24 bg-gray-100 dark:bg-[#1c1c1f] animate-pulse rounded" />
                   </div>
-                  <div className="h-4 w-20 bg-gray-200 dark:bg-[#2a2a2a] animate-pulse rounded" />
+                  <div className="h-4 w-20 bg-gray-200 dark:bg-[#2a2a2e] animate-pulse rounded" />
                 </div>
               ))}
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-[#252525] flex items-center justify-center mb-3">
-                <Wallet size={18} className="text-gray-300 dark:text-[#333333]" />
+              <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-[#252528] flex items-center justify-center mb-3">
+                <Wallet size={18} className="text-gray-300 dark:text-[#33333a]" />
               </div>
-              <p className="text-[13px] font-medium text-gray-400 dark:text-[#4d7a60]">Nenhum lançamento</p>
-              <p className="text-[12px] text-gray-300 dark:text-[#333333] mt-0.5">Registre entradas e saídas para ver o histórico</p>
+              <p className="text-[13px] font-medium text-gray-400 dark:text-[#017e26]">Nenhum lançamento</p>
+              <p className="text-[12px] text-gray-300 dark:text-[#33333a] mt-0.5">Registre entradas e saídas para ver o histórico</p>
             </div>
           ) : (
             <div>
               {grouped.map(({ date, items }) => (
                 <div key={date}>
                   {/* Date separator */}
-                  <div className="flex items-center gap-3 px-5 py-2 bg-gray-50/70 dark:bg-[#1e1e1e] border-y border-gray-100 dark:border-[#2a2a2a]">
-                    <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#4d7a60]">
+                  <div className="flex items-center gap-3 px-5 py-2 bg-gray-50/70 dark:bg-[#1e1e22] border-y border-gray-100 dark:border-[#2a2a2e]">
+                    <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#017e26]">
                       {formatDate(date)}
                     </span>
-                    <div className="flex-1 h-px bg-gray-100 dark:bg-[#2a2a2a]" />
-                    <span className="text-[11px] text-gray-300 dark:text-[#333333]">{items.length} registro{items.length !== 1 ? 's' : ''}</span>
+                    <div className="flex-1 h-px bg-gray-100 dark:bg-[#2a2a2e]" />
+                    <span className="text-[11px] text-gray-300 dark:text-[#33333a]">{items.length} registro{items.length !== 1 ? 's' : ''}</span>
                   </div>
 
                   {/* Transactions for that date */}
                   {items.map(t => (
-                    <div key={t.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50/70 dark:hover:bg-[#252525] transition-colors group border-b border-gray-50 dark:border-[#2a2a2a] last:border-0">
+                    <div key={t.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50/70 dark:hover:bg-[#252528] transition-colors group border-b border-gray-50 dark:border-[#2a2a2e] last:border-0">
                       <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${
                         t.type === 'entrada'
                           ? 'bg-emerald-50 dark:bg-emerald-900/25'
@@ -556,7 +556,7 @@ export default function FinanceiroPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[13px] font-medium text-gray-800 dark:text-[#D1FAE5] truncate">{t.description}</p>
-                        <p className="text-[11px] text-gray-400 dark:text-[#4d7a60]">{categoryLabels[t.category]}</p>
+                        <p className="text-[11px] text-gray-400 dark:text-[#017e26]">{categoryLabels[t.category]}</p>
                       </div>
                       <span className={`tabular text-[14px] font-bold ${
                         t.type === 'entrada' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'
@@ -568,7 +568,7 @@ export default function FinanceiroPage() {
                           type="button"
                           onClick={() => handleOpenEdit(t)}
                           aria-label="Editar lançamento"
-                          className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-200 dark:text-[#2a2a2a] hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+                          className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-200 dark:text-[#2a2a2e] hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
                         >
                           <Pencil size={13} />
                         </button>
@@ -576,7 +576,7 @@ export default function FinanceiroPage() {
                           type="button"
                           onClick={() => setDeleteModal(t)}
                           aria-label="Remover lançamento"
-                          className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-200 dark:text-[#2a2a2a] hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                          className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-200 dark:text-[#2a2a2e] hover:text-red-500 dark:hover:text-red-400 transition-colors"
                         >
                           <Trash2 size={13} />
                         </button>
@@ -598,7 +598,7 @@ export default function FinanceiroPage() {
             {/* Type toggle */}
             <div className="col-span-2">
               <label className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Tipo *</label>
-              <div className="flex rounded-xl border border-gray-200 dark:border-[#333333] overflow-hidden">
+              <div className="flex rounded-xl border border-gray-200 dark:border-[#33333a] overflow-hidden">
                 {(['entrada', 'saida'] as TransactionType[]).map(t => (
                   <button
                     key={t}
@@ -609,7 +609,7 @@ export default function FinanceiroPage() {
                         ? t === 'entrada'
                           ? 'bg-emerald-500 dark:bg-emerald-600 text-white'
                           : 'bg-red-500 dark:bg-red-600 text-white'
-                        : 'bg-white dark:bg-[#1c1c1c] text-gray-500 dark:text-[#4d7a60] hover:bg-gray-50 dark:hover:bg-[#252525]'
+                        : 'bg-white dark:bg-[#1c1c1f] text-gray-500 dark:text-[#017e26] hover:bg-gray-50 dark:hover:bg-[#252528]'
                     }`}
                   >
                     {t === 'entrada'
@@ -677,7 +677,7 @@ export default function FinanceiroPage() {
               <div className="flex items-center justify-between mb-1.5">
                 <label htmlFor="fin-description" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF]">Descrição *</label>
                 {form.description && (form.service || form.reference) && (
-                  <span className="text-[10px] text-[#32B86A] dark:text-[#4EE88A] font-medium">Auto-preenchida — editável</span>
+                  <span className="text-[10px] text-[#01CA3C] dark:text-[#01CA3C] font-medium">Auto-preenchida — editável</span>
                 )}
               </div>
               <input
@@ -693,7 +693,7 @@ export default function FinanceiroPage() {
             <div className="col-span-2">
               <label htmlFor="fin-amount" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Valor *</label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#4d7a60] text-sm font-medium select-none">R$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#017e26] text-sm font-medium select-none">R$</span>
                 <input id="fin-amount" type="number" className="input-field pl-10" placeholder="0,00" min="0" step="0.01" value={form.amount} onChange={set('amount')} required />
               </div>
             </div>
@@ -734,8 +734,8 @@ export default function FinanceiroPage() {
 
       {/* ── Toast ────────────────────────────────────────────────────── */}
       {toast && (
-        <div className="animate-slide-up fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 bg-gray-900 dark:bg-[#1c1c1c] dark:border dark:border-[#333333] text-white px-5 py-3 rounded-xl shadow-xl text-sm font-medium">
-          <CheckCircle2 size={16} className="text-[#4EE88A] flex-shrink-0" />
+        <div className="animate-slide-up fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 bg-gray-900 dark:bg-[#1c1c1f] dark:border dark:border-[#33333a] text-white px-5 py-3 rounded-xl shadow-xl text-sm font-medium">
+          <CheckCircle2 size={16} className="text-[#01CA3C] flex-shrink-0" />
           {toast}
         </div>
       )}

@@ -225,9 +225,9 @@ export const monthlyRevenueData = [
 ]
 
 export const categoryDistribution = [
-  { name: 'Contratos', value: 6883, color: '#32B86A' },
-  { name: 'Ferramentas', value: 89, color: '#4EE88A' },
-  { name: 'Infraestrutura', value: 240, color: '#0F3A20' },
+  { name: 'Contratos', value: 6883, color: '#01CA3C' },
+  { name: 'Ferramentas', value: 89, color: '#01CA3C' },
+  { name: 'Infraestrutura', value: 240, color: '#012a10' },
   { name: 'Marketing', value: 350, color: '#F59E0B' },
   { name: 'Pessoal', value: 5500, color: '#EF4444' },
 ]
