@@ -10,11 +10,11 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantMap = {
-  primary: 'bg-gradient-to-b from-[#4DA37A] to-[#01CA3C] hover:from-[#01CA3C] hover:to-[#014e18] text-white shadow-sm shadow-[#01CA3C]/20 active:scale-[0.98]',
-  secondary: 'bg-[#012a10] hover:bg-[#014e18] text-[#95D5B2] hover:text-white',
-  ghost: 'bg-transparent hover:bg-gray-100 dark:hover:bg-[#2a2a2e] text-gray-600 dark:text-[#01992e] hover:text-gray-900 dark:hover:text-[#F8FBF9]',
+  primary: 'bg-gradient-to-b from-[#4DA37A] to-[#00FF41] hover:from-[#00FF41] hover:to-[#003810] text-white shadow-sm shadow-[#00FF41]/20 active:scale-[0.98]',
+  secondary: 'bg-[#001c08] hover:bg-[#003810] text-[#95D5B2] hover:text-white',
+  ghost: 'bg-transparent hover:bg-gray-100 dark:hover:bg-[#181819] text-gray-600 dark:text-[#00a02a] hover:text-gray-900 dark:hover:text-[#F8FBF9]',
   danger: 'bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800',
-  outline: 'bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-[#2a2a2e] text-gray-700 dark:text-[#A7C4AF] border border-gray-200 dark:border-[#33333a] shadow-sm',
+  outline: 'bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-[#181819] text-gray-700 dark:text-[#A7C4AF] border border-gray-200 dark:border-[#28282d] shadow-sm',
 }
 
 const sizeMap = {

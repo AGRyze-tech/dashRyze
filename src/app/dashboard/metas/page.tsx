@@ -21,7 +21,7 @@ function monthStart() {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function Skeleton({ className }: { className?: string }) {
-  return <div className={`animate-pulse motion-reduce:animate-none rounded-lg bg-gray-100 dark:bg-[#252528] ${className}`} />
+  return <div className={`animate-pulse motion-reduce:animate-none rounded-lg bg-gray-100 dark:bg-[#181819] ${className}`} />
 }
 
 function pct(value: number, goal: number) {
@@ -30,21 +30,21 @@ function pct(value: number, goal: number) {
 }
 
 function barColor(p: number) {
-  if (p >= 100) return 'bg-[#01CA3C]'
+  if (p >= 100) return 'bg-[#00FF41]'
   if (p >= 70)  return 'bg-emerald-500'
   if (p >= 40)  return 'bg-amber-500'
   return 'bg-red-500'
 }
 
 function textColor(p: number) {
-  if (p >= 100) return 'text-[#01CA3C] dark:text-[#01CA3C]'
+  if (p >= 100) return 'text-[#00FF41] dark:text-[#00FF41]'
   if (p >= 70)  return 'text-emerald-600 dark:text-emerald-400'
   if (p >= 40)  return 'text-amber-600 dark:text-amber-400'
   return 'text-red-500 dark:text-red-400'
 }
 
 function ringColor(p: number) {
-  if (p >= 100) return 'ring-[#01CA3C]/30 dark:ring-[#01CA3C]/40'
+  if (p >= 100) return 'ring-[#00FF41]/30 dark:ring-[#00FF41]/40'
   if (p >= 70)  return 'ring-emerald-500/30'
   if (p >= 40)  return 'ring-amber-500/30'
   return 'ring-red-500/30'
@@ -77,10 +77,10 @@ function EditRow({ label, placeholder, value, onChange, onCommit, onCancel }: Ed
           step="any"
           onKeyDown={e => { if (e.key === 'Enter') onCommit(); if (e.key === 'Escape') onCancel() }}
         />
-        <button type="button" onClick={onCommit} className="h-9 px-3 rounded-lg bg-[#01CA3C] hover:bg-[#014e18] text-white text-[12px] font-medium flex items-center gap-1.5 transition-colors flex-shrink-0">
+        <button type="button" onClick={onCommit} className="h-9 px-3 rounded-lg bg-[#00FF41] hover:bg-[#003810] text-white text-[12px] font-medium flex items-center gap-1.5 transition-colors flex-shrink-0">
           <Check size={12} /> Salvar
         </button>
-        <button type="button" onClick={onCancel} aria-label="Cancelar" className="h-9 px-2.5 rounded-lg border border-gray-200 dark:border-[#33333a] hover:bg-gray-50 dark:hover:bg-[#252528] text-gray-500 dark:text-[#01992e] transition-colors flex-shrink-0">
+        <button type="button" onClick={onCancel} aria-label="Cancelar" className="h-9 px-2.5 rounded-lg border border-gray-200 dark:border-[#28282d] hover:bg-gray-50 dark:hover:bg-[#181819] text-gray-500 dark:text-[#00a02a] transition-colors flex-shrink-0">
           <XIcon size={12} />
         </button>
       </div>
@@ -108,20 +108,20 @@ function RevenueCard({ current, goal, loading, editing, editValue, onEditChange,
   useLayoutEffect(() => { barRef.current?.style.setProperty('--bar-w', `${p}%`) }, [p])
 
   return (
-    <div className={`card-light overflow-hidden relative ring-1 ${done ? 'ring-[#01CA3C]/30 dark:ring-[#01CA3C]/40' : `ring-transparent ${ringColor(p)}`}`}>
-      <div className={`absolute inset-0 bg-gradient-to-br ${done ? 'from-[#01CA3C]/8' : 'from-emerald-500/5'} via-transparent to-transparent pointer-events-none`} />
+    <div className={`card-light overflow-hidden relative ring-1 ${done ? 'ring-[#00FF41]/30 dark:ring-[#00FF41]/40' : `ring-transparent ${ringColor(p)}`}`}>
+      <div className={`absolute inset-0 bg-gradient-to-br ${done ? 'from-[#00FF41]/8' : 'from-emerald-500/5'} via-transparent to-transparent pointer-events-none`} />
       <div className="p-6 flex flex-col gap-5">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${done ? 'bg-[#01CA3C]/15 dark:bg-[#01CA3C]/25' : 'bg-emerald-50 dark:bg-emerald-900/30'}`}>
-              <TrendingUp size={19} className={done ? 'text-[#01CA3C] dark:text-[#01CA3C]' : 'text-emerald-600 dark:text-emerald-400'} />
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${done ? 'bg-[#00FF41]/15 dark:bg-[#00FF41]/25' : 'bg-emerald-50 dark:bg-emerald-900/30'}`}>
+              <TrendingUp size={19} className={done ? 'text-[#00FF41] dark:text-[#00FF41]' : 'text-emerald-600 dark:text-emerald-400'} />
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#017e26]">Meta Principal</p>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620]">Meta Principal</p>
               <p className="text-[15px] font-bold text-gray-800 dark:text-[#D1FAE5] mt-0.5">Faturamento</p>
             </div>
           </div>
-          <button type="button" onClick={onEdit} aria-label="Editar meta de faturamento" className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#252528] text-gray-300 dark:text-[#33333a] hover:text-gray-500 dark:hover:text-[#01992e] transition-colors">
+          <button type="button" onClick={onEdit} aria-label="Editar meta de faturamento" className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#181819] text-gray-300 dark:text-[#28282d] hover:text-gray-500 dark:hover:text-[#00a02a] transition-colors">
             <Pencil size={13} />
           </button>
         </div>
@@ -141,22 +141,22 @@ function RevenueCard({ current, goal, loading, editing, editValue, onEditChange,
               <div className="pb-1 flex items-center gap-2">
                 <span className={`text-[20px] font-bold tabular ${textColor(p)}`}>{p.toFixed(1)}%</span>
                 {done && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full bg-[#01CA3C]/10 dark:bg-[#01CA3C]/20 text-[#01CA3C] dark:text-[#01CA3C]">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full bg-[#00FF41]/10 dark:bg-[#00FF41]/20 text-[#00FF41] dark:text-[#00FF41]">
                     <CheckCircle2 size={10} /> Atingida!
                   </span>
                 )}
               </div>
             </div>
-            <div className="relative h-3 bg-gray-100 dark:bg-[#252528] rounded-full overflow-hidden">
+            <div className="relative h-3 bg-gray-100 dark:bg-[#181819] rounded-full overflow-hidden">
               <div ref={barRef} className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ease-out motion-reduce:transition-none w-[var(--bar-w,0%)] ${barColor(p)}`} />
               <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-full pointer-events-none" />
             </div>
             <div className="flex items-center justify-between">
               {done
-                ? <span className="text-[12px] text-[#01CA3C] dark:text-[#01CA3C] font-medium">Meta do mês superada!</span>
-                : <span className="text-[12px] text-gray-400 dark:text-[#017e26]">Faltam <span className="font-semibold text-gray-700 dark:text-[#D1FAE5]">{formatCurrency(remaining)}</span> para a meta</span>
+                ? <span className="text-[12px] text-[#00FF41] dark:text-[#00FF41] font-medium">Meta do mês superada!</span>
+                : <span className="text-[12px] text-gray-400 dark:text-[#006620]">Faltam <span className="font-semibold text-gray-700 dark:text-[#D1FAE5]">{formatCurrency(remaining)}</span> para a meta</span>
               }
-              <span className="text-[12px] text-gray-400 dark:text-[#017e26]">Meta: <span className="font-semibold text-gray-700 dark:text-[#D1FAE5]">{formatCurrency(goal)}</span></span>
+              <span className="text-[12px] text-gray-400 dark:text-[#006620]">Meta: <span className="font-semibold text-gray-700 dark:text-[#D1FAE5]">{formatCurrency(goal)}</span></span>
             </div>
           </div>
         )}
@@ -176,7 +176,7 @@ function SalesCard({ current, loading }: { current: number; loading: boolean }) 
         </div>
         <div>
           <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5]">Número de Vendas</p>
-          <p className="text-[11px] text-gray-400 dark:text-[#017e26] mt-0.5">Transações de entrada este mês</p>
+          <p className="text-[11px] text-gray-400 dark:text-[#006620] mt-0.5">Transações de entrada este mês</p>
         </div>
       </div>
       {loading ? (
@@ -184,7 +184,7 @@ function SalesCard({ current, loading }: { current: number; loading: boolean }) 
       ) : (
         <p className="tabular text-[32px] font-bold leading-none text-amber-600 dark:text-amber-400">
           {Math.round(current)}
-          <span className="text-[16px] font-medium text-gray-400 dark:text-[#017e26] ml-2">
+          <span className="text-[16px] font-medium text-gray-400 dark:text-[#006620] ml-2">
             venda{Math.round(current) !== 1 ? 's' : ''}
           </span>
         </p>
@@ -258,24 +258,24 @@ export default function MetasPage() {
         {/* ── Summary KPIs ──────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 gap-4">
           <div className="stat-card p-5 overflow-hidden relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#01CA3C]/5 via-transparent to-transparent pointer-events-none" />
-            <div className="w-10 h-10 rounded-xl bg-[#01CA3C]/10 dark:bg-[#01CA3C]/20 flex items-center justify-center mb-3">
-              <Target size={17} className="text-[#01CA3C] dark:text-[#01CA3C]" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#00FF41]/5 via-transparent to-transparent pointer-events-none" />
+            <div className="w-10 h-10 rounded-xl bg-[#00FF41]/10 dark:bg-[#00FF41]/20 flex items-center justify-center mb-3">
+              <Target size={17} className="text-[#00FF41] dark:text-[#00FF41]" />
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#017e26] mb-1">Progresso Geral</p>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620] mb-1">Progresso Geral</p>
             <p className={`tabular text-[28px] font-bold leading-none ${textColor(overallPct)}`}>{overallPct.toFixed(0)}%</p>
-            <div className="mt-3 h-1.5 bg-gray-100 dark:bg-[#252528] rounded-full overflow-hidden">
+            <div className="mt-3 h-1.5 bg-gray-100 dark:bg-[#181819] rounded-full overflow-hidden">
               <div className={`h-full rounded-full transition-all duration-500 motion-reduce:transition-none ${barColor(overallPct)}`} style={{ width: `${overallPct}%` }} />
             </div>
           </div>
 
           <div className="stat-card p-5 overflow-hidden relative">
             <div className={`absolute inset-0 bg-gradient-to-br ${overallPct >= 70 ? 'from-amber-500/5' : 'from-gray-500/3'} via-transparent to-transparent pointer-events-none`} />
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${overallPct >= 70 ? 'bg-amber-50 dark:bg-amber-900/25' : 'bg-gray-100 dark:bg-[#252528]'}`}>
-              <Flame size={17} className={overallPct >= 70 ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#33333a]'} />
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${overallPct >= 70 ? 'bg-amber-50 dark:bg-amber-900/25' : 'bg-gray-100 dark:bg-[#181819]'}`}>
+              <Flame size={17} className={overallPct >= 70 ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#28282d]'} />
             </div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#017e26] mb-1">Ritmo do Mês</p>
-            <p className={`tabular text-[28px] font-bold leading-none ${overallPct >= 70 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500 dark:text-[#01992e]'}`}>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620] mb-1">Ritmo do Mês</p>
+            <p className={`tabular text-[28px] font-bold leading-none ${overallPct >= 70 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500 dark:text-[#00a02a]'}`}>
               {overallPct >= 100 ? 'Ótimo' : overallPct >= 70 ? 'Bom' : overallPct >= 40 ? 'Ok' : 'Baixo'}
             </p>
           </div>
@@ -285,10 +285,10 @@ export default function MetasPage() {
         <div>
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#017e26]">Objetivos do Mês</p>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#006620]">Objetivos do Mês</p>
               <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5 capitalize">{monthLabel}</p>
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-gray-400 dark:text-[#017e26]">
+            <div className="flex items-center gap-1.5 text-[11px] text-gray-400 dark:text-[#006620]">
               <Pencil size={11} />
               <span>Clique no lápis para editar</span>
             </div>

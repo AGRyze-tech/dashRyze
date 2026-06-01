@@ -25,11 +25,11 @@ const emptyForm = {
 function ChartTooltip({ active, payload, label, isDark }: { active?: boolean; payload?: { name: string; value: number; color: string }[]; label?: string; isDark: boolean }) {
   if (!active || !payload?.length) return null
   return (
-    <div className={`rounded-xl border px-3 py-2.5 shadow-xl text-[12px] ${isDark ? 'bg-[#1c1c1f] border-[#33333a] text-[#D1FAE5]' : 'bg-white border-gray-100 text-gray-700'}`}>
-      {label && <p className={`font-semibold mb-1 ${isDark ? 'text-[#01992e]' : 'text-gray-500'}`}>{label}</p>}
+    <div className={`rounded-xl border px-3 py-2.5 shadow-xl text-[12px] ${isDark ? 'bg-[#111114] border-[#28282d] text-[#D1FAE5]' : 'bg-white border-gray-100 text-gray-700'}`}>
+      {label && <p className={`font-semibold mb-1 ${isDark ? 'text-[#00a02a]' : 'text-gray-500'}`}>{label}</p>}
       {payload.map(p => (
         <div key={p.name} className="flex items-center gap-2">
-          <span className={isDark ? 'text-[#01992e]' : 'text-gray-500'}>{p.name}:</span>
+          <span className={isDark ? 'text-[#00a02a]' : 'text-gray-500'}>{p.name}:</span>
           <span className="font-semibold">{formatCurrency(p.value)}</span>
         </div>
       ))}
@@ -67,8 +67,8 @@ export default function MetaPage() {
 
   const spendData = campaigns.map(c => ({ name: c.name.length > 16 ? c.name.slice(0, 16) + '…' : c.name, spend: c.spend }))
 
-  const gridColor = isDark ? '#2a2a2e' : '#F3F4F6'
-  const tickColor = isDark ? '#017e26' : '#9CA3AF'
+  const gridColor = isDark ? '#181819' : '#F3F4F6'
+  const tickColor = isDark ? '#006620' : '#9CA3AF'
 
   function handleOpenCreate() {
     setEditTarget(null)
@@ -146,7 +146,7 @@ export default function MetaPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Badge color="purple" dot={false}>Modo Manual</Badge>
-            <span className="text-[12px] text-gray-400 dark:text-[#017e26]">Dados inseridos manualmente</span>
+            <span className="text-[12px] text-gray-400 dark:text-[#006620]">Dados inseridos manualmente</span>
           </div>
           <Button onClick={handleOpenCreate}><Plus size={14} /> Nova campanha</Button>
         </div>
@@ -156,7 +156,7 @@ export default function MetaPage() {
           {[
             { label: 'Gasto Total', value: formatCurrency(totalSpend), icon: DollarSign, iconCls: 'text-red-500 dark:text-red-400', bgCls: 'bg-red-50 dark:bg-red-900/25' },
             { label: 'Impressões', value: totalImpressions.toLocaleString('pt-BR'), icon: Eye, iconCls: 'text-violet-700 dark:text-violet-400', bgCls: 'bg-violet-50 dark:bg-violet-900/25' },
-            { label: 'Cliques', value: totalClicks.toLocaleString('pt-BR'), icon: MousePointer, iconCls: 'text-[#01CA3C] dark:text-[#01CA3C]', bgCls: 'bg-[#01CA3C]/10 dark:bg-[#01CA3C]/20' },
+            { label: 'Cliques', value: totalClicks.toLocaleString('pt-BR'), icon: MousePointer, iconCls: 'text-[#00FF41] dark:text-[#00FF41]', bgCls: 'bg-[#00FF41]/10 dark:bg-[#00FF41]/20' },
             { label: 'CPM Médio', value: formatCurrency(avgCPM), icon: BarChart2, iconCls: 'text-blue-600 dark:text-blue-400', bgCls: 'bg-blue-50 dark:bg-blue-900/25' },
             { label: 'CTR', value: `${ctr.toFixed(2)}%`, icon: TrendingUp, iconCls: 'text-amber-500 dark:text-amber-400', bgCls: 'bg-amber-50 dark:bg-amber-900/25' },
           ].map(({ label, value, icon: Icon, iconCls, bgCls }) => (
@@ -165,7 +165,7 @@ export default function MetaPage() {
                 <Icon size={15} className={iconCls} />
               </div>
               <div className="tabular text-lg font-bold text-gray-900 dark:text-[#F0FDF4]">{value}</div>
-              <div className="text-[11px] text-gray-500 dark:text-[#017e26] mt-0.5">{label}</div>
+              <div className="text-[11px] text-gray-500 dark:text-[#006620] mt-0.5">{label}</div>
             </div>
           ))}
         </div>
@@ -180,11 +180,11 @@ export default function MetaPage() {
               <div className="px-2 pb-4 pt-2">
                 {campaigns.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-[220px] gap-2">
-                    <div className="w-10 h-10 rounded-2xl bg-gray-100 dark:bg-[#252528] flex items-center justify-center">
-                      <BarChart2 size={18} className="text-gray-300 dark:text-[#33333a]" />
+                    <div className="w-10 h-10 rounded-2xl bg-gray-100 dark:bg-[#181819] flex items-center justify-center">
+                      <BarChart2 size={18} className="text-gray-300 dark:text-[#28282d]" />
                     </div>
-                    <p className="text-[13px] text-gray-400 dark:text-[#017e26]">Nenhuma campanha ainda</p>
-                    <p className="text-[12px] text-gray-300 dark:text-[#33333a]">Adicione campanhas para ver o gráfico</p>
+                    <p className="text-[13px] text-gray-400 dark:text-[#006620]">Nenhuma campanha ainda</p>
+                    <p className="text-[12px] text-gray-300 dark:text-[#28282d]">Adicione campanhas para ver o gráfico</p>
                   </div>
                 ) : (
                   <ResponsiveContainer width="100%" height={220}>
@@ -193,7 +193,7 @@ export default function MetaPage() {
                       <XAxis dataKey="name" tick={{ fontSize: 10, fill: tickColor }} axisLine={false} tickLine={false} />
                       <YAxis tick={{ fontSize: 11, fill: tickColor }} axisLine={false} tickLine={false} tickFormatter={v => `R$${v}`} />
                       <Tooltip content={<ChartTooltip isDark={isDark} />} cursor={{ fill: isDark ? 'rgba(64,145,108,0.06)' : 'rgba(0,0,0,0.03)' }} />
-                      <Bar dataKey="spend" name="Gasto" fill="#01CA3C" radius={[5, 5, 0, 0]} maxBarSize={40} />
+                      <Bar dataKey="spend" name="Gasto" fill="#00FF41" radius={[5, 5, 0, 0]} maxBarSize={40} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
@@ -203,16 +203,16 @@ export default function MetaPage() {
 
           {/* Campaign list */}
           <Card padding="none">
-            <CardHeader className="px-5 pt-5 pb-3 border-b border-gray-100 dark:border-[#2a2a2e]">
+            <CardHeader className="px-5 pt-5 pb-3 border-b border-gray-100 dark:border-[#181819]">
               <CardTitle>Campanhas ({campaigns.length})</CardTitle>
             </CardHeader>
-            <div className="divide-y divide-gray-50 dark:divide-[#2a2a2e] overflow-y-auto max-h-[300px]">
+            <div className="divide-y divide-gray-50 dark:divide-[#181819] overflow-y-auto max-h-[300px]">
               {campaigns.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-24 gap-1">
-                  <p className="text-[13px] text-gray-400 dark:text-[#017e26]">Nenhuma campanha</p>
+                  <p className="text-[13px] text-gray-400 dark:text-[#006620]">Nenhuma campanha</p>
                 </div>
               ) : campaigns.map(c => (
-                <div key={c.id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-[#252528] transition-colors group">
+                <div key={c.id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-[#181819] transition-colors group">
                   <div className="flex items-start justify-between mb-1.5">
                     <p className="text-[12px] font-medium text-gray-800 dark:text-[#D1FAE5] leading-tight flex-1 mr-2">{c.name}</p>
                     <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -224,7 +224,7 @@ export default function MetaPage() {
                         type="button"
                         onClick={() => handleOpenEdit(c)}
                         aria-label={`Editar ${c.name}`}
-                        className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-300 dark:text-[#33333a] hover:text-blue-600 dark:hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100"
+                        className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-300 dark:text-[#28282d] hover:text-blue-600 dark:hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100"
                       >
                         <Pencil size={12} />
                       </button>
@@ -232,7 +232,7 @@ export default function MetaPage() {
                         type="button"
                         onClick={() => setDeleteModal(c)}
                         aria-label={`Remover ${c.name}`}
-                        className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 dark:text-[#33333a] hover:text-red-500 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                        className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 dark:text-[#28282d] hover:text-red-500 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
                       >
                         <Trash2 size={12} />
                       </button>
@@ -240,24 +240,24 @@ export default function MetaPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-x-3 gap-y-1 mt-2">
                     <div>
-                      <span className="text-[10px] text-gray-400 dark:text-[#017e26]">Gasto</span>
+                      <span className="text-[10px] text-gray-400 dark:text-[#006620]">Gasto</span>
                       <div className="text-[12px] font-semibold tabular text-red-500 dark:text-red-400">{formatCurrency(c.spend)}</div>
                     </div>
                     <div>
-                      <span className="text-[10px] text-gray-400 dark:text-[#017e26]">CPM</span>
+                      <span className="text-[10px] text-gray-400 dark:text-[#006620]">CPM</span>
                       <div className="text-[12px] font-semibold tabular text-gray-700 dark:text-[#A7C4AF]">{formatCurrency(c.cpm)}</div>
                     </div>
                     <div>
-                      <span className="text-[10px] text-gray-400 dark:text-[#017e26]">Impressões</span>
+                      <span className="text-[10px] text-gray-400 dark:text-[#006620]">Impressões</span>
                       <div className="text-[12px] font-semibold tabular text-gray-700 dark:text-[#A7C4AF]">{c.impressions.toLocaleString('pt-BR')}</div>
                     </div>
                     <div>
-                      <span className="text-[10px] text-gray-400 dark:text-[#017e26]">Cliques</span>
+                      <span className="text-[10px] text-gray-400 dark:text-[#006620]">Cliques</span>
                       <div className="text-[12px] font-semibold tabular text-gray-700 dark:text-[#A7C4AF]">{c.clicks.toLocaleString('pt-BR')}</div>
                     </div>
                   </div>
                   <div className="mt-1.5">
-                    <span className="text-[10px] text-gray-400 dark:text-[#017e26]">Budget/dia: {formatCurrency(c.daily_budget)}</span>
+                    <span className="text-[10px] text-gray-400 dark:text-[#006620]">Budget/dia: {formatCurrency(c.daily_budget)}</span>
                   </div>
                 </div>
               ))}
@@ -334,8 +334,8 @@ export default function MetaPage() {
       </Modal>
 
       {toast && (
-        <div className="animate-slide-up fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 bg-gray-900 dark:bg-[#1c1c1f] dark:border dark:border-[#33333a] text-white px-4 py-3 rounded-xl shadow-xl text-sm font-medium">
-          <CheckCircle2 size={16} className="text-[#01CA3C] flex-shrink-0" />
+        <div className="animate-slide-up fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 bg-gray-900 dark:bg-[#111114] dark:border dark:border-[#28282d] text-white px-4 py-3 rounded-xl shadow-xl text-sm font-medium">
+          <CheckCircle2 size={16} className="text-[#00FF41] flex-shrink-0" />
           {toast}
         </div>
       )}

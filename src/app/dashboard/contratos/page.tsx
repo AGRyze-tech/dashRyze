@@ -364,14 +364,14 @@ export default function ContratosPage() {
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-2 max-h-52 overflow-y-auto">
                 {dueDates.map((date, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <div className="w-6 h-6 rounded-full bg-[#01CA3C]/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-[10px] font-bold text-[#01CA3C]">{i + 1}</span>
+                    <div className="w-6 h-6 rounded-full bg-[#00FF41]/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-[10px] font-bold text-[#00FF41]">{i + 1}</span>
                     </div>
                     <span className="text-[13px] font-semibold tabular text-gray-700 flex-1">{formatCurrency(installmentValue)}</span>
                     <div className="flex items-center gap-1.5">
                       <Calendar size={12} className="text-gray-400 flex-shrink-0" />
                       <input type="date"
-                        className="text-[12px] border border-gray-200 rounded-md px-2 py-1 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#01CA3C] bg-white"
+                        className="text-[12px] border border-gray-200 rounded-md px-2 py-1 text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#00FF41] bg-white"
                         value={date}
                         onChange={e => {
                           const next = [...dueDates]
@@ -414,7 +414,7 @@ export default function ContratosPage() {
 
       {toast && (
         <div className="animate-slide-up fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 bg-gray-900 text-white px-4 py-3 rounded-xl shadow-xl text-sm font-medium">
-          <CheckCircle2 size={16} className="text-[#01CA3C] flex-shrink-0" />
+          <CheckCircle2 size={16} className="text-[#00FF41] flex-shrink-0" />
           {toast}
         </div>
       )}
