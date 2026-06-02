@@ -277,14 +277,16 @@ export default function ClientesPage() {
         await projRepo.create({ ...projectBase, status: 'briefing' })
       }
 
-      // ── Transação de recebimento (só clientes ativos com valor pago) ──────
-      if (form.status === 'ativo' && paidVal && paidVal > 0) {
+      // ── Transação de recebimento (clientes ativos com valor total) ──────
+      // Usa paidVal se preenchido, senão usa totalVal como fallback
+      const txAmount = (paidVal && paidVal > 0) ? paidVal : totalVal
+      if (form.status === 'ativo' && txAmount && txAmount > 0) {
         const txDate = form.closed_at || today
         const txPayload = {
           type: 'entrada' as const,
           category: 'clientes' as const,
           description: `Recebimento - ${form.name}`,
-          amount: paidVal,
+          amount: txAmount,
           date: txDate,
           client_id: savedClient!.id,
         }
@@ -574,8 +576,8 @@ export default function ClientesPage() {
             </div>
 
             <div>
-              <label htmlFor="cli-email" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Email *</label>
-              <input id="cli-email" type="email" className="input-field" placeholder="email@exemplo.com" value={form.email} onChange={set('email')} required />
+              <label htmlFor="cli-email" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Email</label>
+              <input id="cli-email" type="email" className="input-field" placeholder="email@exemplo.com" value={form.email} onChange={set('email')} />
             </div>
 
             <div>
