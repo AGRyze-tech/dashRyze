@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Card } from '@/components/ui/Card'
 import {
-  Search, Plus, Phone, Mail, Instagram, ExternalLink, ChevronRight,
-  CheckCircle2, Pencil, Trash2, Paperclip, X, FileCheck, Globe,
+  Search, Plus, Phone, Instagram, ExternalLink, ChevronRight,
+  CheckCircle2, Pencil, Trash2, Paperclip, X, FileCheck,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { clientRepository, ClientInput } from '@/lib/repositories'
@@ -45,7 +45,7 @@ const PROJECT_TYPE_OPTIONS: { value: ProjectType; label: string }[] = [
 ]
 
 const emptyForm = {
-  name: '', specialty: '', email: '', whatsapp: '',
+  name: '', specialty: '', whatsapp: '',
   status: 'prospecto' as ClientStatus, notes: '',
   closed_at: '', delivery_date: '',
   total_value: '',
@@ -118,8 +118,7 @@ export default function ClientesPage() {
     const lower = search.toLowerCase()
     return clients.filter(c => {
       const matchSearch = (c.name ?? '').toLowerCase().includes(lower) ||
-        (c.specialty ?? '').toLowerCase().includes(lower) ||
-        (c.email ?? '').toLowerCase().includes(lower)
+        (c.specialty ?? '').toLowerCase().includes(lower)
       const matchStatus = statusFilter === 'todos' || c.status === statusFilter
       const matchSpec = specialtyFilter === 'todas' || c.specialty === specialtyFilter
       const matchDate = !range.from || !range.to || !c.closed_at ||
@@ -160,7 +159,6 @@ export default function ClientesPage() {
     setForm({
       name: client.name,
       specialty: client.specialty,
-      email: client.email ?? '',
       whatsapp: client.whatsapp,
       status: client.status,
       notes: client.notes ?? '',
@@ -205,7 +203,6 @@ export default function ClientesPage() {
       const payload: ClientInput = {
         name: form.name,
         specialty: form.specialty,
-        email: form.email,
         whatsapp: form.whatsapp,
         status: form.status,
         notes: form.notes || undefined,
@@ -345,7 +342,7 @@ export default function ClientesPage() {
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Buscar por nome, especialidade ou email..."
+              placeholder="Buscar por nome ou especialidade..."
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="input-field pl-9 py-2"
@@ -437,7 +434,6 @@ export default function ClientesPage() {
                             </div>
                             <div>
                               <p className="font-medium text-gray-900 dark:text-[#F8FBF9] text-[13px]">{client.name}</p>
-                              {client.email && <p className="text-[11px] text-gray-400 dark:text-[#00a02a]">{client.email}</p>}
                             </div>
                           </div>
                         </td>
@@ -448,12 +444,6 @@ export default function ClientesPage() {
                               <a href={`https://wa.me/55${client.whatsapp}`} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"
                                 className="p-1.5 rounded-md hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-gray-400 dark:text-[#00a02a] hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
                                 <Phone size={13} />
-                              </a>
-                            )}
-                            {client.email && (
-                              <a href={`mailto:${client.email}`} aria-label="Email"
-                                className="p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-[#00FF41]/8 text-gray-400 dark:text-[#00a02a] hover:text-blue-600 dark:hover:text-[#00FF41] transition-colors">
-                                <Mail size={13} />
                               </a>
                             )}
                             {client.instagram && (
@@ -573,11 +563,6 @@ export default function ClientesPage() {
                   <option key={s} value={s}>{clientStatusConfig[s].label}</option>
                 ))}
               </select>
-            </div>
-
-            <div>
-              <label htmlFor="cli-email" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Email</label>
-              <input id="cli-email" type="email" className="input-field" placeholder="email@exemplo.com" value={form.email} onChange={set('email')} />
             </div>
 
             <div>

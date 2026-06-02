@@ -6,7 +6,7 @@ type Db = ReturnType<typeof createClient>
 export type ClientInput = {
   name: string
   specialty: string
-  email: string
+  email?: string
   whatsapp: string
   instagram?: string
   website?: string
