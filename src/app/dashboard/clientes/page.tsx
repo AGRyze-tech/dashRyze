@@ -274,10 +274,9 @@ export default function ClientesPage() {
         await projRepo.create({ ...projectBase, status: 'briefing' })
       }
 
-      // ── Transação de recebimento (clientes ativos com valor total) ──────
-      // Usa paidVal se preenchido, senão usa totalVal como fallback
+      // ── Transação de recebimento (qualquer cliente com valor preenchido) ─
       const txAmount = (paidVal && paidVal > 0) ? paidVal : totalVal
-      if (form.status === 'ativo' && txAmount && txAmount > 0) {
+      if (txAmount && txAmount > 0) {
         const txDate = form.closed_at || today
         const txPayload = {
           type: 'entrada' as const,
