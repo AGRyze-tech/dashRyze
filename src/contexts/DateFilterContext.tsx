@@ -18,31 +18,38 @@ interface DateFilterCtx {
 
 function pad(n: number) { return String(n).padStart(2, '0') }
 
+function lastDayOf(year: number, month1indexed: number): number {
+  return new Date(year, month1indexed, 0).getDate()
+}
+
 function computeRange(preset: DatePreset, custom: DateRange): DateRange {
   const now = new Date()
   const y = now.getFullYear()
   const m = now.getMonth() // 0-indexed
 
   switch (preset) {
-    case 'mes-atual':
+    case 'mes-atual': {
+      const last = lastDayOf(y, m + 1)
       return {
         from: `${y}-${pad(m + 1)}-01`,
-        to:   `${y}-${pad(m + 1)}-31`,
+        to:   `${y}-${pad(m + 1)}-${pad(last)}`,
       }
+    }
     case 'mes-passado': {
       const pm = m === 0 ? 11 : m - 1
       const py = m === 0 ? y - 1 : y
-      const lastDay = new Date(y, m, 0).getDate()
+      const last = lastDayOf(py, pm + 1)
       return {
         from: `${py}-${pad(pm + 1)}-01`,
-        to:   `${py}-${pad(pm + 1)}-${lastDay}`,
+        to:   `${py}-${pad(pm + 1)}-${pad(last)}`,
       }
     }
     case 'ultimos-3': {
       const start = new Date(y, m - 2, 1)
+      const last = lastDayOf(y, m + 1)
       return {
         from: `${start.getFullYear()}-${pad(start.getMonth() + 1)}-01`,
-        to:   `${y}-${pad(m + 1)}-31`,
+        to:   `${y}-${pad(m + 1)}-${pad(last)}`,
       }
     }
     case 'este-ano':
