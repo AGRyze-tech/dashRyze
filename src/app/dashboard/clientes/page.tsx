@@ -341,7 +341,7 @@ export default function ClientesPage() {
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Buscar por nome ou especialidade..."
+              placeholder="Buscar por nome ou especialidade…"
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="input-field pl-9 py-2"
@@ -544,7 +544,7 @@ export default function ClientesPage() {
                 id="cli-specialty"
                 list="specialties-list"
                 className="input-field"
-                placeholder="Ex: Psicanalista, Sexólogo..."
+                placeholder="Ex: Psicanalista, Sexólogo…"
                 value={form.specialty}
                 onChange={set('specialty')}
                 required
@@ -566,7 +566,7 @@ export default function ClientesPage() {
 
             <div>
               <label htmlFor="cli-whatsapp" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">WhatsApp *</label>
-              <input id="cli-whatsapp" className="input-field" placeholder="11999990000" value={form.whatsapp} onChange={set('whatsapp')} required />
+              <input id="cli-whatsapp" type="tel" inputMode="numeric" className="input-field" placeholder="11999990000" value={form.whatsapp} onChange={set('whatsapp')} required />
             </div>
 
             <div>
@@ -758,7 +758,7 @@ export default function ClientesPage() {
 
             <div className="col-span-2">
               <label htmlFor="cli-notes" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Observações internas</label>
-              <textarea id="cli-notes" className="input-field resize-none" rows={3} placeholder="Notas privadas sobre o cliente..." value={form.notes} onChange={set('notes')} />
+              <textarea id="cli-notes" className="input-field resize-none" rows={3} placeholder="Notas privadas sobre o cliente…" value={form.notes} onChange={set('notes')} />
             </div>
           </div>
 

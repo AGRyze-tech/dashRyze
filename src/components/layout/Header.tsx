@@ -114,20 +114,20 @@ export function Header({ title, subtitle }: HeaderProps) {
                   }`}>Personalizado</p>
                   <div className="space-y-1.5">
                     <div>
-                      <label className="text-[11px] text-gray-500 dark:text-[#00a02a] block mb-1">De</label>
+                      <label htmlFor="filter-date-from" className="text-[11px] text-gray-500 dark:text-[#00a02a] block mb-1">De</label>
                       <input
+                        id="filter-date-from"
                         type="date"
-                        title="Data inicial"
                         value={customFrom}
                         onChange={e => setFrom(e.target.value)}
                         className="input-field h-8 text-[12px] px-2"
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] text-gray-500 dark:text-[#00a02a] block mb-1">Até</label>
+                      <label htmlFor="filter-date-to" className="text-[11px] text-gray-500 dark:text-[#00a02a] block mb-1">Até</label>
                       <input
+                        id="filter-date-to"
                         type="date"
-                        title="Data final"
                         value={customTo}
                         onChange={e => setTo(e.target.value)}
                         className="input-field h-8 text-[12px] px-2"
