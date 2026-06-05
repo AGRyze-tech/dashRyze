@@ -40,3 +40,6 @@ Thumbs.db
 
 .vercel
 .env*.local
+
+# Verification screenshots
+verify-*.png
