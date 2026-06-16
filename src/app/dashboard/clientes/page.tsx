@@ -13,9 +13,10 @@ import {
 import { createClient } from '@/lib/supabase'
 import { clientRepository, ClientInput } from '@/lib/repositories'
 import { transactionRepository, projectRepository } from '@/lib/repositories'
-import { clientStatusConfig, activeClientStatuses, formatDate, formatCurrency, specialties } from '@/lib/utils'
+import { clientStatusConfig, activeClientStatuses, formatDate, formatCurrency, specialties, acquisitionSourceOptions } from '@/lib/utils'
 import { useDateFilter } from '@/contexts/DateFilterContext'
-import { Client, ClientStatus } from '@/types'
+import { useToast } from '@/hooks/useToast'
+import { Client, ClientStatus, AcquisitionSource } from '@/types'
 import type { ProjectType } from '@/types'
 
 const statusOptions: { value: ClientStatus | 'todos'; label: string }[] = [
@@ -38,15 +39,20 @@ function computePaidValue(mode: '' | '50%' | '100%', total: number | null, custo
 }
 
 const PROJECT_TYPE_OPTIONS: { value: ProjectType; label: string }[] = [
-  { value: 'site',    label: 'Site' },
-  { value: 'landing', label: 'Landing Page' },
-  { value: 'sistema', label: 'Sistema' },
-  { value: 'outro',   label: 'Outro' },
+  { value: 'site',              label: 'Site' },
+  { value: 'landing',           label: 'Landing Page' },
+  { value: 'smartpage',         label: 'Smart Page' },
+  { value: 'gmb',               label: 'Google Meu Negócio' },
+  { value: 'google_ads',        label: 'Google Ads' },
+  { value: 'meta_ads',          label: 'Meta Ads' },
+  { value: 'identidade_visual', label: 'Identidade Visual' },
+  { value: 'sistema',           label: 'Sistema' },
+  { value: 'outro',             label: 'Outro' },
 ]
 
 const emptyForm = {
   name: '', specialty: '', whatsapp: '',
-  status: 'prospecto' as ClientStatus, notes: '',
+  acquisition_source: '' as AcquisitionSource | '', notes: '',
   closed_at: '', delivery_date: '',
   total_value: '',
   payment_mode: '' as '' | '50%' | '100%',
@@ -88,7 +94,7 @@ export default function ClientesPage() {
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
-  const [toast, setToast] = useState('')
+  const { toast, showToast } = useToast()
   const [deleteModal, setDeleteModal] = useState<Client | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [contractFile, setContractFile] = useState<File | null>(null)
@@ -99,6 +105,9 @@ export default function ClientesPage() {
         const repo = clientRepository(createClient())
         const data = await repo.findAll()
         setClients(data)
+      } catch (err) {
+        console.error('Erro ao carregar clientes:', err)
+        showToast('Erro ao carregar clientes. Tente recarregar a página.')
       } finally {
         setLoading(false)
       }
@@ -106,11 +115,6 @@ export default function ClientesPage() {
     load()
   }, [])
 
-  useEffect(() => {
-    if (!toast) return
-    const t = setTimeout(() => setToast(''), 3500)
-    return () => clearTimeout(t)
-  }, [toast])
 
   const { range } = useDateFilter()
 
@@ -160,7 +164,7 @@ export default function ClientesPage() {
       name: client.name,
       specialty: client.specialty,
       whatsapp: client.whatsapp,
-      status: client.status,
+      acquisition_source: (client.acquisition_source as AcquisitionSource) ?? '',
       notes: client.notes ?? '',
       closed_at: client.closed_at ?? '',
       delivery_date: client.delivery_date ?? '',
@@ -204,7 +208,8 @@ export default function ClientesPage() {
         name: form.name,
         specialty: form.specialty,
         whatsapp: form.whatsapp,
-        status: form.status,
+        status: editingClient?.status ?? 'ativo',
+        acquisition_source: form.acquisition_source || null,
         notes: form.notes || undefined,
         closed_at: form.closed_at || null,
         delivery_date: form.delivery_date || null,
@@ -226,12 +231,12 @@ export default function ClientesPage() {
         const data = await repo.update(editingClient.id, fullPayload)
         savedClient = data
         setClients(prev => prev.map(c => c.id === editingClient.id ? data : c))
-        setToast(`${data.name} atualizado com sucesso!`)
+        showToast(`${data.name} atualizado com sucesso!`)
       } else {
         const data = await repo.create(fullPayload)
         savedClient = data
         setClients(prev => [data, ...prev])
-        setToast(`${data.name} adicionado com sucesso!`)
+        showToast(`${data.name} adicionado com sucesso!`)
       }
 
       // ── Domínio ──────────────────────────────────────────────────────────
@@ -274,8 +279,8 @@ export default function ClientesPage() {
         await projRepo.create({ ...projectBase, status: 'briefing' })
       }
 
-      // ── Transação de recebimento (qualquer cliente com valor preenchido) ─
-      const txAmount = (paidVal && paidVal > 0) ? paidVal : totalVal
+      // ── Transação de recebimento — sempre usa valor total do contrato ────
+      const txAmount = totalVal
       if (txAmount && txAmount > 0) {
         const txDate = form.closed_at || today
         const txPayload = {
@@ -317,7 +322,7 @@ export default function ClientesPage() {
     try {
       await clientRepository(createClient()).remove(deleteModal.id)
       setClients(prev => prev.filter(c => c.id !== deleteModal.id))
-      setToast(`${deleteModal.name} removido.`)
+      showToast(`${deleteModal.name} removido.`)
       setDeleteModal(null)
     } catch (err) {
       console.error('Erro ao deletar cliente:', err)
@@ -556,10 +561,11 @@ export default function ClientesPage() {
             </div>
 
             <div>
-              <label htmlFor="cli-status" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Status</label>
-              <select id="cli-status" className="input-field cursor-pointer" value={form.status} onChange={set('status')}>
-                {activeClientStatuses.map(s => (
-                  <option key={s} value={s}>{clientStatusConfig[s].label}</option>
+              <label htmlFor="cli-source" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Origem do cliente</label>
+              <select id="cli-source" className="input-field cursor-pointer" value={form.acquisition_source} onChange={set('acquisition_source')}>
+                <option value="">Não informado</option>
+                {acquisitionSourceOptions.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
             </div>

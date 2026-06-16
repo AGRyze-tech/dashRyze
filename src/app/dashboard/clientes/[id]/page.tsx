@@ -50,6 +50,8 @@ export default function ClientePage({ params }: { params: { id: string } }) {
         if (cancelled) return
         if (clientData) setClient(clientData)
         if (projectData) setProjects(projectData)
+      } catch (err) {
+        if (!cancelled) console.error('Erro ao carregar cliente:', err)
       } finally {
         if (!cancelled) setLoading(false)
       }

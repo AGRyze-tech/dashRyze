@@ -32,6 +32,27 @@ export function transactionRepository(db: Db) {
       return (data ?? []) as Pick<Transaction, 'type' | 'amount'>[]
     },
 
+    async findFrom(from: string): Promise<Transaction[]> {
+      const { data, error } = await db
+        .from('transactions')
+        .select('*')
+        .gte('date', from)
+        .order('date')
+      if (error) throw error
+      return (data ?? []) as Transaction[]
+    },
+
+    async findInRange(from: string, to: string): Promise<Transaction[]> {
+      const { data, error } = await db
+        .from('transactions')
+        .select('*')
+        .gte('date', from)
+        .lte('date', to)
+        .order('date', { ascending: false })
+      if (error) throw error
+      return (data ?? []) as Transaction[]
+    },
+
     async create(input: TransactionInput): Promise<Transaction> {
       const { data, error } = await db
         .from('transactions')

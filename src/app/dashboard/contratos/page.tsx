@@ -9,6 +9,7 @@ import { FileText, Download, Plus, AlertCircle, CheckCircle2, Clock, Trash2, Cal
 import { createClient } from '@/lib/supabase'
 import { contractRepository, projectRepository, clientRepository } from '@/lib/repositories'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import { useToast } from '@/hooks/useToast'
 import { Contract, InstallmentStatus, Client, Project, PaymentMethod } from '@/types'
 
 const statusIcon: Record<InstallmentStatus, React.ElementType> = {
@@ -49,10 +50,11 @@ export default function ContratosPage() {
   const [saveError, setSaveError] = useState('')
   const [deleteModal, setDeleteModal] = useState<Contract | null>(null)
   const [deleting, setDeleting] = useState(false)
-  const [toast, setToast] = useState('')
-  const contractRepo = useMemo(() => contractRepository(createClient()), [])
-  const clientRepo = useMemo(() => clientRepository(createClient()), [])
-  const projectRepo = useMemo(() => projectRepository(createClient()), [])
+  const { toast, showToast } = useToast()
+  const db = useMemo(() => createClient(), [])
+  const contractRepo = useMemo(() => contractRepository(db), [db])
+  const clientRepo = useMemo(() => clientRepository(db), [db])
+  const projectRepo = useMemo(() => projectRepository(db), [db])
 
   useEffect(() => {
     async function load() {
@@ -63,6 +65,9 @@ export default function ContratosPage() {
         ])
         setContracts(contractsData)
         setClients(clientsData as Client[])
+      } catch (err) {
+        console.error('Erro ao carregar contratos:', err)
+        showToast('Erro ao carregar contratos. Tente recarregar a página.')
       } finally {
         setLoading(false)
       }
@@ -70,11 +75,6 @@ export default function ContratosPage() {
     load()
   }, [])
 
-  useEffect(() => {
-    if (!toast) return
-    const t = setTimeout(() => setToast(''), 3500)
-    return () => clearTimeout(t)
-  }, [toast])
 
   useEffect(() => {
     if (!form.client_id) { setProjects([]); return }
@@ -140,7 +140,7 @@ export default function ContratosPage() {
       )
 
       setContracts(prev => [contract, ...prev])
-      setToast(`Contrato ${contract.number} criado com sucesso!`)
+      showToast(`Contrato ${contract.number} criado com sucesso!`)
       setShowModal(false)
     } catch (err: unknown) {
       setSaveError(err instanceof Error ? err.message : 'Erro desconhecido.')
@@ -155,7 +155,7 @@ export default function ContratosPage() {
     try {
       await contractRepo.remove(deleteModal.id)
       setContracts(prev => prev.filter(c => c.id !== deleteModal.id))
-      setToast(`Contrato ${deleteModal.number} removido.`)
+      showToast(`Contrato ${deleteModal.number} removido.`)
       setDeleteModal(null)
     } finally {
       setDeleting(false)

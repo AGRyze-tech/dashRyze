@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase'
-import type { Client, ClientStatus } from '@/types'
+import type { Client, ClientStatus, AcquisitionSource } from '@/types'
 
 type Db = ReturnType<typeof createClient>
 
@@ -11,6 +11,7 @@ export type ClientInput = {
   instagram?: string
   website?: string
   status: ClientStatus
+  acquisition_source?: AcquisitionSource | null
   notes?: string
   closed_at?: string | null
   delivery_date?: string | null

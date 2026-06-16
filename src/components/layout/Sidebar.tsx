@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, Users, FolderKanban,
   TrendingUp, BarChart2, Target, Settings, LogOut, Sun, Moon, CalendarCheck, CalendarDays,
+  Server, Wrench,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
@@ -25,6 +26,7 @@ const navGroups: NavGroup[] = [
     items: [
       { href: '/dashboard/financeiro', icon: TrendingUp, label: 'Financeiro' },
       { href: '/dashboard/metas', icon: Target, label: 'Metas' },
+      { href: '/dashboard/hospedagem', icon: Server, label: 'Hospedagem' },
     ],
   },
   {
@@ -39,6 +41,7 @@ const navGroups: NavGroup[] = [
     label: 'Projetos',
     items: [
       { href: '/dashboard/projetos', icon: FolderKanban, label: 'Projetos' },
+      { href: '/dashboard/modificacoes', icon: Wrench, label: 'Modificações' },
     ],
   },
   {

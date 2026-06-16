@@ -215,28 +215,22 @@ function GoalsSection({ monthRevenue, salesCount, loading }: GoalsSectionProps) 
 
         <div className="h-px bg-gray-100 dark:bg-[#181819]" />
 
-        {/* Sales goal */}
-        {editing === 'sales' ? (
-          <EditGoalRow
-            label="Meta de Vendas (nº)"
-            inputRef={inputRef}
-            value={inputVal}
-            onChange={setInputVal}
-            onCommit={commitEdit}
-            onCancel={cancelEdit}
-            placeholder="Ex: 20"
-          />
-        ) : (
-          <ProgressRow
-            label="Número de Vendas"
-            icon={Zap}
-            current={salesCount}
-            goal={goals.sales}
-            formatValue={v => `${Math.round(v)} venda${Math.round(v) !== 1 ? 's' : ''}`}
-            loading={loading}
-            onEditGoal={() => startEdit('sales')}
-          />
-        )}
+        {/* Sales count — plain number, no goal */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-[#181819]">
+              <Zap size={13} className="text-gray-400 dark:text-[#00a02a]" />
+            </div>
+            <span className="text-[12px] font-semibold text-gray-700 dark:text-[#D1FAE5]">Vendas no mês</span>
+          </div>
+          {loading ? (
+            <Skeleton className="h-7 w-16" />
+          ) : (
+            <span className="text-[28px] font-bold leading-none tabular text-gray-900 dark:text-[#F0FDF4]">
+              {salesCount}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -394,15 +388,17 @@ export default function DashboardPage() {
         const [cli, proj, txn, lds, campaigns] = await Promise.all([
           clientRepository(db).findSummary(),
           projectRepository(db).findDashboard(),
-          db.from('transactions').select('type, amount').gte('date', range.from).lte('date', range.to),
+          transactionRepository(db).findInRange(range.from, range.to),
           leadRepository(db).findAll(),
           db.from('meta_campaigns').select('*').order('created_at'),
         ])
         setClients(cli as DashClient[])
         setProjects(proj as DashProject[])
-        setTransactions((txn.data ?? []) as Transaction[])
+        setTransactions(txn)
         setLeads(lds)
         setMeta((campaigns.data ?? []) as MetaCampaign[])
+      } catch (err) {
+        console.error('Erro ao carregar dashboard:', err)
       } finally {
         setLoading(false)
       }
@@ -480,7 +476,7 @@ export default function DashboardPage() {
       <div className="p-4 sm:p-6 space-y-5">
 
         {/* ── KPI row ───────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 stagger-children">
+        <div className="grid grid-cols-2 xl:grid-cols-3 gap-4 stagger-children">
           <KpiCard
             label="Receita do Mês"
             value={formatCurrency(monthRevenue)}
@@ -510,16 +506,6 @@ export default function DashboardPage() {
             accent="from-blue-500/5"
             loading={loading}
             href="/dashboard/projetos"
-          />
-          <KpiCard
-            label="Leads Novos"
-            value={newLeads}
-            sub={`${leads.length} lead${leads.length !== 1 ? 's' : ''} no total`}
-            icon={Zap}
-            iconCls="bg-amber-50 dark:bg-amber-900/30 text-amber-500 dark:text-amber-400"
-            accent="from-amber-500/5"
-            loading={loading}
-            href="/dashboard/leads"
           />
         </div>
 

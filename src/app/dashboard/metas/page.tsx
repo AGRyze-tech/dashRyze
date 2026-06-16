@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
+import { transactionRepository } from '@/lib/repositories'
 import { useDateFilter } from '@/contexts/DateFilterContext'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -203,7 +204,8 @@ export default function MetasPage() {
   const [monthRevenue, setMonthRevenue] = useState(0)
   const [salesCount, setSalesCount] = useState(0)
 
-  const supabase   = useMemo(() => createClient(), [])
+  const supabase = useMemo(() => createClient(), [])
+  const txRepo   = useMemo(() => transactionRepository(supabase), [supabase])
   const { range, label: rangeLabel } = useDateFilter()
   const monthLabel = rangeLabel
 
@@ -211,19 +213,19 @@ export default function MetasPage() {
     if (!range.from || !range.to) return
     async function load() {
       try {
-        const [{ data: txn }, { data: settings }] = await Promise.all([
-          supabase.from('transactions').select('type, amount').gte('date', range.from).lte('date', range.to),
+        const [txn, { data: settings }] = await Promise.all([
+          txRepo.findInRange(range.from, range.to),
           supabase.from('settings').select('value').eq('key', 'goals').single(),
         ])
-        if (txn) {
-          let revenue = 0, sales = 0
-          for (const t of txn) {
-            if (t.type === 'entrada') { revenue += t.amount; sales++ }
-          }
-          setMonthRevenue(revenue)
-          setSalesCount(sales)
+        let revenue = 0, sales = 0
+        for (const t of txn) {
+          if (t.type === 'entrada') { revenue += t.amount; sales++ }
         }
+        setMonthRevenue(revenue)
+        setSalesCount(sales)
         if (settings?.value) setGoals({ ...DEFAULT_GOALS, ...settings.value })
+      } catch (err) {
+        console.error('Erro ao carregar metas:', err)
       } finally {
         setLoading(false)
       }

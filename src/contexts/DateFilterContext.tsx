@@ -12,6 +12,7 @@ interface DateFilterCtx {
   range: DateRange
   preset: DatePreset
   label: string
+  custom: DateRange
   setPreset: (p: DatePreset) => void
   setCustomRange: (r: DateRange) => void
 }
@@ -71,6 +72,7 @@ const DateFilterContext = createContext<DateFilterCtx>({
   range:          { from: '', to: '' },
   preset:         'mes-atual',
   label:          'Este mês',
+  custom:         { from: '', to: '' },
   setPreset:      () => {},
   setCustomRange: () => {},
 })
@@ -92,7 +94,7 @@ export function DateFilterProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <DateFilterContext.Provider value={{ range, preset, label, setPreset, setCustomRange }}>
+    <DateFilterContext.Provider value={{ range, preset, label, custom, setPreset, setCustomRange }}>
       {children}
     </DateFilterContext.Provider>
   )

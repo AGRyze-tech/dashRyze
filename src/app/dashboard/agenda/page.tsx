@@ -11,6 +11,7 @@ import {
 import { createClient } from '@/lib/supabase'
 import { Meeting, MeetingType, MeetingStatus } from '@/types'
 import { cn } from '@/lib/utils'
+import { useToast } from '@/hooks/useToast'
 
 // ── Constants ────────────────────────────────────────────────────────
 const SLOT_H = 52       // px per 30-min slot
@@ -108,7 +109,7 @@ export default function AgendaPage() {
   const [saveError, setSaveError] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<Meeting | null>(null)
   const [deleting, setDeleting] = useState(false)
-  const [toast, setToast] = useState('')
+  const { toast, showToast } = useToast(3000)
   const [nowTop, setNowTop] = useState(currentTimeTop)
 
   const db = useMemo(() => createClient(), [])
@@ -131,11 +132,6 @@ export default function AgendaPage() {
 
   useEffect(() => { loadMeetings(weekStart) }, [weekStart, loadMeetings])
 
-  useEffect(() => {
-    if (!toast) return
-    const t = setTimeout(() => setToast(''), 3000)
-    return () => clearTimeout(t)
-  }, [toast])
 
   // Days for the grid
   const days = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart])
@@ -213,12 +209,12 @@ export default function AgendaPage() {
         const { data, error } = await db.from('meetings').update(payload).eq('id', editingMeeting.id).select().single()
         if (error) throw error
         setMeetings(prev => prev.map(m => m.id === editingMeeting.id ? (data as Meeting) : m))
-        setToast('Reunião atualizada!')
+        showToast('Reunião atualizada!')
       } else {
         const { data, error } = await db.from('meetings').insert([payload]).select().single()
         if (error) throw error
         setMeetings(prev => [...prev, data as Meeting])
-        setToast('Reunião registrada!')
+        showToast('Reunião registrada!')
       }
       setShowModal(false)
       setEditingMeeting(null)
@@ -240,7 +236,7 @@ export default function AgendaPage() {
       const { error } = await db.from('meetings').delete().eq('id', deleteTarget.id)
       if (error) throw error
       setMeetings(prev => prev.filter(m => m.id !== deleteTarget.id))
-      setToast('Reunião removida.')
+      showToast('Reunião removida.')
       setDeleteTarget(null)
       setShowModal(false)
     } finally {

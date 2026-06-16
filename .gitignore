@@ -42,4 +42,4 @@ Thumbs.db
 .env*.local
 
 # Verification screenshots
-verify-*.png
+.screenshots/

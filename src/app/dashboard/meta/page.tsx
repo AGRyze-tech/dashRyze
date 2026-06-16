@@ -8,6 +8,7 @@ import { Modal } from '@/components/ui/Modal'
 import { useTheme } from '@/components/layout/ThemeProvider'
 import { BarChart2, Eye, MousePointer, DollarSign, TrendingUp, Plus, Pencil, Trash2, CheckCircle2 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
+import { useToast } from '@/hooks/useToast'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { MetaCampaign } from '@/types'
 import { loadMetaCampaigns, saveMetaCampaign, deleteMetaCampaign } from '@/lib/meta'
@@ -45,7 +46,7 @@ export default function MetaPage() {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [deleteModal, setDeleteModal] = useState<MetaCampaign | null>(null)
-  const [toast, setToast] = useState('')
+  const { toast, showToast } = useToast()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
 
@@ -53,11 +54,6 @@ export default function MetaPage() {
     loadMetaCampaigns().then(setCampaigns)
   }, [])
 
-  useEffect(() => {
-    if (!toast) return
-    const t = setTimeout(() => setToast(''), 3500)
-    return () => clearTimeout(t)
-  }, [toast])
 
   const totalSpend = campaigns.reduce((s, c) => s + c.spend, 0)
   const totalImpressions = campaigns.reduce((s, c) => s + c.impressions, 0)
@@ -114,10 +110,10 @@ export default function MetaPage() {
       await saveMetaCampaign(payload)
       if (editTarget) {
         setCampaigns(prev => prev.map(c => c.id === editTarget.id ? payload : c))
-        setToast(`${payload.name} atualizada!`)
+        showToast(`${payload.name} atualizada!`)
       } else {
         setCampaigns(prev => [payload, ...prev])
-        setToast(`${payload.name} adicionada!`)
+        showToast(`${payload.name} adicionada!`)
       }
       setShowModal(false)
     } catch {
@@ -131,7 +127,7 @@ export default function MetaPage() {
     if (!deleteModal) return
     await deleteMetaCampaign(deleteModal.id)
     setCampaigns(prev => prev.filter(c => c.id !== deleteModal.id))
-    setToast(`${deleteModal.name} removida.`)
+    showToast(`${deleteModal.name} removida.`)
     setDeleteModal(null)
   }
 

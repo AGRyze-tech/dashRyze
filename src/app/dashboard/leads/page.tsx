@@ -11,6 +11,7 @@ import { leadRepository } from '@/lib/repositories'
 import { leadStatusConfig, formatDate } from '@/lib/utils'
 import { Lead, LeadStatus } from '@/types'
 import { useDateFilter } from '@/contexts/DateFilterContext'
+import { useToast } from '@/hooks/useToast'
 
 const statusOptions: { value: LeadStatus | 'todos'; label: string }[] = [
   { value: 'todos', label: 'Todos' },
@@ -55,7 +56,7 @@ export default function LeadsPage() {
   const [deleteModal, setDeleteModal] = useState<Lead | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [convertModal, setConvertModal] = useState<Lead | null>(null)
-  const [toast, setToast] = useState('')
+  const { toast, showToast } = useToast()
   const [openStatusId, setOpenStatusId] = useState<string | null>(null)
   const repo = useMemo(() => leadRepository(createClient()), [])
 
@@ -64,6 +65,9 @@ export default function LeadsPage() {
       try {
         const data = await repo.findAll()
         setLeads(data)
+      } catch (err) {
+        console.error('Erro ao carregar leads:', err)
+        showToast('Erro ao carregar leads. Tente recarregar a página.')
       } finally {
         setLoading(false)
       }
@@ -71,11 +75,6 @@ export default function LeadsPage() {
     load()
   }, [])
 
-  useEffect(() => {
-    if (!toast) return
-    const t = setTimeout(() => setToast(''), 3500)
-    return () => clearTimeout(t)
-  }, [toast])
 
   useEffect(() => {
     if (!openStatusId) return
@@ -121,7 +120,7 @@ export default function LeadsPage() {
         status: form.status,
       })
       setLeads(prev => [data, ...prev])
-      setToast(`${data.name} adicionado com sucesso!`)
+      showToast(`${data.name} adicionado com sucesso!`)
       setShowModal(false)
     } catch (err: unknown) {
       setSaveError(err instanceof Error ? err.message : 'Erro ao salvar.')
@@ -146,7 +145,7 @@ export default function LeadsPage() {
     const ok = await handleUpdateStatus(lead.id, 'convertido')
     if (!ok) return
     setConvertModal(null)
-    setToast(`${lead.name} convertido em cliente!`)
+    showToast(`${lead.name} convertido em cliente!`)
   }
 
   async function handleDelete() {
@@ -155,7 +154,7 @@ export default function LeadsPage() {
     try {
       await repo.remove(deleteModal.id)
       setLeads(prev => prev.filter(l => l.id !== deleteModal.id))
-      setToast(`${deleteModal.name} removido.`)
+      showToast(`${deleteModal.name} removido.`)
       setDeleteModal(null)
     } finally {
       setDeleting(false)

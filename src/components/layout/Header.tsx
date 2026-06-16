@@ -18,12 +18,12 @@ const PRESETS: { value: DatePreset; label: string }[] = [
 ]
 
 export function Header({ title, subtitle }: HeaderProps) {
-  const [search, setSearch]       = useState('')
-  const [open, setOpen]           = useState(false)
-  const [customFrom, setFrom]     = useState('')
-  const [customTo, setTo]         = useState('')
+  const [search, setSearch] = useState('')
+  const [open, setOpen]     = useState(false)
   const { toggle } = useMobileNav()
-  const { preset, label, setPreset, setCustomRange } = useDateFilter()
+  const { preset, label, custom, setPreset, setCustomRange } = useDateFilter()
+  const [customFrom, setFrom] = useState(custom.from)
+  const [customTo, setTo]     = useState(custom.to)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   // Close on outside click

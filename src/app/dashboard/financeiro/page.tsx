@@ -14,9 +14,10 @@ import {
 } from 'recharts'
 import { createClient } from '@/lib/supabase'
 import { transactionRepository, clientRepository } from '@/lib/repositories'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency, formatDate, firstOfMonthISO } from '@/lib/utils'
 import { Transaction, TransactionType, TransactionCategory, Client } from '@/types'
 import { useDateFilter } from '@/contexts/DateFilterContext'
+import { useToast } from '@/hooks/useToast'
 
 const categoryLabels: Record<TransactionCategory, string> = {
   clientes:      'Clientes',
@@ -128,6 +129,7 @@ function ChartTooltip({ active, payload, label, isDark }: { active?: boolean; pa
 
 export default function FinanceiroPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [chartTransactions, setChartTransactions] = useState<Transaction[]>([])
   const [pendingClients, setPendingClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const [typeFilter, setTypeFilter] = useState<'todos' | 'entrada' | 'saida' | 'pendentes'>('todos')
@@ -138,11 +140,24 @@ export default function FinanceiroPage() {
   const [saveError, setSaveError] = useState('')
   const [deleteModal, setDeleteModal] = useState<Transaction | null>(null)
   const [deleting, setDeleting] = useState(false)
-  const [toast, setToast] = useState('')
+  const { toast, showToast } = useToast()
   const repo = useMemo(() => transactionRepository(createClient()), [])
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const { range } = useDateFilter()
+
+  // Chart always shows last 6 months regardless of the active date filter
+  useEffect(() => {
+    async function loadChart() {
+      try {
+        const data = await repo.findFrom(firstOfMonthISO(5))
+        setChartTransactions(data)
+      } catch (err) {
+        console.error('Erro ao carregar gráfico:', err)
+      }
+    }
+    loadChart()
+  }, [repo])
 
   useEffect(() => {
     if (!range.from || !range.to) return
@@ -150,14 +165,18 @@ export default function FinanceiroPage() {
     async function load() {
       try {
         const db = createClient()
+        const txRepo = transactionRepository(db)
         const [txns, clients] = await Promise.all([
-          db.from('transactions').select('*').gte('date', range.from).lte('date', range.to).order('date', { ascending: false }),
+          txRepo.findInRange(range.from, range.to),
           clientRepository(db).findAll(),
         ])
-        setTransactions((txns.data ?? []) as Transaction[])
+        setTransactions(txns)
         setPendingClients(
           clients.filter(c => (c.total_value ?? 0) > 0 && (c.paid_value ?? 0) < (c.total_value ?? 0))
         )
+      } catch (err) {
+        console.error('Erro ao carregar financeiro:', err)
+        showToast('Erro ao carregar dados. Tente recarregar a página.')
       } finally {
         setLoading(false)
       }
@@ -165,11 +184,6 @@ export default function FinanceiroPage() {
     load()
   }, [range.from, range.to])
 
-  useEffect(() => {
-    if (!toast) return
-    const t = setTimeout(() => setToast(''), 3500)
-    return () => clearTimeout(t)
-  }, [toast])
 
   let totalEntradas = 0
   let totalSaidas = 0
@@ -184,7 +198,7 @@ export default function FinanceiroPage() {
     [transactions, typeFilter]
   )
   const grouped = useMemo(() => groupByDate(filtered), [filtered])
-  const monthlyData = useMemo(() => buildMonthlyData(transactions), [transactions])
+  const monthlyData = useMemo(() => buildMonthlyData(chartTransactions), [chartTransactions])
   const categoryData = useMemo(() => buildCategoryData(transactions), [transactions])
 
   const set = (field: keyof typeof emptyForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -259,11 +273,11 @@ export default function FinanceiroPage() {
           prev.map(t => t.id === editingTransaction.id ? data : t)
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         )
-        setToast('Lançamento atualizado!')
+        showToast('Lançamento atualizado!')
       } else {
         const data = await repo.create(payload)
         setTransactions(prev => [data, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()))
-        setToast('Lançamento registrado!')
+        showToast('Lançamento registrado!')
       }
       handleCloseModal()
     } catch (err: unknown) {
@@ -283,7 +297,7 @@ export default function FinanceiroPage() {
     try {
       await repo.remove(deleteModal.id)
       setTransactions(prev => prev.filter(t => t.id !== deleteModal.id))
-      setToast('Lançamento removido.')
+      showToast('Lançamento removido.')
       setDeleteModal(null)
     } finally {
       setDeleting(false)

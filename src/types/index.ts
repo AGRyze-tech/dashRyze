@@ -1,7 +1,8 @@
 export type ClientStatus = 'prospecto' | 'ativo' | 'inativo' | 'churned'
 // 'churned' kept for legacy data; hidden from UI
 export type ProjectStatus = 'briefing' | 'desenvolvimento' | 'revisao' | 'entregue' | 'concluido' | 'pausado'
-export type ProjectType = 'site' | 'landing' | 'smartpage' | 'sistema' | 'outro'
+export type ProjectType = 'site' | 'landing' | 'smartpage' | 'sistema' | 'gmb' | 'google_ads' | 'meta_ads' | 'identidade_visual' | 'outro'
+export type AcquisitionSource = 'indicacao' | 'anuncio' | 'prospeccao' | 'organico'
 export type LeadStatus = 'novo' | 'contatado' | 'qualificado' | 'descartado' | 'convertido'
 export type TransactionType = 'entrada' | 'saida'
 export type TransactionCategory = 'ferramentas' | 'infraestrutura' | 'marketing' | 'pessoal' | 'outros' | 'contrato' | 'hospedagem' | 'clientes' | 'meta_ads' | 'imposto' | 'dominio'
@@ -17,6 +18,7 @@ export interface Client {
   instagram?: string
   website?: string
   status: ClientStatus
+  acquisition_source?: AcquisitionSource | null
   notes?: string
   closed_at?: string
   delivery_date?: string
@@ -26,17 +28,49 @@ export interface Client {
   created_at: string
 }
 
+export interface Hosting {
+  id: string
+  client_name: string
+  domain: string
+  plan?: string | null
+  monthly_value: number
+  renewal_date?: string | null
+  status: 'ativo' | 'inativo' | 'vencido'
+  notes?: string | null
+  created_at: string
+}
+
+export type ModificationPriority = 'alta' | 'media' | 'baixa'
+export type ModificationStatus = 'pendente' | 'em_andamento' | 'concluida'
+
+export interface Modification {
+  id: string
+  title: string
+  description?: string | null
+  client_name?: string | null
+  project_id?: string | null
+  priority: ModificationPriority
+  status: ModificationStatus
+  deadline?: string | null
+  assigned_to: 'isaac' | 'vinicius'
+  labels?: string[] | null
+  created_at: string
+}
+
 export type MeetingType = 'reuniao' | 'fechamento' | 'pos_call'
 export type MeetingStatus = 'agendada' | 'concluida' | 'churned' | 'no_show'
+export type ClosingMethod = 'whatsapp' | 'reuniao'
 
 export interface Meeting {
   id: string
   title?: string | null
   client_name: string
+  phone?: string | null
   date: string
   scheduled_time?: string | null
   type: MeetingType
   status: MeetingStatus
+  closing_method?: ClosingMethod | null
   notes?: string | null
   created_at: string
 }
