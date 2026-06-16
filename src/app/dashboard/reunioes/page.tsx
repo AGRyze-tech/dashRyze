@@ -96,11 +96,14 @@ export default function ReunioesPage() {
   )
 
   const stats = useMemo(() => {
+    let marcadas = 0, concluidas = 0, noshow = 0, poscall = 0
+    for (const m of filtered) {
+      if (m.status === 'agendada')  marcadas++
+      if (m.status === 'concluida') concluidas++
+      if (m.status === 'no_show')   noshow++
+      if (m.type   === 'pos_call')  poscall++
+    }
     const total = filtered.length
-    const marcadas  = filtered.filter(m => m.status === 'agendada').length
-    const concluidas = filtered.filter(m => m.status === 'concluida').length
-    const noshow    = filtered.filter(m => m.status === 'no_show').length
-    const poscall   = filtered.filter(m => m.type === 'pos_call').length
     const pct = (n: number) => total > 0 ? Math.round((n / total) * 100) : 0
     return { total, marcadas, concluidas, noshow, poscall, pct }
   }, [filtered])

@@ -361,7 +361,13 @@ function KpiCard({ label, value, sub, icon: Icon, iconCls, accent = 'from-gray-5
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
-  const [greeting, setGreeting] = useState('')
+  const [greeting] = useState(() => {
+    const now = new Date()
+    const h = now.getHours()
+    const period = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'
+    const date = now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
+    return `${period}, Isaac · ${date}`
+  })
   const [loading, setLoading] = useState(true)
   const [clients, setClients] = useState<DashClient[]>([])
   const [projects, setProjects] = useState<DashProject[]>([])
@@ -369,14 +375,6 @@ export default function DashboardPage() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [meta, setMeta] = useState<MetaCampaign[]>([])
   const { range } = useDateFilter()
-
-  useEffect(() => {
-    const now = new Date()
-    const h = now.getHours()
-    const period = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'
-    const date = now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
-    setGreeting(`${period}, Isaac · ${date}`)
-  }, [])
 
   useEffect(() => {
     if (!range.from || !range.to) return

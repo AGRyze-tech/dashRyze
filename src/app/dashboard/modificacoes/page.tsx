@@ -117,11 +117,13 @@ export default function ModificacoesPage() {
   }, [mods, tab, priorityFilter])
 
   const stats = useMemo(() => {
-    const total = mods.length
-    const pendentes = mods.filter(m => m.status === 'pendente').length
-    const andamento = mods.filter(m => m.status === 'em_andamento').length
-    const concluidas = mods.filter(m => m.status === 'concluida').length
-    return { total, pendentes, andamento, concluidas }
+    let pendentes = 0, andamento = 0, concluidas = 0
+    for (const m of mods) {
+      if (m.status === 'pendente')     pendentes++
+      if (m.status === 'em_andamento') andamento++
+      if (m.status === 'concluida')    concluidas++
+    }
+    return { total: mods.length, pendentes, andamento, concluidas }
   }, [mods])
 
   const tabCounts: Record<TabStatus, number> = {
@@ -154,6 +156,8 @@ export default function ModificacoesPage() {
     setShowModal(true)
   }
 
+  const projectsById = useMemo(() => new Map(projects.map(p => [p.id, p])), [projects])
+
   const set = (field: keyof typeof emptyForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
       const value = e.target.value
@@ -161,7 +165,7 @@ export default function ModificacoesPage() {
         const next = { ...f, [field]: value }
         // Auto-fill assigned_to from selected project
         if (field === 'project_id' && value) {
-          const proj = projects.find(p => p.id === value)
+          const proj = projectsById.get(value)
           if (proj) {
             next.assigned_to = proj.responsible
             if (!next.client_name && proj.client_name) next.client_name = proj.client_name
