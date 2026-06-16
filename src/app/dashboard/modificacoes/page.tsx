@@ -93,10 +93,11 @@ export default function ModificacoesPage() {
           throw error
         }
         setMods((data ?? []) as Modification[])
-        setProjects((projData ?? []).map((p: { id: string; name: string; responsible: string; client: { name: string } | null }) => ({
-          id: p.id,
-          name: p.name,
-          client_name: p.client?.name,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setProjects((projData ?? [] as any[]).map((p: any) => ({
+          id: p.id as string,
+          name: p.name as string,
+          client_name: (Array.isArray(p.client) ? p.client[0]?.name : p.client?.name) as string | undefined,
           responsible: p.responsible as 'isaac' | 'vinicius',
         })))
       } catch (err) {
