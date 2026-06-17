@@ -369,7 +369,15 @@ export default function ClientesPage() {
 
         {/* Migration banner — shown when acquisition_source column is missing */}
         {missingCols.includes('acquisition_source') && (
-          <div className="rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 p-4">
+          <div className="rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 p-4 relative">
+            <button
+              type="button"
+              onClick={() => setMissingCols([])}
+              className="absolute top-3 right-3 text-amber-500 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-200 transition-colors"
+              aria-label="Fechar aviso"
+            >
+              <X size={14} />
+            </button>
             <p className="text-[13px] font-semibold text-amber-800 dark:text-amber-300 mb-2">⚠ Execute esta migração no Supabase para ativar o campo "Origem do cliente"</p>
             <pre className="text-[11px] bg-gray-900 text-emerald-400 rounded-lg p-3 overflow-x-auto leading-relaxed">
 {`alter table clients
