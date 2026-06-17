@@ -94,7 +94,6 @@ export default function ClientesPage() {
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
-  const [missingCols, setMissingCols] = useState<string[]>([])
   const { toast, showToast } = useToast()
   const [deleteModal, setDeleteModal] = useState<Client | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -231,39 +230,14 @@ export default function ClientesPage() {
         editingClient ? repo.update(editingClient.id, p) : repo.create(p)
 
       let savedClient: typeof editingClient
-      try {
-        const data = await trySave(fullPayload)
-        savedClient = data
-        if (editingClient) {
-          setClients(prev => prev.map(c => c.id === editingClient.id ? data : c))
-          showToast(`${data.name} atualizado com sucesso!`)
-        } else {
-          setClients(prev => [data, ...prev])
-          showToast(`${data.name} adicionado com sucesso!`)
-        }
-      } catch (firstErr: unknown) {
-        const firstMsg =
-          firstErr instanceof Error ? firstErr.message
-          : typeof firstErr === 'object' && firstErr !== null && 'message' in firstErr
-          ? String((firstErr as { message: unknown }).message)
-          : String(firstErr)
-        if (firstMsg.includes('acquisition_source')) {
-          // Column missing — retry without it, show migration banner
-          setMissingCols(prev => prev.includes('acquisition_source') ? prev : [...prev, 'acquisition_source'])
-          const { acquisition_source: _aq, ...payloadWithout } = fullPayload as ClientInput & { acquisition_source?: unknown }
-          void _aq
-          const data = await trySave(payloadWithout as ClientInput)
-          savedClient = data
-          if (editingClient) {
-            setClients(prev => prev.map(c => c.id === editingClient.id ? data : c))
-            showToast(`${data.name} atualizado (execute migração para salvar "Origem")`)
-          } else {
-            setClients(prev => [data, ...prev])
-            showToast(`${data.name} adicionado (execute migração para salvar "Origem")`)
-          }
-        } else {
-          throw firstErr
-        }
+      const data = await trySave(fullPayload)
+      savedClient = data
+      if (editingClient) {
+        setClients(prev => prev.map(c => c.id === editingClient.id ? data : c))
+        showToast(`${data.name} atualizado com sucesso!`)
+      } else {
+        setClients(prev => [data, ...prev])
+        showToast(`${data.name} adicionado com sucesso!`)
       }
 
       // ── Domínio ──────────────────────────────────────────────────────────
@@ -366,27 +340,6 @@ export default function ClientesPage() {
       />
 
       <div className="p-4 sm:p-6 space-y-5">
-
-        {/* Migration banner — shown when acquisition_source column is missing */}
-        {missingCols.includes('acquisition_source') && (
-          <div className="rounded-xl border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 p-4 relative">
-            <button
-              type="button"
-              onClick={() => setMissingCols([])}
-              className="absolute top-3 right-3 text-amber-500 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-200 transition-colors"
-              aria-label="Fechar aviso"
-            >
-              <X size={14} />
-            </button>
-            <p className="text-[13px] font-semibold text-amber-800 dark:text-amber-300 mb-2">⚠ Execute esta migração no Supabase para ativar o campo "Origem do cliente"</p>
-            <pre className="text-[11px] bg-gray-900 text-emerald-400 rounded-lg p-3 overflow-x-auto leading-relaxed">
-{`alter table clients
-  add column if not exists acquisition_source text
-  check (acquisition_source in ('indicacao','anuncio','prospeccao','organico'));`}
-            </pre>
-            <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-2">O cliente foi salvo normalmente. A origem será gravada após executar a migração.</p>
-          </div>
-        )}
 
         {/* Filters bar */}
         <div className="flex items-center gap-3 flex-wrap">
