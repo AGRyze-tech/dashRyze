@@ -242,7 +242,11 @@ export default function ClientesPage() {
           showToast(`${data.name} adicionado com sucesso!`)
         }
       } catch (firstErr: unknown) {
-        const firstMsg = firstErr instanceof Error ? firstErr.message : String(firstErr)
+        const firstMsg =
+          firstErr instanceof Error ? firstErr.message
+          : typeof firstErr === 'object' && firstErr !== null && 'message' in firstErr
+          ? String((firstErr as { message: unknown }).message)
+          : String(firstErr)
         if (firstMsg.includes('acquisition_source')) {
           // Column missing — retry without it, show migration banner
           setMissingCols(prev => prev.includes('acquisition_source') ? prev : [...prev, 'acquisition_source'])
