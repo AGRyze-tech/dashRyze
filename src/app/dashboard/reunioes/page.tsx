@@ -152,25 +152,50 @@ export default function ReunioesPage() {
     setSaving(true)
     setSaveError('')
     try {
-      const payload = {
+      type MeetingPayload = {
+        client_name: string; phone: string | null; date: string
+        scheduled_time: string | null; type: MeetingType; status: MeetingStatus
+        closing_method: ClosingMethod | null; notes: string | null
+      }
+      const fullPayload: MeetingPayload = {
         client_name: form.client_name.trim(),
         phone: form.phone.trim() || null,
         date: form.date,
         scheduled_time: form.scheduled_time || null,
         type: form.type,
         status: form.status,
-        closing_method: form.closing_method || null,
+        closing_method: (form.closing_method as ClosingMethod) || null,
         notes: form.notes.trim() || null,
       }
+
+      const trySave = (p: Partial<MeetingPayload>) =>
+        editingMeeting
+          ? db.from('meetings').update(p).eq('id', editingMeeting.id).select().single()
+          : db.from('meetings').insert([p]).select().single()
+
+      const errMsg = (err: unknown) =>
+        err instanceof Error ? err.message
+          : typeof err === 'object' && err !== null && 'message' in err
+          ? String((err as { message: unknown }).message) : String(err)
+
+      let result = await trySave(fullPayload)
+
+      if (result.error) {
+        const msg = errMsg(result.error)
+        if (msg.includes('phone') || msg.includes('closing_method')) {
+          const { phone: _p, closing_method: _c, ...without } = fullPayload
+          void _p; void _c
+          result = await trySave(without)
+        }
+        if (result.error) throw result.error
+      }
+
+      const saved = result.data as Meeting
       if (editingMeeting) {
-        const { data, error } = await db.from('meetings').update(payload).eq('id', editingMeeting.id).select().single()
-        if (error) throw error
-        setMeetings(prev => prev.map(m => m.id === editingMeeting.id ? (data as Meeting) : m))
+        setMeetings(prev => prev.map(m => m.id === editingMeeting.id ? saved : m))
         showToast('Reunião atualizada!')
       } else {
-        const { data, error } = await db.from('meetings').insert([payload]).select().single()
-        if (error) throw error
-        setMeetings(prev => [data as Meeting, ...prev])
+        setMeetings(prev => [saved, ...prev])
         showToast('Reunião registrada!')
       }
       setShowModal(false)
