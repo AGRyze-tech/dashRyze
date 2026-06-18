@@ -230,14 +230,26 @@ export default function ClientesPage() {
         editingClient ? repo.update(editingClient.id, p) : repo.create(p)
 
       let savedClient: typeof editingClient
-      const data = await trySave(fullPayload)
-      savedClient = data
+      let saveData: Client
+      try {
+        saveData = await trySave(fullPayload)
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message
+          : typeof e === 'object' && e !== null && 'message' in e
+          ? String((e as { message: unknown }).message) : String(e)
+        if (msg.includes('acquisition_source')) {
+          const { acquisition_source: _, ...without } = fullPayload as ClientInput & { acquisition_source?: unknown }
+          void _
+          saveData = await trySave(without as ClientInput)
+        } else throw e
+      }
+      savedClient = saveData
       if (editingClient) {
-        setClients(prev => prev.map(c => c.id === editingClient.id ? data : c))
-        showToast(`${data.name} atualizado com sucesso!`)
+        setClients(prev => prev.map(c => c.id === editingClient.id ? saveData : c))
+        showToast(`${saveData.name} atualizado com sucesso!`)
       } else {
-        setClients(prev => [data, ...prev])
-        showToast(`${data.name} adicionado com sucesso!`)
+        setClients(prev => [saveData, ...prev])
+        showToast(`${saveData.name} adicionado com sucesso!`)
       }
 
       // ── Domínio ──────────────────────────────────────────────────────────
