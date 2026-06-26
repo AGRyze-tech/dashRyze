@@ -141,7 +141,7 @@ const ProjectCard = memo(function ProjectCard({
 export default function ProjetosPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [clients, setClients] = useState<Client[]>([])
-  const [pendingByProject, setPendingByProject] = useState<Map<string, number>>(new Map())
+  const [pendingByClient, setPendingByClient] = useState<Map<string, number>>(new Map())
   const [loading, setLoading] = useState(true)
   const [dragging, setDragging] = useState<string | null>(null)
   const [dragOver, setDragOver] = useState<ProjectStatus | null>(null)
@@ -163,17 +163,17 @@ export default function ProjetosPage() {
     const [data, { data: instData }] = await Promise.all([
       projRepo.findAll(),
       db.from('contract_installments')
-        .select('value, contract:contracts(project_id)')
+        .select('value, contract:contracts(client_id)')
         .in('status', ['pendente', 'atrasado']),
     ])
     setProjects(data)
     const map = new Map<string, number>()
     for (const row of (instData ?? [])) {
-      const projectId = (row.contract as unknown as { project_id: string | null })?.project_id
-      if (!projectId) continue
-      map.set(projectId, (map.get(projectId) ?? 0) + row.value)
+      const clientId = (row.contract as unknown as { client_id: string | null })?.client_id
+      if (!clientId) continue
+      map.set(clientId, (map.get(clientId) ?? 0) + row.value)
     }
-    setPendingByProject(map)
+    setPendingByClient(map)
     setLoading(false)
   }, [projRepo, db])
 
@@ -353,7 +353,7 @@ export default function ProjetosPage() {
                     >
                       <ProjectCard
                         project={project}
-                        pendingAmount={pendingByProject.get(project.id)}
+                        pendingAmount={pendingByClient.get(project.client_id)}
                         onEdit={openEdit}
                         onDelete={setDeleteTarget}
                         onView={setViewTarget}
