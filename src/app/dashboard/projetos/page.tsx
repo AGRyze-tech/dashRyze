@@ -5,11 +5,12 @@ import { projectRepository, clientRepository } from '@/lib/repositories'
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
-import { AlertTriangle, Clock, Plus, ExternalLink, User, Pencil, Trash2, Eye } from 'lucide-react'
+import { AlertTriangle, Clock, Plus, ExternalLink, User, Pencil, Trash2, Eye, Wallet } from 'lucide-react'
 import {
   formatDate, daysUntil, isDeadlineWarning, isOverdue,
   projectTypeLabels, projectTypeOptions, deadlineLabel,
 } from '@/lib/utils'
+import { formatCurrency } from '@/lib/format'
 import { Project, ProjectStatus, Client } from '@/types'
 import { useDateFilter } from '@/contexts/DateFilterContext'
 
@@ -45,11 +46,13 @@ const emptyForm = {
 
 const ProjectCard = memo(function ProjectCard({
   project,
+  pendingAmount,
   onEdit,
   onDelete,
   onView,
 }: {
   project: Project
+  pendingAmount?: number
   onEdit: (p: Project) => void
   onDelete: (p: Project) => void
   onView: (p: Project) => void
@@ -102,6 +105,15 @@ const ProjectCard = memo(function ProjectCard({
         <span className="text-[11px] text-gray-500 dark:text-[#00a02a] capitalize">{project.responsible}</span>
       </div>
 
+      {pendingAmount && pendingAmount > 0 ? (
+        <div className="flex items-center gap-1.5 mt-2">
+          <Wallet size={11} className="text-amber-500 dark:text-amber-400 flex-shrink-0" />
+          <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+            {formatCurrency(pendingAmount)} pendente
+          </span>
+        </div>
+      ) : null}
+
       {active && (
         <div className={`flex items-center gap-1.5 mt-3 pt-3 border-t border-gray-100 dark:border-[#181819] ${over ? 'text-red-500 dark:text-red-400' : warn ? 'text-amber-500 dark:text-amber-400' : 'text-gray-400 dark:text-[#00a02a]'}`}>
           {(over || warn) ? <AlertTriangle size={11} /> : <Clock size={11} />}
@@ -129,6 +141,7 @@ const ProjectCard = memo(function ProjectCard({
 export default function ProjetosPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [clients, setClients] = useState<Client[]>([])
+  const [pendingByProject, setPendingByProject] = useState<Map<string, number>>(new Map())
   const [loading, setLoading] = useState(true)
   const [dragging, setDragging] = useState<string | null>(null)
   const [dragOver, setDragOver] = useState<ProjectStatus | null>(null)
@@ -147,10 +160,22 @@ export default function ProjetosPage() {
 
   const load = useCallback(async () => {
     setLoading(true)
-    const data = await projRepo.findAll()
+    const [data, { data: instData }] = await Promise.all([
+      projRepo.findAll(),
+      db.from('contract_installments')
+        .select('value, contract:contracts(project_id)')
+        .in('status', ['pendente', 'atrasado']),
+    ])
     setProjects(data)
+    const map = new Map<string, number>()
+    for (const row of (instData ?? [])) {
+      const projectId = (row.contract as unknown as { project_id: string | null })?.project_id
+      if (!projectId) continue
+      map.set(projectId, (map.get(projectId) ?? 0) + row.value)
+    }
+    setPendingByProject(map)
     setLoading(false)
-  }, [projRepo])
+  }, [projRepo, db])
 
   useEffect(() => {
     clientRepo.findForSelect().then(data => setClients(data as Client[]))
@@ -328,6 +353,7 @@ export default function ProjetosPage() {
                     >
                       <ProjectCard
                         project={project}
+                        pendingAmount={pendingByProject.get(project.id)}
                         onEdit={openEdit}
                         onDelete={setDeleteTarget}
                         onView={setViewTarget}
