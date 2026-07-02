@@ -182,10 +182,13 @@ export default function ReunioesPage() {
 
       if (result.error) {
         const msg = errMsg(result.error)
-        if (msg.includes('phone') || msg.includes('closing_method')) {
-          const { phone: _p, closing_method: _c, ...without } = fullPayload
-          void _p; void _c
-          result = await trySave(without)
+        const missingPhone = msg.includes('phone')
+        const missingClosing = msg.includes('closing_method')
+        if (missingPhone || missingClosing) {
+          const stripped: Partial<MeetingPayload> = { ...fullPayload }
+          if (missingPhone) delete stripped.phone
+          if (missingClosing) delete stripped.closing_method
+          result = await trySave(stripped)
         }
         if (result.error) throw result.error
       }

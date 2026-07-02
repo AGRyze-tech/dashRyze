@@ -160,25 +160,30 @@ export default function ProjetosPage() {
 
   const load = useCallback(async () => {
     setLoading(true)
-    const [data, { data: instData }] = await Promise.all([
-      projRepo.findAll(),
-      db.from('contract_installments')
-        .select('value, contract:contracts(client_id)')
-        .in('status', ['pendente', 'atrasado']),
-    ])
-    setProjects(data)
-    const map = new Map<string, number>()
-    for (const row of (instData ?? [])) {
-      const clientId = (row.contract as unknown as { client_id: string | null })?.client_id
-      if (!clientId) continue
-      map.set(clientId, (map.get(clientId) ?? 0) + row.value)
+    try {
+      const [data, instResult] = await Promise.all([
+        projRepo.findAll(),
+        db.from('contract_installments')
+          .select('value, contract:contracts(client_id)')
+          .in('status', ['pendente', 'atrasado']),
+      ])
+      setProjects(data)
+      const map = new Map<string, number>()
+      for (const row of (instResult.data ?? [])) {
+        const clientId = (row.contract as unknown as { client_id: string | null })?.client_id
+        if (!clientId) continue
+        map.set(clientId, (map.get(clientId) ?? 0) + row.value)
+      }
+      setPendingByClient(map)
+    } finally {
+      setLoading(false)
     }
-    setPendingByClient(map)
-    setLoading(false)
   }, [projRepo, db])
 
   useEffect(() => {
-    clientRepo.findForSelect().then(data => setClients(data as Client[]))
+    clientRepo.findForSelect()
+      .then(data => setClients(data as Client[]))
+      .catch(err => console.error('Erro ao carregar clientes:', err))
     load()
   }, [load])
 
