@@ -11,6 +11,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [resetMode, setResetMode] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
   const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent) {
@@ -28,6 +30,25 @@ export default function LoginPage() {
       }
     } catch {
       setError('Erro ao conectar. Tente novamente.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleReset(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+      })
+      if (error) {
+        setError('Não foi possível enviar o email. Verifique o endereço.')
+      } else {
+        setResetSent(true)
+      }
     } finally {
       setLoading(false)
     }
@@ -124,68 +145,138 @@ export default function LoginPage() {
           </div>
 
           <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">Bem-vindo</h1>
-            <p className="text-gray-500 text-sm">Entre com suas credenciais para acessar o dashboard.</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">{resetMode ? 'Recuperar senha' : 'Bem-vindo'}</h1>
+            <p className="text-gray-500 text-sm">
+              {resetMode ? 'Informe seu email para receber o link de redefinição.' : 'Entre com suas credenciais para acessar o dashboard.'}
+            </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="input-field"
-                placeholder="seu@email.com"
-                required
-                autoComplete="email"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Senha</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  className="input-field pr-10"
-                  placeholder="••••••••"
-                  required
-                  autoComplete="current-password"
-                />
+          {resetMode ? (
+            resetSent ? (
+              <div className="space-y-4">
+                <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3 text-sm text-emerald-700">
+                  Se o email existir, um link de redefinição foi enviado. Confira sua caixa de entrada (e o spam).
+                </div>
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  onClick={() => { setResetMode(false); setResetSent(false); setError('') }}
+                  className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  Voltar para o login
                 </button>
               </div>
-            </div>
+            ) : (
+              <form onSubmit={handleReset} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className="input-field"
+                    placeholder="seu@email.com"
+                    required
+                    autoComplete="email"
+                  />
+                </div>
 
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-600">
-                {error}
+                {error && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-600">
+                    {error}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full flex items-center justify-center gap-2 bg-[#00FF41] hover:bg-[#003810] text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
+                  style={{ boxShadow: '0 4px 16px rgba(64,145,108,0.25)' }}
+                >
+                  {loading ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>Enviar link <ArrowRight size={15} /></>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => { setResetMode(false); setError('') }}
+                  className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  Voltar para o login
+                </button>
+              </form>
+            )
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className="input-field"
+                  placeholder="seu@email.com"
+                  required
+                  autoComplete="email"
+                />
               </div>
-            )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-[#00FF41] hover:bg-[#003810] text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
-              style={{ boxShadow: '0 4px 16px rgba(64,145,108,0.25)' }}
-            >
-              {loading ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  Entrar
-                  <ArrowRight size={15} />
-                </>
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-sm font-medium text-gray-700">Senha</label>
+                  <button
+                    type="button"
+                    onClick={() => { setResetMode(true); setError('') }}
+                    className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    Esqueci minha senha
+                  </button>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    className="input-field pr-10"
+                    placeholder="••••••••"
+                    required
+                    autoComplete="current-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-600">
+                  {error}
+                </div>
               )}
-            </button>
-          </form>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 bg-[#00FF41] hover:bg-[#003810] text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed mt-2"
+                style={{ boxShadow: '0 4px 16px rgba(64,145,108,0.25)' }}
+              >
+                {loading ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    Entrar
+                    <ArrowRight size={15} />
+                  </>
+                )}
+              </button>
+            </form>
+          )}
 
           <p className="text-center text-[12px] text-gray-400 mt-8">
             Acesso restrito · RyzeSystems © 2026
