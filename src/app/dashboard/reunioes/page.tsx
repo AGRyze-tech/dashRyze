@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
@@ -52,6 +52,77 @@ const emptyForm = {
 function Skeleton({ className }: { className?: string }) {
   return <div className={`animate-pulse rounded-lg bg-gray-100 dark:bg-[#181819] ${className}`} />
 }
+
+type MeetingRowProps = {
+  meeting: Meeting
+  onStatusChange: (id: string, status: MeetingStatus) => void
+  onEdit: (m: Meeting) => void
+  onDelete: (m: Meeting) => void
+}
+
+const MeetingRow = memo(function MeetingRow({ meeting: m, onStatusChange, onEdit, onDelete }: MeetingRowProps) {
+  const cfg = typeConfig[m.type]
+  const Icon = cfg.icon
+  const sCfg = statusConfig[m.status]
+  return (
+    <div className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-50 dark:border-[#181819] last:border-0 hover:bg-gray-50/70 dark:hover:bg-[#111114] transition-colors group">
+      <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${cfg.bgClass}`}>
+        <Icon size={14} className={cfg.iconClass} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <p className="text-[13px] font-medium text-gray-800 dark:text-[#D1FAE5] truncate">
+            {m.client_name || '—'}
+          </p>
+          {m.closing_method && (
+            <span className="flex-shrink-0 flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#00FF41]/10 dark:bg-[#00FF41]/15 text-[#00FF41]">
+              {m.closing_method === 'whatsapp' ? <MessageCircle size={9} /> : <Video size={9} />}
+              {m.closing_method === 'whatsapp' ? 'WhatsApp' : 'Reunião'}
+            </span>
+          )}
+        </div>
+        <p className="text-[11px] text-gray-400 dark:text-[#00a02a] flex items-center gap-1.5 flex-wrap">
+          {m.scheduled_time ? m.scheduled_time.slice(0, 5) : formatDate(m.date)}
+          {m.scheduled_time && <span className="opacity-70">· {formatDate(m.date)}</span>}
+          {m.phone && <span className="opacity-70">· {m.phone}</span>}
+          {m.notes && <span className="opacity-70 truncate max-w-[160px]">· {m.notes}</span>}
+        </p>
+      </div>
+      <Badge color={cfg.color} dot={false}>{cfg.label}</Badge>
+      <div className="relative flex-shrink-0">
+        <select
+          value={m.status}
+          onChange={e => onStatusChange(m.id, e.target.value as MeetingStatus)}
+          className={`appearance-none text-[10px] font-semibold px-2 py-0.5 pr-5 rounded-full border cursor-pointer ${sCfg.selectClass}`}
+          aria-label="Status da reunião"
+        >
+          {(Object.entries(statusConfig) as [MeetingStatus, { label: string; selectClass: string }][]).map(([s, sc]) => (
+            <option key={s} value={s}>{sc.label}</option>
+          ))}
+        </select>
+        <ChevronDown size={9} className="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none opacity-60" />
+      </div>
+      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity">
+        <button
+          type="button"
+          onClick={() => onEdit(m)}
+          aria-label="Editar"
+          className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-[#00FF41]/10 text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-[#00FF41] transition-colors"
+        >
+          <Pencil size={13} />
+        </button>
+        <button
+          type="button"
+          onClick={() => onDelete(m)}
+          aria-label="Remover"
+          className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+        >
+          <Trash2 size={13} />
+        </button>
+      </div>
+    </div>
+  )
+})
 
 export default function ReunioesPage() {
   const [meetings, setMeetings] = useState<Meeting[]>([])
@@ -125,7 +196,7 @@ export default function ReunioesPage() {
     setShowModal(true)
   }
 
-  function handleOpenEdit(m: Meeting) {
+  const handleOpenEdit = useCallback((m: Meeting) => {
     setEditingMeeting(m)
     setForm({
       client_name: m.client_name,
@@ -139,7 +210,7 @@ export default function ReunioesPage() {
     })
     setSaveError('')
     setShowModal(true)
-  }
+  }, [])
 
   const set = (field: keyof typeof emptyForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
@@ -182,12 +253,12 @@ export default function ReunioesPage() {
 
       if (result.error) {
         const msg = errMsg(result.error)
-        const missingPhone = msg.includes('phone')
-        const missingClosing = msg.includes('closing_method')
-        if (missingPhone || missingClosing) {
-          const stripped: Partial<MeetingPayload> = { ...fullPayload }
-          if (missingPhone) delete stripped.phone
-          if (missingClosing) delete stripped.closing_method
+        const isSchemaCacheError = msg.includes('phone') || msg.includes('closing_method')
+        if (isSchemaCacheError) {
+          // Both columns were added via ALTER TABLE — strip both in one retry
+          // to avoid a second cache miss if PostgREST rebuilt its cache mid-session
+          const { phone: _p, closing_method: _c, ...stripped } = fullPayload
+          void _p; void _c
           result = await trySave(stripped)
         }
         if (result.error) throw result.error
@@ -228,11 +299,11 @@ export default function ReunioesPage() {
     }
   }
 
-  async function handleStatusChange(meetingId: string, status: MeetingStatus) {
+  const handleStatusChange = useCallback(async (meetingId: string, status: MeetingStatus) => {
     const { data, error } = await db.from('meetings').update({ status }).eq('id', meetingId).select().single()
     if (error) return
     setMeetings(prev => prev.map(m => m.id === meetingId ? (data as Meeting) : m))
-  }
+  }, [db])
 
   if (!tableExists) {
     return (
@@ -423,70 +494,15 @@ create policy "allow all" on meetings
             </div>
           ) : (
             <div>
-              {tabMeetings.map(m => {
-                const cfg = typeConfig[m.type]
-                const Icon = cfg.icon
-                const sCfg = statusConfig[m.status]
-                return (
-                  <div key={m.id} className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-50 dark:border-[#181819] last:border-0 hover:bg-gray-50/70 dark:hover:bg-[#111114] transition-colors group">
-                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${cfg.bgClass}`}>
-                      <Icon size={14} className={cfg.iconClass} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-[13px] font-medium text-gray-800 dark:text-[#D1FAE5] truncate">
-                          {m.client_name || '—'}
-                        </p>
-                        {m.closing_method && (
-                          <span className="flex-shrink-0 flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#00FF41]/10 dark:bg-[#00FF41]/15 text-[#00FF41]">
-                            {m.closing_method === 'whatsapp' ? <MessageCircle size={9} /> : <Video size={9} />}
-                            {m.closing_method === 'whatsapp' ? 'WhatsApp' : 'Reunião'}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[11px] text-gray-400 dark:text-[#00a02a] flex items-center gap-1.5 flex-wrap">
-                        {m.scheduled_time ? m.scheduled_time.slice(0, 5) : formatDate(m.date)}
-                        {m.scheduled_time && <span className="opacity-70">· {formatDate(m.date)}</span>}
-                        {m.phone && <span className="opacity-70">· {m.phone}</span>}
-                        {m.notes && <span className="opacity-70 truncate max-w-[160px]">· {m.notes}</span>}
-                      </p>
-                    </div>
-                    <Badge color={cfg.color} dot={false}>{cfg.label}</Badge>
-                    {/* Inline status select */}
-                    <div className="relative flex-shrink-0">
-                      <select
-                        value={m.status}
-                        onChange={e => handleStatusChange(m.id, e.target.value as MeetingStatus)}
-                        className={`appearance-none text-[10px] font-semibold px-2 py-0.5 pr-5 rounded-full border cursor-pointer ${sCfg.selectClass}`}
-                        aria-label="Status da reunião"
-                      >
-                        {(Object.entries(statusConfig) as [MeetingStatus, { label: string; selectClass: string }][]).map(([s, sc]) => (
-                          <option key={s} value={s}>{sc.label}</option>
-                        ))}
-                      </select>
-                      <ChevronDown size={9} className="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none opacity-60" />
-                    </div>
-                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEdit(m)}
-                        aria-label="Editar"
-                        className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-[#00FF41]/10 text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-[#00FF41] transition-colors"
-                      >
-                        <Pencil size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDeleteModal(m)}
-                        aria-label="Remover"
-                        className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  </div>
-                )
-              })}
+              {tabMeetings.map(m => (
+                <MeetingRow
+                  key={m.id}
+                  meeting={m}
+                  onStatusChange={handleStatusChange}
+                  onEdit={handleOpenEdit}
+                  onDelete={setDeleteModal}
+                />
+              ))}
             </div>
           )}
         </div>
