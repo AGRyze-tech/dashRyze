@@ -158,3 +158,37 @@ export interface DashboardStats {
   pending_leads: number
   overdue_contracts: number
 }
+
+export interface PaymentProof {
+  id: string
+  name: string
+  client_id?: string | null
+  client_name: string
+  description?: string | null
+  amount: number
+  payment_date?: string | null
+  start_file_url?: string | null
+  start_file_name?: string | null
+  end_file_url?: string | null
+  end_file_name?: string | null
+  notes?: string | null
+  created_at: string
+}
+
+export type GmbStatus = 'ativo' | 'pendente' | 'verificado' | 'suspenso'
+
+export interface GmbProfile {
+  id: string
+  client_id?: string | null
+  client_name: string
+  business_name: string
+  google_url?: string | null
+  category?: string | null
+  phone?: string | null
+  address?: string | null
+  rating?: number | null
+  total_reviews?: number | null
+  status: GmbStatus
+  notes?: string | null
+  created_at: string
+}

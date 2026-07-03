@@ -118,6 +118,26 @@ CREATE TABLE leads (
 );
 
 -- ========================
+-- MEETINGS
+-- ========================
+
+CREATE TABLE IF NOT EXISTS meetings (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_name text NOT NULL DEFAULT '',
+  phone text,
+  date date NOT NULL,
+  scheduled_time time,
+  type text NOT NULL DEFAULT 'reuniao' CHECK (type IN ('reuniao', 'fechamento', 'pos_call')),
+  status text NOT NULL DEFAULT 'agendada' CHECK (status IN ('agendada', 'concluida', 'churned', 'no_show')),
+  closing_method text CHECK (closing_method IN ('whatsapp', 'reuniao')),
+  notes text,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE meetings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "allow all" ON meetings FOR ALL USING (true) WITH CHECK (true);
+
+-- ========================
 -- PROFILES (RBAC)
 -- ========================
 
@@ -248,3 +268,50 @@ $$;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
+-- ========================
+-- PAYMENT PROOFS
+-- ========================
+
+CREATE TABLE IF NOT EXISTS payment_proofs (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_id uuid REFERENCES clients(id) ON DELETE SET NULL,
+  client_name text NOT NULL,
+  name text NOT NULL,
+  description text,
+  amount numeric(10,2) NOT NULL DEFAULT 0,
+  payment_date date,
+  start_file_url text,
+  start_file_name text,
+  end_file_url text,
+  end_file_name text,
+  notes text,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE payment_proofs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "allow all" ON payment_proofs FOR ALL USING (true) WITH CHECK (true);
+
+-- ========================
+-- GMB PROFILES
+-- ========================
+
+CREATE TABLE IF NOT EXISTS gmb_profiles (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_id uuid REFERENCES clients(id) ON DELETE SET NULL,
+  client_name text NOT NULL,
+  business_name text NOT NULL,
+  google_url text,
+  category text,
+  phone text,
+  address text,
+  rating numeric(2,1),
+  total_reviews int,
+  status text NOT NULL DEFAULT 'ativo'
+    CHECK (status IN ('ativo', 'pendente', 'verificado', 'suspenso')),
+  notes text,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE gmb_profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "allow all" ON gmb_profiles FOR ALL USING (true) WITH CHECK (true);

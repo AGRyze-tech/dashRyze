@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, Users, FolderKanban,
   TrendingUp, BarChart2, Target, Settings, LogOut, Sun, Moon, CalendarCheck, CalendarDays,
-  Server, Wrench,
+  Server, Wrench, Receipt, MapPin,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
@@ -27,6 +27,7 @@ const navGroups: NavGroup[] = [
       { href: '/dashboard/financeiro', icon: TrendingUp, label: 'Financeiro' },
       { href: '/dashboard/metas', icon: Target, label: 'Metas' },
       { href: '/dashboard/hospedagem', icon: Server, label: 'Hospedagem' },
+      { href: '/dashboard/comprovante', icon: Receipt, label: 'Comprovantes' },
     ],
   },
   {
@@ -48,6 +49,7 @@ const navGroups: NavGroup[] = [
     label: 'Marketing',
     items: [
       { href: '/dashboard/meta', icon: BarChart2, label: 'Meta Ads', exact: true },
+      { href: '/dashboard/google-meu-negocio', icon: MapPin, label: 'Google Meu Negócio' },
     ],
   },
 ]
