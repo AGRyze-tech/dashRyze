@@ -45,7 +45,11 @@ export default function LoginPage() {
         redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
       })
       if (error) {
-        setError('Não foi possível enviar o email. Verifique o endereço.')
+        setError(
+          error.status === 429
+            ? 'Muitos pedidos em sequência. Espere cerca de 1 minuto e tente novamente.'
+            : error.message
+        )
       } else {
         setResetSent(true)
       }
