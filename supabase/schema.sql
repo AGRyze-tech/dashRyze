@@ -123,6 +123,7 @@ CREATE TABLE leads (
 
 CREATE TABLE IF NOT EXISTS meetings (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_id uuid REFERENCES clients(id) ON DELETE SET NULL,
   client_name text NOT NULL DEFAULT '',
   phone text,
   date date NOT NULL,
@@ -136,6 +137,48 @@ CREATE TABLE IF NOT EXISTS meetings (
 
 ALTER TABLE meetings ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "allow all" ON meetings FOR ALL USING (true) WITH CHECK (true);
+
+-- ========================
+-- HOSTING
+-- ========================
+
+CREATE TABLE IF NOT EXISTS hosting (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_id uuid REFERENCES clients(id) ON DELETE SET NULL,
+  client_name text NOT NULL,
+  domain text NOT NULL,
+  plan text,
+  monthly_value numeric(10,2) NOT NULL DEFAULT 0,
+  renewal_date date,
+  status text NOT NULL DEFAULT 'ativo' CHECK (status IN ('ativo', 'inativo', 'vencido')),
+  notes text,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE hosting ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "allow all" ON hosting FOR ALL USING (true) WITH CHECK (true);
+
+-- ========================
+-- MODIFICATIONS
+-- ========================
+
+CREATE TABLE IF NOT EXISTS modifications (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  title text NOT NULL,
+  description text,
+  client_id uuid REFERENCES clients(id) ON DELETE SET NULL,
+  client_name text,
+  project_id uuid REFERENCES projects(id) ON DELETE SET NULL,
+  priority text NOT NULL DEFAULT 'media' CHECK (priority IN ('alta', 'media', 'baixa')),
+  status text NOT NULL DEFAULT 'pendente' CHECK (status IN ('pendente', 'em_andamento', 'concluida')),
+  deadline date,
+  assigned_to text NOT NULL DEFAULT 'isaac' CHECK (assigned_to IN ('isaac', 'vinicius')),
+  labels text[],
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE modifications ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "allow all" ON modifications FOR ALL USING (true) WITH CHECK (true);
 
 -- ========================
 -- PROFILES (RBAC)

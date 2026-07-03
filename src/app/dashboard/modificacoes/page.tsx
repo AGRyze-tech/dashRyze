@@ -9,8 +9,9 @@ import {
   ChevronDown, User,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
+import { clientRepository } from '@/lib/repositories'
 import { formatDate } from '@/lib/utils'
-import { Modification, ModificationPriority, ModificationStatus } from '@/types'
+import { Modification, ModificationPriority, ModificationStatus, Client } from '@/types'
 import { useToast } from '@/hooks/useToast'
 
 const priorityConfig: Record<ModificationPriority, { label: string; color: 'red' | 'yellow' | 'green'; icon: React.ElementType; rowClass: string }> = {
@@ -37,6 +38,7 @@ const tabs: { id: TabStatus; label: string }[] = [
 const emptyForm = {
   title: '',
   description: '',
+  client_id: '',
   client_name: '',
   project_id: '' as string,
   priority: 'media' as ModificationPriority,
@@ -48,6 +50,7 @@ const emptyForm = {
 interface ProjectOption {
   id: string
   name: string
+  client_id?: string
   client_name?: string
   responsible: 'isaac' | 'vinicius'
 }
@@ -80,13 +83,15 @@ export default function ModificacoesPage() {
   const [deleting, setDeleting] = useState(false)
   const { toast, showToast } = useToast()
   const db = useMemo(() => createClient(), [])
+  const clientRepo = useMemo(() => clientRepository(db), [db])
+  const [clients, setClients] = useState<Pick<Client, 'id' | 'name' | 'specialty'>[]>([])
 
   useEffect(() => {
     async function load() {
       try {
         const [{ data, error }, { data: projData }] = await Promise.all([
           db.from('modifications').select('*').order('created_at', { ascending: false }),
-          db.from('projects').select('id, name, responsible, client:clients(name)').order('created_at', { ascending: false }),
+          db.from('projects').select('id, name, client_id, responsible, client:clients(name)').order('created_at', { ascending: false }),
         ])
         if (error) {
           if (error.code === '42P01') { setTableExists(false); return }
@@ -97,6 +102,7 @@ export default function ModificacoesPage() {
         setProjects((projData ?? [] as any[]).map((p: any) => ({
           id: p.id as string,
           name: p.name as string,
+          client_id: p.client_id as string | undefined,
           client_name: (Array.isArray(p.client) ? p.client[0]?.name : p.client?.name) as string | undefined,
           responsible: p.responsible as 'isaac' | 'vinicius',
         })))
@@ -107,7 +113,10 @@ export default function ModificacoesPage() {
       }
     }
     load()
-  }, [db])
+    clientRepo.findForSelect()
+      .then(data => setClients(data))
+      .catch(err => console.error('Erro ao carregar clientes:', err))
+  }, [db, clientRepo])
 
   const filtered = useMemo(() => {
     return mods.filter(m => {
@@ -146,6 +155,7 @@ export default function ModificacoesPage() {
     setForm({
       title: m.title,
       description: m.description ?? '',
+      client_id: m.client_id ?? '',
       client_name: m.client_name ?? '',
       project_id: m.project_id ?? '',
       priority: m.priority,
@@ -164,11 +174,12 @@ export default function ModificacoesPage() {
       const value = e.target.value
       setForm(f => {
         const next = { ...f, [field]: value }
-        // Auto-fill assigned_to from selected project
+        // Auto-fill assigned_to and client from selected project
         if (field === 'project_id' && value) {
           const proj = projectsById.get(value)
           if (proj) {
             next.assigned_to = proj.responsible
+            if (!next.client_id && proj.client_id) next.client_id = proj.client_id
             if (!next.client_name && proj.client_name) next.client_name = proj.client_name
           }
         }
@@ -185,6 +196,7 @@ export default function ModificacoesPage() {
       const payload = {
         title: form.title.trim(),
         description: form.description.trim() || null,
+        client_id: form.client_id || null,
         client_name: form.client_name.trim() || null,
         project_id: form.project_id || null,
         priority: form.priority,
@@ -491,7 +503,29 @@ create policy "allow all" on modifications
             </div>
             <div>
               <label htmlFor="mod-client" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Cliente</label>
-              <input id="mod-client" className="input-field" placeholder="Nome do cliente" value={form.client_name} onChange={set('client_name')} />
+              <select
+                id="mod-client"
+                className="input-field cursor-pointer"
+                value={form.client_id}
+                onChange={e => {
+                  const clientId = e.target.value
+                  const client = clients.find(c => c.id === clientId)
+                  setForm(f => ({ ...f, client_id: clientId, client_name: client?.name ?? '' }))
+                }}
+              >
+                <option value="">Selecionar cliente...</option>
+                {clients.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+              {!form.client_id && (
+                <input
+                  className="input-field mt-2"
+                  placeholder="Ou digitar o nome manualmente"
+                  value={form.client_name}
+                  onChange={set('client_name')}
+                />
+              )}
             </div>
             <div>
               <label htmlFor="mod-priority" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Prioridade</label>

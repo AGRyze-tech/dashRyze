@@ -8,8 +8,9 @@ import {
   Server, Plus, Pencil, Trash2, CheckCircle2, AlertCircle, Clock, Globe,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
+import { clientRepository } from '@/lib/repositories'
 import { formatDate, formatCurrency } from '@/lib/utils'
-import { Hosting } from '@/types'
+import { Hosting, Client } from '@/types'
 import { useToast } from '@/hooks/useToast'
 
 const statusConfig: Record<Hosting['status'], { label: string; color: 'green' | 'yellow' | 'red'; icon: React.ElementType }> = {
@@ -19,6 +20,7 @@ const statusConfig: Record<Hosting['status'], { label: string; color: 'green' | 
 }
 
 const emptyForm = {
+  client_id: '',
   client_name: '',
   domain: '',
   plan: '',
@@ -53,6 +55,8 @@ export default function HospedagemPage() {
   const [deleting, setDeleting] = useState(false)
   const { toast, showToast } = useToast()
   const db = useMemo(() => createClient(), [])
+  const clientRepo = useMemo(() => clientRepository(db), [db])
+  const [clients, setClients] = useState<Pick<Client, 'id' | 'name' | 'specialty'>[]>([])
 
   useEffect(() => {
     async function load() {
@@ -73,7 +77,10 @@ export default function HospedagemPage() {
       }
     }
     load()
-  }, [db])
+    clientRepo.findForSelect()
+      .then(data => setClients(data))
+      .catch(err => console.error('Erro ao carregar clientes:', err))
+  }, [db, clientRepo])
 
   const stats = useMemo(() => {
     let ativos = 0, totalMonthly = 0, vencendo = 0
@@ -98,6 +105,7 @@ export default function HospedagemPage() {
   function handleOpenEdit(h: Hosting) {
     setEditing(h)
     setForm({
+      client_id: h.client_id ?? '',
       client_name: h.client_name,
       domain: h.domain,
       plan: h.plan ?? '',
@@ -122,6 +130,7 @@ export default function HospedagemPage() {
     setSaveError('')
     try {
       const payload = {
+        client_id: form.client_id || null,
         client_name: form.client_name.trim(),
         domain: form.domain.trim(),
         plan: form.plan.trim() || null,
@@ -345,7 +354,30 @@ create policy "allow all" on hosting
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <label htmlFor="host-client" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Cliente *</label>
-              <input id="host-client" className="input-field" placeholder="Nome do cliente" value={form.client_name} onChange={set('client_name')} required />
+              <select
+                id="host-client"
+                className="input-field cursor-pointer"
+                value={form.client_id}
+                onChange={e => {
+                  const clientId = e.target.value
+                  const client = clients.find(c => c.id === clientId)
+                  setForm(f => ({ ...f, client_id: clientId, client_name: client?.name ?? '' }))
+                }}
+              >
+                <option value="">Selecionar cliente...</option>
+                {clients.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+              {!form.client_id && (
+                <input
+                  className="input-field mt-2"
+                  placeholder="Ou digitar o nome manualmente"
+                  value={form.client_name}
+                  onChange={set('client_name')}
+                  required
+                />
+              )}
             </div>
             <div>
               <label htmlFor="host-domain" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Domínio *</label>

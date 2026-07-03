@@ -122,9 +122,9 @@ export default function ClientePage({ params }: { params: { id: string } }) {
           ])
           if (cancelled) return
           if (proofData) setProofs(proofData.filter(matchesClient))
-          if (meetingData) setMeetings(meetingData.filter(m => normalize(m.client_name) === targetName))
-          if (hostingData) setHostings(hostingData.filter(h => normalize(h.client_name) === targetName))
-          if (modData) setMods(modData.filter(m => !!m.client_name && normalize(m.client_name) === targetName))
+          if (meetingData) setMeetings(meetingData.filter(matchesClient))
+          if (hostingData) setHostings(hostingData.filter(matchesClient))
+          if (modData) setMods(modData.filter(matchesClient))
           if (gmbData) setGmbProfiles(gmbData.filter(matchesClient))
         }
       } catch (err) {

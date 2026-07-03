@@ -10,8 +10,9 @@ import {
   MessageCircle, Video,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
+import { clientRepository } from '@/lib/repositories'
 import { formatDate } from '@/lib/utils'
-import { Meeting, MeetingType, MeetingStatus, ClosingMethod } from '@/types'
+import { Meeting, MeetingType, MeetingStatus, ClosingMethod, Client } from '@/types'
 import { useDateFilter } from '@/contexts/DateFilterContext'
 import { useToast } from '@/hooks/useToast'
 
@@ -39,6 +40,7 @@ const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
 ]
 
 const emptyForm = {
+  client_id: '',
   client_name: '',
   phone: '',
   date: new Date().toISOString().split('T')[0],
@@ -136,8 +138,10 @@ export default function ReunioesPage() {
   const [saveError, setSaveError] = useState('')
   const [deleteModal, setDeleteModal] = useState<Meeting | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [clients, setClients] = useState<Pick<Client, 'id' | 'name' | 'specialty'>[]>([])
   const { toast, showToast } = useToast()
   const db = useMemo(() => createClient(), [])
+  const clientRepo = useMemo(() => clientRepository(db), [db])
   const { range } = useDateFilter()
 
   useEffect(() => {
@@ -159,7 +163,10 @@ export default function ReunioesPage() {
       }
     }
     load()
-  }, [db])
+    clientRepo.findForSelect()
+      .then(data => setClients(data))
+      .catch(err => console.error('Erro ao carregar clientes:', err))
+  }, [db, clientRepo])
 
   const filtered = useMemo(() =>
     meetings.filter(m => (!range.from || m.date >= range.from) && (!range.to || m.date <= range.to)),
@@ -199,6 +206,7 @@ export default function ReunioesPage() {
   const handleOpenEdit = useCallback((m: Meeting) => {
     setEditingMeeting(m)
     setForm({
+      client_id: m.client_id ?? '',
       client_name: m.client_name,
       phone: m.phone ?? '',
       date: m.date,
@@ -224,11 +232,12 @@ export default function ReunioesPage() {
     setSaveError('')
     try {
       type MeetingPayload = {
-        client_name: string; phone: string | null; date: string
+        client_id: string | null; client_name: string; phone: string | null; date: string
         scheduled_time: string | null; type: MeetingType; status: MeetingStatus
         closing_method: ClosingMethod | null; notes: string | null
       }
       const fullPayload: MeetingPayload = {
+        client_id: form.client_id || null,
         client_name: form.client_name.trim(),
         phone: form.phone.trim() || null,
         date: form.date,
@@ -253,12 +262,12 @@ export default function ReunioesPage() {
 
       if (result.error) {
         const msg = errMsg(result.error)
-        const isSchemaCacheError = msg.includes('phone') || msg.includes('closing_method')
+        const isSchemaCacheError = msg.includes('phone') || msg.includes('closing_method') || msg.includes('client_id')
         if (isSchemaCacheError) {
-          // Both columns were added via ALTER TABLE — strip both in one retry
+          // These columns were added via ALTER TABLE — strip all in one retry
           // to avoid a second cache miss if PostgREST rebuilt its cache mid-session
-          const { phone: _p, closing_method: _c, ...stripped } = fullPayload
-          void _p; void _c
+          const { phone: _p, closing_method: _c, client_id: _cid, ...stripped } = fullPayload
+          void _p; void _c; void _cid
           result = await trySave(stripped)
         }
         if (result.error) throw result.error
@@ -537,7 +546,30 @@ create policy "allow all" on meetings
 
             <div>
               <label htmlFor="mtg-client" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Cliente / Contato *</label>
-              <input id="mtg-client" className="input-field" placeholder="Dr. Nome..." value={form.client_name} onChange={set('client_name')} required />
+              <select
+                id="mtg-client"
+                className="input-field cursor-pointer"
+                value={form.client_id}
+                onChange={e => {
+                  const clientId = e.target.value
+                  const client = clients.find(c => c.id === clientId)
+                  setForm(f => ({ ...f, client_id: clientId, client_name: client?.name ?? '' }))
+                }}
+              >
+                <option value="">Selecionar cliente...</option>
+                {clients.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+              {!form.client_id && (
+                <input
+                  className="input-field mt-2"
+                  placeholder="Ou digitar o nome (prospecção, ainda não é cliente)"
+                  value={form.client_name}
+                  onChange={set('client_name')}
+                  required
+                />
+              )}
             </div>
 
             <div>

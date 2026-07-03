@@ -30,6 +30,7 @@ export interface Client {
 
 export interface Hosting {
   id: string
+  client_id?: string | null
   client_name: string
   domain: string
   plan?: string | null
@@ -47,6 +48,7 @@ export interface Modification {
   id: string
   title: string
   description?: string | null
+  client_id?: string | null
   client_name?: string | null
   project_id?: string | null
   priority: ModificationPriority
@@ -64,6 +66,7 @@ export type ClosingMethod = 'whatsapp' | 'reuniao'
 export interface Meeting {
   id: string
   title?: string | null
+  client_id?: string | null
   client_name: string
   phone?: string | null
   date: string

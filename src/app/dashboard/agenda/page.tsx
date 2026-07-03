@@ -9,7 +9,8 @@ import {
   Handshake, PhoneCall, Calendar, Pencil, Trash2, ChevronDown,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
-import { Meeting, MeetingType, MeetingStatus } from '@/types'
+import { clientRepository } from '@/lib/repositories'
+import { Meeting, MeetingType, MeetingStatus, Client } from '@/types'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/hooks/useToast'
 
@@ -44,6 +45,7 @@ const statusConfig: Record<MeetingStatus, { label: string; selectClass: string }
 }
 
 const emptyForm = {
+  client_id: '',
   client_name: '',
   date: '',
   scheduled_time: '',
@@ -111,8 +113,16 @@ export default function AgendaPage() {
   const [deleting, setDeleting] = useState(false)
   const { toast, showToast } = useToast(3000)
   const [nowTop, setNowTop] = useState(currentTimeTop)
+  const [clients, setClients] = useState<Pick<Client, 'id' | 'name' | 'specialty'>[]>([])
 
   const db = useMemo(() => createClient(), [])
+  const clientRepo = useMemo(() => clientRepository(db), [db])
+
+  useEffect(() => {
+    clientRepo.findForSelect()
+      .then(data => setClients(data))
+      .catch(err => console.error('Erro ao carregar clientes:', err))
+  }, [clientRepo])
 
   // Live current-time indicator
   useEffect(() => {
@@ -175,6 +185,7 @@ export default function AgendaPage() {
     e.stopPropagation()
     setEditingMeeting(m)
     setForm({
+      client_id: m.client_id ?? '',
       client_name: m.client_name,
       date: m.date,
       scheduled_time: m.scheduled_time ?? '',
@@ -198,6 +209,7 @@ export default function AgendaPage() {
     setSaveError('')
     try {
       const payload = {
+        client_id: form.client_id || null,
         client_name: form.client_name.trim(),
         date: form.date,
         scheduled_time: form.scheduled_time || null,
@@ -499,7 +511,30 @@ export default function AgendaPage() {
 
             <div>
               <label htmlFor="ag-client" className="block text-[12px] font-medium text-gray-700 dark:text-[#00a02a] mb-1.5">Cliente / Contato *</label>
-              <input id="ag-client" className="input-field" placeholder="Dr. Nome..." value={form.client_name} onChange={set('client_name')} required />
+              <select
+                id="ag-client"
+                className="input-field cursor-pointer"
+                value={form.client_id}
+                onChange={e => {
+                  const clientId = e.target.value
+                  const client = clients.find(c => c.id === clientId)
+                  setForm(f => ({ ...f, client_id: clientId, client_name: client?.name ?? '' }))
+                }}
+              >
+                <option value="">Selecionar cliente...</option>
+                {clients.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+              {!form.client_id && (
+                <input
+                  className="input-field mt-2"
+                  placeholder="Ou digitar o nome (prospecção, ainda não é cliente)"
+                  value={form.client_name}
+                  onChange={set('client_name')}
+                  required
+                />
+              )}
             </div>
 
             <div>
