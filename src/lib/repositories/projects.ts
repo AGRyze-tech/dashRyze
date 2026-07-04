@@ -55,9 +55,10 @@ export function projectRepository(db: Db) {
       return (data ?? []) as Pick<Project, 'id' | 'name'>[]
     },
 
-    async create(input: ProjectInput): Promise<void> {
-      const { error } = await db.from('projects').insert(input)
+    async create(input: ProjectInput): Promise<Project> {
+      const { data, error } = await db.from('projects').insert(input).select().single()
       if (error) throw error
+      return data as Project
     },
 
     async update(id: string, input: Partial<ProjectInput>): Promise<void> {

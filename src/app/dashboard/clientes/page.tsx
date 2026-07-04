@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { clientRepository, ClientInput } from '@/lib/repositories'
-import { transactionRepository, projectRepository } from '@/lib/repositories'
+import { transactionRepository, projectRepository, contractRepository, InstallmentInput } from '@/lib/repositories'
 import { clientStatusConfig, activeClientStatuses, formatDate, formatCurrency, specialties, acquisitionSourceOptions } from '@/lib/utils'
 import { useDateFilter } from '@/contexts/DateFilterContext'
 import { useToast } from '@/hooks/useToast'
@@ -285,30 +285,79 @@ export default function ClientesPage() {
         .order('created_at')
         .limit(1)
 
+      let projectId: string
       if (existingProjs && existingProjs.length > 0) {
         // Update preserving the project status (don't reset to briefing)
-        await projRepo.update(existingProjs[0].id, projectBase)
+        projectId = existingProjs[0].id
+        await projRepo.update(projectId, projectBase)
       } else {
-        await projRepo.create({ ...projectBase, status: 'briefing' })
+        const createdProject = await projRepo.create({ ...projectBase, status: 'briefing' })
+        projectId = createdProject.id
       }
 
-      // ── Transação de recebimento — sempre usa valor total do contrato ────
-      const txAmount = totalVal
-      if (txAmount && txAmount > 0) {
-        const txDate = form.closed_at || today
-        const txPayload = {
-          type: 'entrada' as const,
-          category: 'clientes' as const,
-          description: `Recebimento - ${form.name}`,
-          amount: txAmount,
-          date: txDate,
-          client_id: savedClient!.id,
-        }
-        const existing = await txRepo.findClientReceipt(savedClient!.id)
-        if (existing) {
-          await txRepo.update(existing.id, txPayload)
+      // ── Contrato — gerado a partir do valor total/pago do cliente ───────
+      if (totalVal && totalVal > 0) {
+        const { data: existingContracts } = await db
+          .from('contracts')
+          .select('id')
+          .eq('client_id', savedClient!.id)
+          .order('created_at')
+          .limit(1)
+
+        if (existingContracts && existingContracts.length > 0) {
+          // Contrato já existe: só sincroniza o valor total.
+          // Parcelas já geradas continuam controladas manualmente em Contratos,
+          // pra não reembaralhar parcelas já pagas.
+          await db.from('contracts').update({ total_value: totalVal }).eq('id', existingContracts[0].id)
         } else {
-          await txRepo.create(txPayload)
+          const contractRepo = contractRepository(db)
+          const dueDate1 = form.closed_at || today
+          const dueDate2 = form.delivery_date || deadline30
+          const isFullyPaid = paidVal != null && paidVal >= totalVal - 0.01
+          const isUnpaid = !paidVal || paidVal <= 0
+
+          let installmentsInput: InstallmentInput[]
+          if (isFullyPaid) {
+            installmentsInput = [{ number: 1, value: totalVal, due_date: dueDate1, status: 'pendente' }]
+          } else if (isUnpaid) {
+            installmentsInput = [{ number: 1, value: totalVal, due_date: dueDate2, status: 'pendente' }]
+          } else {
+            installmentsInput = [
+              { number: 1, value: paidVal!, due_date: dueDate1, status: 'pendente' },
+              { number: 2, value: totalVal - paidVal!, due_date: dueDate2, status: 'pendente' },
+            ]
+          }
+
+          const created = await contractRepo.create(
+            {
+              client_id: savedClient!.id,
+              project_id: projectId,
+              total_value: totalVal,
+              payment_method: installmentsInput.length > 1 ? 'parcelado' : 'avista',
+              installments_count: installmentsInput.length,
+            },
+            installmentsInput,
+          )
+
+          // Marca como paga a parcela referente ao valor já recebido. O gatilho
+          // documentado em schema.sql para gerar a transação automaticamente
+          // não existe de fato no banco (confirmado em teste), então criamos a
+          // transação diretamente aqui em vez de depender dele.
+          if (!isUnpaid) {
+            const toMarkPaid = created.installments.find(i => i.number === 1)
+            if (toMarkPaid) {
+              await db.from('contract_installments').update({ status: 'pago', paid_at: dueDate1 }).eq('id', toMarkPaid.id)
+              await txRepo.create({
+                type: 'entrada',
+                category: 'contrato',
+                description: `Parcela 1/${installmentsInput.length} — ${form.name}`,
+                amount: toMarkPaid.value,
+                date: dueDate1,
+                client_id: savedClient!.id,
+                contract_id: created.id,
+              })
+            }
+          }
         }
       }
       setForm(emptyForm)
