@@ -90,48 +90,63 @@ export default function ClientePage({ params }: { params: { id: string } }) {
   useEffect(() => {
     let cancelled = false
     async function load() {
-      try {
-        const [{ data: clientData }, { data: projectData }, { data: contractData }, { data: txData }] = await Promise.all([
-          supabase.from('clients').select('*').eq('id', id).single(),
-          supabase.from('projects').select('*').eq('client_id', id).order('created_at', { ascending: false }),
-          supabase.from('contracts').select('*, installments:contract_installments(*)').eq('client_id', id).order('created_at', { ascending: false }),
-          supabase.from('transactions').select('*').eq('client_id', id).order('date', { ascending: false }),
+      const [clientRes, projectRes, contractRes, txRes] = await Promise.allSettled([
+        supabase.from('clients').select('*').eq('id', id).single(),
+        supabase.from('projects').select('*').eq('client_id', id).order('created_at', { ascending: false }),
+        supabase.from('contracts').select('*, installments:contract_installments(*)').eq('client_id', id).order('created_at', { ascending: false }),
+        supabase.from('transactions').select('*').eq('client_id', id).order('date', { ascending: false }),
+      ])
+      if (cancelled) return
+
+      const clientData = clientRes.status === 'fulfilled' ? clientRes.value.data : null
+      if (clientRes.status === 'rejected') console.error('Erro ao carregar cliente:', clientRes.reason)
+      if (clientData) setClient(clientData)
+
+      if (projectRes.status === 'fulfilled') { if (projectRes.value.data) setProjects(projectRes.value.data) }
+      else console.error('Erro ao carregar projetos:', projectRes.reason)
+
+      if (contractRes.status === 'fulfilled') { if (contractRes.value.data) setContracts(contractRes.value.data as unknown as ContractWithInstallments[]) }
+      else console.error('Erro ao carregar contratos:', contractRes.reason)
+
+      if (txRes.status === 'fulfilled') { if (txRes.value.data) setTransactions(txRes.value.data) }
+      else console.error('Erro ao carregar transações:', txRes.reason)
+
+      if (clientData) {
+        const normalize = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ')
+        const targetName = normalize(clientData.name)
+        const matchesClient = (row: { client_id?: string | null; client_name?: string | null }) =>
+          row.client_id === id || (!!row.client_name && normalize(row.client_name) === targetName)
+
+        // These tables link by client_name (or an optional client_id) rather than a
+        // foreign key, and are small agency-scale tables — fetching all rows and
+        // matching client-side avoids PostgREST filter syntax breaking on names that
+        // contain parentheses/commas, and tolerates whitespace/case differences.
+        const [proofRes, meetingRes, hostingRes, modRes, gmbRes] = await Promise.allSettled([
+          supabase.from('payment_proofs').select('*'),
+          supabase.from('meetings').select('*').order('date', { ascending: false }),
+          supabase.from('hosting').select('*'),
+          supabase.from('modifications').select('*').order('created_at', { ascending: false }),
+          supabase.from('gmb_profiles').select('*'),
         ])
         if (cancelled) return
-        if (clientData) setClient(clientData)
-        if (projectData) setProjects(projectData)
-        if (contractData) setContracts(contractData as unknown as ContractWithInstallments[])
-        if (txData) setTransactions(txData)
 
-        if (clientData) {
-          const normalize = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ')
-          const targetName = normalize(clientData.name)
-          const matchesClient = (row: { client_id?: string | null; client_name?: string | null }) =>
-            row.client_id === id || (!!row.client_name && normalize(row.client_name) === targetName)
+        if (proofRes.status === 'fulfilled') { if (proofRes.value.data) setProofs(proofRes.value.data.filter(matchesClient)) }
+        else console.error('Erro ao carregar comprovantes:', proofRes.reason)
 
-          // These tables link by client_name (or an optional client_id) rather than a
-          // foreign key, and are small agency-scale tables — fetching all rows and
-          // matching client-side avoids PostgREST filter syntax breaking on names that
-          // contain parentheses/commas, and tolerates whitespace/case differences.
-          const [{ data: proofData }, { data: meetingData }, { data: hostingData }, { data: modData }, { data: gmbData }] = await Promise.all([
-            supabase.from('payment_proofs').select('*'),
-            supabase.from('meetings').select('*').order('date', { ascending: false }),
-            supabase.from('hosting').select('*'),
-            supabase.from('modifications').select('*').order('created_at', { ascending: false }),
-            supabase.from('gmb_profiles').select('*'),
-          ])
-          if (cancelled) return
-          if (proofData) setProofs(proofData.filter(matchesClient))
-          if (meetingData) setMeetings(meetingData.filter(matchesClient))
-          if (hostingData) setHostings(hostingData.filter(matchesClient))
-          if (modData) setMods(modData.filter(matchesClient))
-          if (gmbData) setGmbProfiles(gmbData.filter(matchesClient))
-        }
-      } catch (err) {
-        if (!cancelled) console.error('Erro ao carregar cliente:', err)
-      } finally {
-        if (!cancelled) setLoading(false)
+        if (meetingRes.status === 'fulfilled') { if (meetingRes.value.data) setMeetings(meetingRes.value.data.filter(matchesClient)) }
+        else console.error('Erro ao carregar reuniões:', meetingRes.reason)
+
+        if (hostingRes.status === 'fulfilled') { if (hostingRes.value.data) setHostings(hostingRes.value.data.filter(matchesClient)) }
+        else console.error('Erro ao carregar hospedagens:', hostingRes.reason)
+
+        if (modRes.status === 'fulfilled') { if (modRes.value.data) setMods(modRes.value.data.filter(matchesClient)) }
+        else console.error('Erro ao carregar modificações:', modRes.reason)
+
+        if (gmbRes.status === 'fulfilled') { if (gmbRes.value.data) setGmbProfiles(gmbRes.value.data.filter(matchesClient)) }
+        else console.error('Erro ao carregar perfis GMB:', gmbRes.reason)
       }
+
+      if (!cancelled) setLoading(false)
     }
     load()
     return () => { cancelled = true }

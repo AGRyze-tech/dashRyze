@@ -340,22 +340,11 @@ export default function ClientesPage() {
           )
 
           // Marca como paga a parcela referente ao valor já recebido. O gatilho
-          // documentado em schema.sql para gerar a transação automaticamente
-          // não existe de fato no banco (confirmado em teste), então criamos a
-          // transação diretamente aqui em vez de depender dele.
+          // on_installment_paid cuida de gerar a transação em Financeiro.
           if (!isUnpaid) {
             const toMarkPaid = created.installments.find(i => i.number === 1)
             if (toMarkPaid) {
               await db.from('contract_installments').update({ status: 'pago', paid_at: dueDate1 }).eq('id', toMarkPaid.id)
-              await txRepo.create({
-                type: 'entrada',
-                category: 'contrato',
-                description: `Parcela 1/${installmentsInput.length} — ${form.name}`,
-                amount: toMarkPaid.value,
-                date: dueDate1,
-                client_id: savedClient!.id,
-                contract_id: created.id,
-              })
             }
           }
         }

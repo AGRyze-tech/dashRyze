@@ -26,7 +26,7 @@ CREATE TABLE clients (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   name text NOT NULL,
   specialty text NOT NULL,
-  email text NOT NULL,
+  email text,
   whatsapp text NOT NULL,
   instagram text,
   website text,
@@ -34,7 +34,12 @@ CREATE TABLE clients (
   notes text,
   closed_at date,
   delivery_date date,
-  created_at timestamptz DEFAULT now()
+  created_at timestamptz DEFAULT now(),
+  contract_url text,
+  total_value numeric(10,2),
+  paid_value numeric(10,2),
+  acquisition_source text,
+  domain_included boolean
 );
 
 -- ========================
@@ -69,6 +74,11 @@ CREATE TABLE contracts (
   payment_method payment_method NOT NULL DEFAULT 'avista',
   installments_count integer NOT NULL DEFAULT 1,
   pdf_url text,
+  pdf_name text,
+  initial_payment_proof_url text,
+  initial_payment_proof_name text,
+  final_payment_proof_url text,
+  final_payment_proof_name text,
   created_at timestamptz DEFAULT now()
 );
 
@@ -98,6 +108,7 @@ CREATE TABLE transactions (
   description text NOT NULL,
   amount numeric(10,2) NOT NULL,
   date date NOT NULL,
+  client_id uuid REFERENCES clients(id) ON DELETE SET NULL,
   contract_id uuid REFERENCES contracts(id) ON DELETE SET NULL,
   created_at timestamptz DEFAULT now()
 );
@@ -358,3 +369,37 @@ CREATE TABLE IF NOT EXISTS gmb_profiles (
 
 ALTER TABLE gmb_profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "allow all" ON gmb_profiles FOR ALL USING (true) WITH CHECK (true);
+
+-- ========================
+-- META ADS CAMPAIGNS (manual)
+-- ========================
+
+CREATE TABLE IF NOT EXISTS meta_campaigns (
+  id uuid PRIMARY KEY,
+  name text NOT NULL,
+  status text NOT NULL DEFAULT 'ACTIVE',
+  daily_budget numeric(10,2) NOT NULL DEFAULT 0,
+  spend numeric(10,2) NOT NULL DEFAULT 0,
+  impressions integer NOT NULL DEFAULT 0,
+  clicks integer NOT NULL DEFAULT 0,
+  cpm numeric(10,2) NOT NULL DEFAULT 0,
+  reach integer NOT NULL DEFAULT 0,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE meta_campaigns ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "allow all" ON meta_campaigns FOR ALL USING (true) WITH CHECK (true);
+
+-- ========================
+-- SETTINGS (metas mensais e outras configs globais)
+-- ========================
+
+CREATE TABLE IF NOT EXISTS settings (
+  key text PRIMARY KEY,
+  value jsonb NOT NULL,
+  updated_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "allow all" ON settings FOR ALL USING (true) WITH CHECK (true);

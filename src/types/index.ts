@@ -115,6 +115,11 @@ export interface Contract {
   payment_method: PaymentMethod
   installments_count: number
   pdf_url?: string
+  pdf_name?: string
+  initial_payment_proof_url?: string
+  initial_payment_proof_name?: string
+  final_payment_proof_url?: string
+  final_payment_proof_name?: string
   created_at: string
   installments?: ContractInstallment[]
 }

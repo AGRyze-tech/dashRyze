@@ -382,24 +382,30 @@ export default function DashboardPage() {
     setLoading(true)
 
     async function load() {
-      try {
-        const [cli, proj, txn, lds, campaigns] = await Promise.all([
-          clientRepository(db).findSummary(),
-          projectRepository(db).findDashboard(),
-          transactionRepository(db).findInRange(range.from, range.to),
-          leadRepository(db).findAll(),
-          db.from('meta_campaigns').select('*').order('created_at'),
-        ])
-        setClients(cli as DashClient[])
-        setProjects(proj as DashProject[])
-        setTransactions(txn)
-        setLeads(lds)
-        setMeta((campaigns.data ?? []) as MetaCampaign[])
-      } catch (err) {
-        console.error('Erro ao carregar dashboard:', err)
-      } finally {
-        setLoading(false)
-      }
+      const [cli, proj, txn, lds, campaigns] = await Promise.allSettled([
+        clientRepository(db).findSummary(),
+        projectRepository(db).findDashboard(),
+        transactionRepository(db).findInRange(range.from, range.to),
+        leadRepository(db).findAll(),
+        db.from('meta_campaigns').select('*').order('created_at'),
+      ])
+
+      if (cli.status === 'fulfilled') setClients(cli.value as DashClient[])
+      else console.error('Erro ao carregar clientes:', cli.reason)
+
+      if (proj.status === 'fulfilled') setProjects(proj.value as DashProject[])
+      else console.error('Erro ao carregar projetos:', proj.reason)
+
+      if (txn.status === 'fulfilled') setTransactions(txn.value)
+      else console.error('Erro ao carregar transações:', txn.reason)
+
+      if (lds.status === 'fulfilled') setLeads(lds.value)
+      else console.error('Erro ao carregar leads:', lds.reason)
+
+      if (campaigns.status === 'fulfilled') setMeta((campaigns.value.data ?? []) as MetaCampaign[])
+      else console.error('Erro ao carregar campanhas Meta Ads:', campaigns.reason)
+
+      setLoading(false)
     }
 
     load()

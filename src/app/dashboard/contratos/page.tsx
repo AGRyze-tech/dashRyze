@@ -1,11 +1,12 @@
 ﻿'use client'
 import { Fragment, useState, useEffect, useMemo } from 'react'
+import Link from 'next/link'
 import { Header } from '@/components/layout/Header'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
-import { FileText, Download, Plus, AlertCircle, CheckCircle2, Clock, Trash2, Calendar } from 'lucide-react'
+import { FileText, Download, Plus, AlertCircle, CheckCircle2, Clock, Trash2, Calendar, Eye } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { contractRepository, projectRepository, clientRepository } from '@/lib/repositories'
 import { formatCurrency, formatDate } from '@/lib/utils'
@@ -266,10 +267,16 @@ export default function ContratosPage() {
                         )}
                       </td>
                       <td>
-                        <button type="button" onClick={() => setDeleteModal(contract)} aria-label="Remover contrato"
-                          className="p-1.5 rounded-md hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors">
-                          <Trash2 size={13} />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <Link href={`/dashboard/contratos/${contract.id}`} aria-label="Ver detalhes do contrato"
+                            className="p-1.5 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors inline-flex">
+                            <Eye size={13} />
+                          </Link>
+                          <button type="button" onClick={() => setDeleteModal(contract)} aria-label="Remover contrato"
+                            className="p-1.5 rounded-md hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors">
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                     {(contract.installments ?? []).length > 0 && (

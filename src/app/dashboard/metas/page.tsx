@@ -212,23 +212,30 @@ export default function MetasPage() {
   useEffect(() => {
     if (!range.from || !range.to) return
     async function load() {
-      try {
-        const [txn, { data: settings }] = await Promise.all([
-          txRepo.findInRange(range.from, range.to),
-          supabase.from('settings').select('value').eq('key', 'goals').single(),
-        ])
+      const [txnResult, settingsResult] = await Promise.allSettled([
+        txRepo.findInRange(range.from, range.to),
+        supabase.from('settings').select('value').eq('key', 'goals').maybeSingle(),
+      ])
+
+      if (txnResult.status === 'fulfilled') {
         let revenue = 0, sales = 0
-        for (const t of txn) {
+        for (const t of txnResult.value) {
           if (t.type === 'entrada') { revenue += t.amount; sales++ }
         }
         setMonthRevenue(revenue)
         setSalesCount(sales)
-        if (settings?.value) setGoals({ ...DEFAULT_GOALS, ...settings.value })
-      } catch (err) {
-        console.error('Erro ao carregar metas:', err)
-      } finally {
-        setLoading(false)
+      } else {
+        console.error('Erro ao carregar transações do período:', txnResult.reason)
       }
+
+      if (settingsResult.status === 'fulfilled') {
+        const settingsValue = settingsResult.value.data?.value
+        if (settingsValue) setGoals({ ...DEFAULT_GOALS, ...settingsValue })
+      } else {
+        console.error('Erro ao carregar metas salvas:', settingsResult.reason)
+      }
+
+      setLoading(false)
     }
     load()
   }, [supabase, range.from, range.to])
