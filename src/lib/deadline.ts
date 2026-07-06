@@ -1,5 +1,7 @@
+import { parseLocalDate } from './format'
+
 export function daysUntil(date: string): number {
-  const target = new Date(date)
+  const target = parseLocalDate(date)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   target.setHours(0, 0, 0, 0)
