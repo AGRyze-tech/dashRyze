@@ -244,115 +244,136 @@ export default function ClientesPage() {
         } else throw e
       }
       savedClient = saveData
-      if (editingClient) {
-        setClients(prev => prev.map(c => c.id === editingClient.id ? saveData : c))
-        showToast(`${saveData.name} atualizado com sucesso!`)
-      } else {
-        setClients(prev => [saveData, ...prev])
-        showToast(`${saveData.name} adicionado com sucesso!`)
-      }
+      setClients(prev =>
+        prev.some(c => c.id === saveData.id)
+          ? prev.map(c => c.id === saveData.id ? saveData : c)
+          : [saveData, ...prev]
+      )
+      // A partir daqui, qualquer nova tentativa de salvar (se o passo seguinte
+      // falhar e o usuário clicar em Salvar de novo) deve atualizar este
+      // cliente em vez de criar um duplicado.
+      setEditingClient(saveData)
 
-      // ── Domínio ──────────────────────────────────────────────────────────
-      const txRepo = transactionRepository(db)
-      if (form.domain_included && wasNotDomain) {
-        await txRepo.create({
-          type: 'saida',
-          category: 'dominio',
-          description: `Domínio - ${form.name}`,
-          amount: 40,
-          date: new Date().toISOString().split('T')[0],
-        })
-      }
+      // ── Projeto/contrato/domínio: erro aqui não deve parecer um sucesso ──
+      // silencioso. O cliente já está salvo; se o restante falhar, avisamos
+      // exatamente o que não completou em vez de só mostrar "salvo com sucesso".
+      try {
+        // ── Domínio ────────────────────────────────────────────────────────
+        const txRepo = transactionRepository(db)
+        if (form.domain_included && wasNotDomain) {
+          await txRepo.create({
+            type: 'saida',
+            category: 'dominio',
+            description: `Domínio - ${form.name}`,
+            amount: 40,
+            date: new Date().toISOString().split('T')[0],
+          })
+        }
 
-      // ── Projeto (sempre cria ou atualiza) ────────────────────────────────
-      const projRepo = projectRepository(db)
-      const today = new Date().toISOString().split('T')[0]
-      const deadline30 = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]
-      const projectBase = {
-        client_id: savedClient!.id,
-        name: form.name,
-        type: form.project_type,
-        responsible: form.responsible,
-        start_date: form.closed_at || today,
-        deadline: form.delivery_date || deadline30,
-        notes: form.notes || null,
-      }
+        // ── Projeto (sempre cria ou atualiza) ─────────────────────────────
+        const projRepo = projectRepository(db)
+        const today = new Date().toISOString().split('T')[0]
+        const deadline30 = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]
+        const projectBase = {
+          client_id: savedClient!.id,
+          name: form.name,
+          type: form.project_type,
+          responsible: form.responsible,
+          start_date: form.closed_at || today,
+          deadline: form.delivery_date || deadline30,
+          notes: form.notes || null,
+        }
 
-      const { data: existingProjs } = await db
-        .from('projects')
-        .select('id, status')
-        .eq('client_id', savedClient!.id)
-        .order('created_at')
-        .limit(1)
-
-      let projectId: string
-      if (existingProjs && existingProjs.length > 0) {
-        // Update preserving the project status (don't reset to briefing)
-        projectId = existingProjs[0].id
-        await projRepo.update(projectId, projectBase)
-      } else {
-        const createdProject = await projRepo.create({ ...projectBase, status: 'briefing' })
-        projectId = createdProject.id
-      }
-
-      // ── Contrato — gerado a partir do valor total/pago do cliente ───────
-      if (totalVal && totalVal > 0) {
-        const { data: existingContracts } = await db
-          .from('contracts')
-          .select('id')
+        const { data: existingProjs } = await db
+          .from('projects')
+          .select('id, status')
           .eq('client_id', savedClient!.id)
           .order('created_at')
           .limit(1)
 
-        if (existingContracts && existingContracts.length > 0) {
-          // Contrato já existe: só sincroniza o valor total.
-          // Parcelas já geradas continuam controladas manualmente em Contratos,
-          // pra não reembaralhar parcelas já pagas.
-          await db.from('contracts').update({ total_value: totalVal }).eq('id', existingContracts[0].id)
+        let projectId: string
+        if (existingProjs && existingProjs.length > 0) {
+          // Update preserving the project status (don't reset to briefing)
+          projectId = existingProjs[0].id
+          await projRepo.update(projectId, projectBase)
         } else {
-          const contractRepo = contractRepository(db)
-          const dueDate1 = form.closed_at || today
-          const dueDate2 = form.delivery_date || deadline30
-          const isFullyPaid = paidVal != null && paidVal >= totalVal - 0.01
-          const isUnpaid = !paidVal || paidVal <= 0
+          const createdProject = await projRepo.create({ ...projectBase, status: 'briefing' })
+          projectId = createdProject.id
+        }
 
-          let installmentsInput: InstallmentInput[]
-          if (isFullyPaid) {
-            installmentsInput = [{ number: 1, value: totalVal, due_date: dueDate1, status: 'pendente' }]
-          } else if (isUnpaid) {
-            installmentsInput = [{ number: 1, value: totalVal, due_date: dueDate2, status: 'pendente' }]
+        // ── Contrato — gerado a partir do valor total/pago do cliente ─────
+        if (totalVal && totalVal > 0) {
+          const { data: existingContracts } = await db
+            .from('contracts')
+            .select('id')
+            .eq('client_id', savedClient!.id)
+            .order('created_at')
+            .limit(1)
+
+          if (existingContracts && existingContracts.length > 0) {
+            // Contrato já existe: só sincroniza o valor total.
+            // Parcelas já geradas continuam controladas manualmente em Contratos,
+            // pra não reembaralhar parcelas já pagas.
+            await db.from('contracts').update({ total_value: totalVal }).eq('id', existingContracts[0].id)
           } else {
-            installmentsInput = [
-              { number: 1, value: paidVal!, due_date: dueDate1, status: 'pendente' },
-              { number: 2, value: totalVal - paidVal!, due_date: dueDate2, status: 'pendente' },
-            ]
-          }
+            const contractRepo = contractRepository(db)
+            const dueDate1 = form.closed_at || today
+            const dueDate2 = form.delivery_date || deadline30
+            const isFullyPaid = paidVal != null && paidVal >= totalVal - 0.01
+            const isUnpaid = !paidVal || paidVal <= 0
 
-          const created = await contractRepo.create(
-            {
-              client_id: savedClient!.id,
-              project_id: projectId,
-              total_value: totalVal,
-              payment_method: installmentsInput.length > 1 ? 'parcelado' : 'avista',
-              installments_count: installmentsInput.length,
-            },
-            installmentsInput,
-          )
+            let installmentsInput: InstallmentInput[]
+            if (isFullyPaid) {
+              installmentsInput = [{ number: 1, value: totalVal, due_date: dueDate1, status: 'pendente' }]
+            } else if (isUnpaid) {
+              installmentsInput = [{ number: 1, value: totalVal, due_date: dueDate2, status: 'pendente' }]
+            } else {
+              installmentsInput = [
+                { number: 1, value: paidVal!, due_date: dueDate1, status: 'pendente' },
+                { number: 2, value: totalVal - paidVal!, due_date: dueDate2, status: 'pendente' },
+              ]
+            }
 
-          // Marca como paga a parcela referente ao valor já recebido. O gatilho
-          // on_installment_paid cuida de gerar a transação em Financeiro.
-          if (!isUnpaid) {
-            const toMarkPaid = created.installments.find(i => i.number === 1)
-            if (toMarkPaid) {
-              await db.from('contract_installments').update({ status: 'pago', paid_at: dueDate1 }).eq('id', toMarkPaid.id)
+            const created = await contractRepo.create(
+              {
+                client_id: savedClient!.id,
+                project_id: projectId,
+                total_value: totalVal,
+                payment_method: installmentsInput.length > 1 ? 'parcelado' : 'avista',
+                installments_count: installmentsInput.length,
+              },
+              installmentsInput,
+            )
+
+            // Marca como paga a parcela referente ao valor já recebido. O gatilho
+            // on_installment_paid cuida de gerar a transação em Financeiro.
+            if (!isUnpaid) {
+              const toMarkPaid = created.installments.find(i => i.number === 1)
+              if (toMarkPaid) {
+                await db.from('contract_installments').update({ status: 'pago', paid_at: dueDate1 }).eq('id', toMarkPaid.id)
+              }
             }
           }
         }
+
+        setForm(emptyForm)
+        setContractFile(null)
+        setEditingClient(null)
+        setShowModal(false)
+        showToast(`${saveData.name} salvo com sucesso!`)
+      } catch (cascadeErr: unknown) {
+        console.error('Erro ao gerar projeto/contrato para o cliente:', cascadeErr)
+        const cascadeMsg =
+          cascadeErr instanceof Error
+            ? cascadeErr.message
+            : typeof cascadeErr === 'object' && cascadeErr !== null && 'message' in cascadeErr
+            ? String((cascadeErr as { message: unknown }).message)
+            : String(cascadeErr)
+        setSaveError(
+          `"${saveData.name}" foi salvo, mas houve um erro ao gerar o projeto/contrato automaticamente: ${cascadeMsg}. ` +
+          'Clique em Salvar novamente para tentar de novo (não vai duplicar o cliente), ou crie manualmente em Projetos/Contratos.'
+        )
       }
-      setForm(emptyForm)
-      setContractFile(null)
-      setEditingClient(null)
-      setShowModal(false)
     } catch (err: unknown) {
       console.error('Erro ao salvar cliente:', err)
       const msg =
