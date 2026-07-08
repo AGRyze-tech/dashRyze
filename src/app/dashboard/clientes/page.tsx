@@ -356,6 +356,13 @@ export default function ClientesPage() {
           }
         }
 
+        // Recalcula total_value/paid_value do cliente a partir do que foi
+        // efetivamente gerado em contratos/parcelas — garante que a lista de
+        // Clientes mostra o mesmo número que Contratos e Financeiro, mesmo que
+        // o formulário e o estado gravado tenham divergido em algum passo.
+        const recalculated = await repo.recalcFinancials(savedClient!.id)
+        setClients(prev => prev.map(c => c.id === recalculated.id ? recalculated : c))
+
         setForm(emptyForm)
         setContractFile(null)
         setEditingClient(null)

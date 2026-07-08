@@ -5,7 +5,7 @@ import { projectRepository, clientRepository } from '@/lib/repositories'
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
-import { AlertTriangle, Clock, Plus, ExternalLink, User, Pencil, Trash2, Eye, Wallet } from 'lucide-react'
+import { AlertTriangle, Clock, Plus, ExternalLink, User, Pencil, Trash2, Eye, Wallet, CheckCircle2 } from 'lucide-react'
 import {
   formatDate, daysUntil, isDeadlineWarning, isOverdue,
   projectTypeLabels, projectTypeOptions, deadlineLabel,
@@ -13,6 +13,7 @@ import {
 import { formatCurrency } from '@/lib/format'
 import { Project, ProjectStatus, Client } from '@/types'
 import { useDateFilter } from '@/contexts/DateFilterContext'
+import { useToast } from '@/hooks/useToast'
 
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -141,7 +142,7 @@ const ProjectCard = memo(function ProjectCard({
 export default function ProjetosPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [clients, setClients] = useState<Client[]>([])
-  const [pendingByClient, setPendingByClient] = useState<Map<string, number>>(new Map())
+  const [pendingByProject, setPendingByProject] = useState<Map<string, number>>(new Map())
   const [loading, setLoading] = useState(true)
   const [dragging, setDragging] = useState<string | null>(null)
   const [dragOver, setDragOver] = useState<ProjectStatus | null>(null)
@@ -157,6 +158,7 @@ export default function ProjetosPage() {
   const db = useMemo(() => createClient(), [])
   const projRepo = useMemo(() => projectRepository(db), [db])
   const clientRepo = useMemo(() => clientRepository(db), [db])
+  const { toast, showToast } = useToast()
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -164,17 +166,21 @@ export default function ProjetosPage() {
       const [data, instResult] = await Promise.all([
         projRepo.findAll(),
         db.from('contract_installments')
-          .select('value, contract:contracts(client_id)')
+          .select('value, contract:contracts(project_id)')
           .in('status', ['pendente', 'atrasado']),
       ])
       setProjects(data)
+      // Só soma parcelas de contratos vinculados diretamente ao projeto (via
+      // contract.project_id) — parcelas de um contrato sem projeto vinculado
+      // não aparecem em nenhum card, em vez de duplicar o total do cliente em
+      // todos os projetos dele.
       const map = new Map<string, number>()
       for (const row of (instResult.data ?? [])) {
-        const clientId = (row.contract as unknown as { client_id: string | null })?.client_id
-        if (!clientId) continue
-        map.set(clientId, (map.get(clientId) ?? 0) + row.value)
+        const projectId = (row.contract as unknown as { project_id: string | null })?.project_id
+        if (!projectId) continue
+        map.set(projectId, (map.get(projectId) ?? 0) + row.value)
       }
-      setPendingByClient(map)
+      setPendingByProject(map)
     } finally {
       setLoading(false)
     }
@@ -258,7 +264,10 @@ export default function ProjetosPage() {
     setDragging(null)
     setDragOver(null)
     try { await projRepo.updateStatus(id, status) }
-    catch { if (prev) setProjects(ps => ps.map(p => p.id === id ? { ...p, status: prev } : p)) }
+    catch {
+      if (prev) setProjects(ps => ps.map(p => p.id === id ? { ...p, status: prev } : p))
+      showToast('Não deu pra mover o projeto — tente de novo.')
+    }
   }
 
   const set = (field: keyof typeof emptyForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
@@ -358,7 +367,7 @@ export default function ProjetosPage() {
                     >
                       <ProjectCard
                         project={project}
-                        pendingAmount={pendingByClient.get(project.client_id)}
+                        pendingAmount={pendingByProject.get(project.id)}
                         onEdit={openEdit}
                         onDelete={setDeleteTarget}
                         onView={setViewTarget}
@@ -488,6 +497,13 @@ export default function ProjetosPage() {
           </div>
         )}
       </Modal>
+
+      {toast && (
+        <div className="animate-slide-up fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 bg-gray-900 dark:bg-[#111114] dark:border dark:border-[#28282d] text-white px-5 py-3 rounded-xl shadow-xl text-sm font-medium">
+          <CheckCircle2 size={16} className="text-[#00FF41] flex-shrink-0" />
+          {toast}
+        </div>
+      )}
     </div>
   )
 }

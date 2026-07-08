@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { clientRepository } from '@/lib/repositories'
-import { formatDate, formatCurrency } from '@/lib/utils'
+import { formatDate, formatCurrency, daysUntil, effectiveHostingStatus } from '@/lib/utils'
 import { Hosting, Client } from '@/types'
 import { useToast } from '@/hooks/useToast'
 
@@ -32,14 +32,6 @@ const emptyForm = {
 
 function Skeleton({ className }: { className?: string }) {
   return <div className={`animate-pulse rounded-lg bg-gray-100 dark:bg-[#181819] ${className}`} />
-}
-
-function daysUntilRenewal(date: string): number {
-  const target = new Date(date)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  target.setHours(0, 0, 0, 0)
-  return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 }
 
 export default function HospedagemPage() {
@@ -85,10 +77,10 @@ export default function HospedagemPage() {
   const stats = useMemo(() => {
     let ativos = 0, totalMonthly = 0, vencendo = 0
     for (const h of hostings) {
-      if (h.status === 'ativo') ativos++
+      if (effectiveHostingStatus(h) === 'ativo') ativos++
       totalMonthly += h.monthly_value
       if (h.renewal_date) {
-        const days = daysUntilRenewal(h.renewal_date)
+        const days = daysUntil(h.renewal_date)
         if (days >= 0 && days <= 30) vencendo++
       }
     }
@@ -294,9 +286,9 @@ create policy "allow all" on hosting
           ) : (
             <div>
               {hostings.map(h => {
-                const sCfg = statusConfig[h.status]
+                const sCfg = statusConfig[effectiveHostingStatus(h)]
                 const SIcon = sCfg.icon
-                const daysLeft = h.renewal_date ? daysUntilRenewal(h.renewal_date) : null
+                const daysLeft = h.renewal_date ? daysUntil(h.renewal_date) : null
                 const isWarning = daysLeft !== null && daysLeft >= 0 && daysLeft <= 30
                 const isOverdue = daysLeft !== null && daysLeft < 0
                 return (

@@ -131,6 +131,7 @@ export interface Transaction {
   description: string
   amount: number
   date: string
+  client_id?: string | null
   contract_id?: string
   created_at: string
 }

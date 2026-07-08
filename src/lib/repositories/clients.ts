@@ -91,5 +91,38 @@ export function clientRepository(db: Db) {
       const { data } = db.storage.from('clientes').getPublicUrl(path)
       return data.publicUrl
     },
+
+    // Recalcula total_value/paid_value do zero a partir dos contratos+parcelas
+    // e dos lançamentos de Financeiro vinculados ao cliente. Categoria 'contrato'
+    // é excluída da soma de transações porque o trigger on_installment_paid já
+    // gera essa transação a partir da parcela paga — somar as duas contaria o
+    // mesmo pagamento em dobro.
+    async recalcFinancials(clientId: string): Promise<Client> {
+      const [{ data: contracts, error: cErr }, { data: transactions, error: tErr }] = await Promise.all([
+        db.from('contracts').select('total_value, installments:contract_installments(value, status)').eq('client_id', clientId),
+        db.from('transactions').select('amount').eq('client_id', clientId).eq('type', 'entrada').neq('category', 'contrato'),
+      ])
+      if (cErr) throw cErr
+      if (tErr) throw tErr
+
+      let totalValue = 0
+      let paidFromInstallments = 0
+      for (const c of (contracts ?? []) as { total_value: number; installments: { value: number; status: string }[] }[]) {
+        totalValue += c.total_value
+        for (const inst of c.installments ?? []) {
+          if (inst.status === 'pago') paidFromInstallments += inst.value
+        }
+      }
+      const paidFromTransactions = (transactions ?? []).reduce((sum, t) => sum + (t as { amount: number }).amount, 0)
+
+      const { data, error } = await db
+        .from('clients')
+        .update({ total_value: totalValue, paid_value: paidFromInstallments + paidFromTransactions })
+        .eq('id', clientId)
+        .select()
+        .single()
+      if (error) throw error
+      return data
+    },
   }
 }

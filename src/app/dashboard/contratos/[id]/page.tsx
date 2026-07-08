@@ -11,8 +11,8 @@ import {
   Clock, AlertCircle, Upload, Download, CreditCard,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
-import { contractRepository } from '@/lib/repositories'
-import { installmentStatusConfig, formatCurrency, formatDate } from '@/lib/utils'
+import { contractRepository, clientRepository } from '@/lib/repositories'
+import { installmentStatusConfig, formatCurrency, formatDate, effectiveInstallmentStatus } from '@/lib/utils'
 import { useToast } from '@/hooks/useToast'
 import type { Contract, ContractInstallment } from '@/types'
 
@@ -109,8 +109,11 @@ export default function ContratoPage({ params }: { params: { id: string } }) {
         .update({ status: 'pago', paid_at: new Date().toISOString() })
         .eq('id', installmentId)
       if (error) throw error
+      if (contract?.client_id) {
+        await clientRepository(db).recalcFinancials(contract.client_id)
+      }
       await load()
-      showToast('Parcela marcada como paga — transação criada em Financeiro.')
+      showToast('Parcela marcada como paga — transação criada em Financeiro e cliente atualizado.')
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Erro ao marcar parcela como paga.')
     } finally {
@@ -221,12 +224,13 @@ export default function ContratoPage({ params }: { params: { id: string } }) {
               </CardHeader>
               <div className="divide-y divide-gray-50 dark:divide-[#181819]">
                 {(contract.installments ?? []).map(inst => {
-                  const cfg = installmentStatusConfig[inst.status]
-                  const StatusIcon = statusIcon[inst.status]
+                  const effStatus = effectiveInstallmentStatus(inst)
+                  const cfg = installmentStatusConfig[effStatus]
+                  const StatusIcon = statusIcon[effStatus]
                   return (
                     <div key={inst.id} className="flex items-center gap-4 px-5 py-4">
                       <StatusIcon size={16} className={
-                        inst.status === 'pago' ? 'text-emerald-500' : inst.status === 'atrasado' ? 'text-red-500' : 'text-amber-500'
+                        effStatus === 'pago' ? 'text-emerald-500' : effStatus === 'atrasado' ? 'text-red-500' : 'text-amber-500'
                       } />
                       <div className="flex-1 min-w-0">
                         <p className="text-[13px] font-medium text-gray-800 dark:text-[#D1FAE5]">Parcela {inst.number}</p>

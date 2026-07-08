@@ -1,4 +1,5 @@
 import { parseLocalDate } from './format'
+import type { InstallmentStatus, Hosting } from '@/types'
 
 export function daysUntil(date: string): number {
   const target = parseLocalDate(date)
@@ -21,4 +22,17 @@ export function isDeadlineWarning(deadline: string): boolean {
 
 export function isOverdue(deadline: string): boolean {
   return daysUntil(deadline) < 0
+}
+
+// Deriva o status "de verdade" pra exibição sem escrever no banco: uma parcela
+// que passou do vencimento sem ser paga é tratada como atrasada em toda a UI,
+// mesmo que a coluna `status` ainda diga 'pendente' (nada muda ela automaticamente).
+export function effectiveInstallmentStatus(installment: { status: InstallmentStatus; due_date: string }): InstallmentStatus {
+  if (installment.status === 'pendente' && isOverdue(installment.due_date)) return 'atrasado'
+  return installment.status
+}
+
+export function effectiveHostingStatus(hosting: Pick<Hosting, 'status' | 'renewal_date'>): Hosting['status'] {
+  if (hosting.status === 'ativo' && hosting.renewal_date && isOverdue(hosting.renewal_date)) return 'vencido'
+  return hosting.status
 }

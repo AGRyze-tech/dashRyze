@@ -9,7 +9,7 @@ import { Modal } from '@/components/ui/Modal'
 import { FileText, Download, Plus, AlertCircle, CheckCircle2, Clock, Trash2, Calendar, Eye } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { contractRepository, projectRepository, clientRepository } from '@/lib/repositories'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency, formatDate, effectiveInstallmentStatus } from '@/lib/utils'
 import { useToast } from '@/hooks/useToast'
 import { Contract, InstallmentStatus, Client, Project, PaymentMethod } from '@/types'
 
@@ -140,6 +140,7 @@ export default function ContratosPage() {
         installmentsPayload,
       )
 
+      await clientRepo.recalcFinancials(form.client_id)
       setContracts(prev => [contract, ...prev])
       showToast(`Contrato ${contract.number} criado com sucesso!`)
       setShowModal(false)
@@ -155,6 +156,7 @@ export default function ContratosPage() {
     setDeleting(true)
     try {
       await contractRepo.remove(deleteModal.id)
+      await clientRepo.recalcFinancials(deleteModal.client_id)
       setContracts(prev => prev.filter(c => c.id !== deleteModal.id))
       showToast(`Contrato ${deleteModal.number} removido.`)
       setDeleteModal(null)
@@ -284,10 +286,11 @@ export default function ContratosPage() {
                         <td colSpan={8} className="px-6 py-2">
                           <div className="flex gap-3 flex-wrap">
                             {(contract.installments ?? []).map(inst => {
-                              const StatusIcon = statusIcon[inst.status]
+                              const effStatus = effectiveInstallmentStatus(inst)
+                              const StatusIcon = statusIcon[effStatus]
                               return (
                                 <div key={inst.id} className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-[11px]">
-                                  <StatusIcon size={11} className={statusColor[inst.status]} />
+                                  <StatusIcon size={11} className={statusColor[effStatus]} />
                                   <span className="font-medium text-gray-600">Parcela {inst.number}</span>
                                   <span className="text-gray-400">·</span>
                                   <span className="tabular font-semibold text-gray-700">{formatCurrency(inst.value)}</span>

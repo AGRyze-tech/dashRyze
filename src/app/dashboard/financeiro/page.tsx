@@ -6,7 +6,7 @@ import { Modal } from '@/components/ui/Modal'
 import { useTheme } from '@/components/layout/ThemeProvider'
 import {
   TrendingUp, TrendingDown, Wallet, Plus, ArrowUpRight, ArrowDownLeft,
-  Trash2, CheckCircle2, Activity, Pencil,
+  Trash2, CheckCircle2, Activity, Pencil, Target,
 } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -73,6 +73,7 @@ const emptyForm = {
   category: 'clientes' as TransactionCategory,
   service: '',
   reference: '',
+  client_id: '',
   description: '',
   amount: '',
   date: new Date().toISOString().split('T')[0],
@@ -131,6 +132,8 @@ export default function FinanceiroPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [chartTransactions, setChartTransactions] = useState<Transaction[]>([])
   const [pendingClients, setPendingClients] = useState<Client[]>([])
+  const [totalPrevisto, setTotalPrevisto] = useState(0)
+  const [clientOptions, setClientOptions] = useState<{ id: string; name: string; specialty: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [typeFilter, setTypeFilter] = useState<'todos' | 'entrada' | 'saida' | 'pendentes'>('todos')
   const [showModal, setShowModal] = useState(false)
@@ -144,7 +147,7 @@ export default function FinanceiroPage() {
   const repo = useMemo(() => transactionRepository(createClient()), [])
   const { theme } = useTheme()
   const isDark = theme === 'dark'
-  const { range } = useDateFilter()
+  const { range, label } = useDateFilter()
 
   // Chart always shows last 6 months regardless of the active date filter
   useEffect(() => {
@@ -160,6 +163,12 @@ export default function FinanceiroPage() {
   }, [repo])
 
   useEffect(() => {
+    clientRepository(createClient()).findForSelect()
+      .then(data => setClientOptions(data))
+      .catch(err => console.error('Erro ao carregar clientes:', err))
+  }, [])
+
+  useEffect(() => {
     if (!range.from || !range.to) return
     setLoading(true)
     async function load() {
@@ -173,6 +182,17 @@ export default function FinanceiroPage() {
         setTransactions(txns)
         setPendingClients(
           clients.filter(c => (c.total_value ?? 0) > 0 && (c.paid_value ?? 0) < (c.total_value ?? 0))
+        )
+        // Faturamento total previsto: soma o orçado (pago ou não) dos clientes
+        // fechados dentro do período selecionado no filtro de data global —
+        // por padrão "Este mês", pra acompanhar o faturamento mês a mês.
+        // Cliente sem data de fechamento não entra na conta (não dá pra saber
+        // em qual mês contar). Cálculo isolado: não lê nem escreve nada usado
+        // pelas outras 3 barras, então não tem como uma pisar na outra.
+        setTotalPrevisto(
+          clients
+            .filter(c => c.closed_at && c.closed_at >= range.from && c.closed_at <= range.to)
+            .reduce((sum, c) => sum + (c.total_value ?? 0), 0)
         )
       } catch (err) {
         console.error('Erro ao carregar financeiro:', err)
@@ -214,6 +234,13 @@ export default function FinanceiroPage() {
     setForm(f => ({ ...f, reference, description: composeDesc(f.service, reference, f.type, f.category) }))
   }
 
+  function handleClientChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const clientId = e.target.value
+    const client = clientOptions.find(c => c.id === clientId)
+    const reference = client?.name ?? ''
+    setForm(f => ({ ...f, client_id: clientId, reference, description: composeDesc(f.service, reference, f.type, f.category) }))
+  }
+
   function handleCategoryChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const category = e.target.value as TransactionCategory
     setForm(f => ({ ...f, category, description: composeDesc(f.service, f.reference, f.type, category) }))
@@ -221,7 +248,7 @@ export default function FinanceiroPage() {
 
   function setType(t: TransactionType) {
     const defaultCat: TransactionCategory = t === 'entrada' ? 'clientes' : 'meta_ads'
-    setForm(f => ({ ...f, type: t, category: defaultCat, service: '', reference: '', description: '' }))
+    setForm(f => ({ ...f, type: t, category: defaultCat, service: '', reference: '', client_id: '', description: '' }))
   }
 
   function handleOpenModal() {
@@ -238,6 +265,7 @@ export default function FinanceiroPage() {
       category: t.category,
       service: '',
       reference: '',
+      client_id: t.client_id ?? '',
       description: t.description,
       amount: String(t.amount),
       date: t.date,
@@ -260,13 +288,16 @@ export default function FinanceiroPage() {
     setSaving(true)
     setSaveError('')
     try {
+      const clientId = form.type === 'entrada' && form.client_id ? form.client_id : null
       const payload = {
         type: form.type,
         category: form.category,
         description: form.description.trim(),
         amount,
         date: form.date,
+        client_id: clientId,
       }
+      const prevClientId = editingTransaction?.client_id ?? null
       if (editingTransaction) {
         const data = await repo.update(editingTransaction.id, payload)
         setTransactions(prev =>
@@ -279,6 +310,11 @@ export default function FinanceiroPage() {
         setTransactions(prev => [data, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()))
         showToast('Lançamento registrado!')
       }
+      // Mantém o cliente em dia com o que acabou de ser lançado — se o
+      // lançamento trocou de cliente na edição, os dois lados são recalculados.
+      const clientRepo = clientRepository(createClient())
+      if (clientId) await clientRepo.recalcFinancials(clientId)
+      if (prevClientId && prevClientId !== clientId) await clientRepo.recalcFinancials(prevClientId)
       handleCloseModal()
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message
@@ -295,7 +331,31 @@ export default function FinanceiroPage() {
     if (!deleteModal) return
     setDeleting(true)
     try {
+      const db = createClient()
       await repo.remove(deleteModal.id)
+
+      if (deleteModal.contract_id) {
+        // Essa transação foi gerada automaticamente ao marcar uma parcela como
+        // paga. Apagá-la sem reverter a parcela deixaria "parcela paga" em
+        // Contratos com o dinheiro correspondente sumido do Financeiro — então
+        // volta a parcela mais recente paga com esse valor pro estado pendente.
+        const { data: match } = await db
+          .from('contract_installments')
+          .select('id')
+          .eq('contract_id', deleteModal.contract_id)
+          .eq('status', 'pago')
+          .eq('value', deleteModal.amount)
+          .order('paid_at', { ascending: false })
+          .limit(1)
+        if (match?.[0]) {
+          await db.from('contract_installments').update({ status: 'pendente', paid_at: null }).eq('id', match[0].id)
+        }
+        const { data: contract } = await db.from('contracts').select('client_id').eq('id', deleteModal.contract_id).single()
+        if (contract?.client_id) await clientRepository(db).recalcFinancials(contract.client_id)
+      } else if (deleteModal.client_id) {
+        await clientRepository(db).recalcFinancials(deleteModal.client_id)
+      }
+
       setTransactions(prev => prev.filter(t => t.id !== deleteModal.id))
       showToast('Lançamento removido.')
       setDeleteModal(null)
@@ -315,7 +375,20 @@ export default function FinanceiroPage() {
       <div className="p-4 sm:p-6 space-y-5">
 
         {/* ── KPI Cards ─────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+          {/* Faturamento total previsto — soma independente, não entra na conta de entradas/saldo abaixo */}
+          <div className="stat-card p-5 overflow-hidden relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent pointer-events-none" />
+            <div className="mb-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+                <Target size={17} className="text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+            <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a] mb-1">Faturamento total previsto</p>
+            <p className="tabular text-[26px] font-bold leading-none text-blue-600 dark:text-blue-400">{formatCurrency(totalPrevisto)}</p>
+            <p className="text-[11px] text-gray-400 dark:text-[#00a02a] mt-1">Período: {label} · fechados, pago ou não</p>
+          </div>
 
           {/* Entradas */}
           <div className="stat-card p-5 overflow-hidden relative">
@@ -436,7 +509,7 @@ export default function FinanceiroPage() {
                   { key: 'todos',     label: 'Todos' },
                   { key: 'entrada',   label: 'Entradas' },
                   { key: 'saida',     label: 'Saídas' },
-                  { key: 'pendentes', label: `Pendentes${pendingClients.length > 0 ? ` (${pendingClients.length})` : ''}` },
+                  { key: 'pendentes', label: `Orçamentos${pendingClients.length > 0 ? ` (${pendingClients.length})` : ''}` },
                 ] as { key: typeof typeFilter; label: string }[]).map(({ key, label }) => (
                   <button
                     type="button"
@@ -666,14 +739,19 @@ export default function FinanceiroPage() {
                 </div>
                 <div>
                   <label htmlFor="fin-client" className="block text-[12px] font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Cliente</label>
-                  <input
-                    id="fin-client"
-                    type="text"
-                    className="input-field"
-                    placeholder="Ex: Anderson, Paulo, Dr. João..."
-                    value={form.reference}
-                    onChange={handleReferenceChange}
-                  />
+                  <select id="fin-client" className="input-field cursor-pointer" value={form.client_id} onChange={handleClientChange}>
+                    <option value="">Avulso (sem cliente cadastrado)</option>
+                    {clientOptions.map(c => <option key={c.id} value={c.id}>{c.name} — {c.specialty}</option>)}
+                  </select>
+                  {!form.client_id && (
+                    <input
+                      type="text"
+                      className="input-field mt-2"
+                      placeholder="Ou digite o nome (ex: Anderson, Paulo, Dr. João...)"
+                      value={form.reference}
+                      onChange={handleReferenceChange}
+                    />
+                  )}
                 </div>
               </>
             ) : (
@@ -740,6 +818,11 @@ export default function FinanceiroPage() {
                 {formatCurrency(deleteModal.amount)}
               </strong>?
             </p>
+            {deleteModal.contract_id && (
+              <p className="text-[12px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 rounded-lg px-3 py-2">
+                Esse lançamento veio do pagamento de uma parcela em Contratos. Ao remover, a parcela volta para &quot;Pendente&quot; automaticamente.
+              </p>
+            )}
             <div className="flex gap-3 justify-end">
               <Button variant="outline" onClick={() => setDeleteModal(null)}>Cancelar</Button>
               <Button onClick={handleDelete} loading={deleting} className="bg-red-500 hover:bg-red-600 text-white border-red-500">

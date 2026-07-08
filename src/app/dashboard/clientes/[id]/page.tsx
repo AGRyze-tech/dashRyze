@@ -13,7 +13,7 @@ import {
   Receipt, CheckCircle2, XCircle, Server, Wrench, MapPin, Star,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
-import { clientStatusConfig, projectStatusConfig, installmentStatusConfig, formatDate, formatCurrency, projectTypeLabels, projectTypeOptions, projectStatusOptions } from '@/lib/utils'
+import { clientStatusConfig, projectStatusConfig, installmentStatusConfig, formatDate, formatCurrency, projectTypeLabels, projectTypeOptions, projectStatusOptions, effectiveInstallmentStatus, effectiveHostingStatus } from '@/lib/utils'
 import {
   Client, Project, ProjectStatus, Contract, ContractInstallment, Transaction,
   PaymentProof, Meeting, Hosting, Modification, GmbProfile,
@@ -165,9 +165,9 @@ export default function ClientePage({ params }: { params: { id: string } }) {
   }, [contracts])
 
   function contractStatus(c: ContractWithInstallments) {
-    const list = c.installments ?? []
-    if (list.some(i => i.status === 'atrasado')) return installmentStatusConfig.atrasado
-    if (list.some(i => i.status === 'pendente')) return installmentStatusConfig.pendente
+    const list = (c.installments ?? []).map(effectiveInstallmentStatus)
+    if (list.some(s => s === 'atrasado')) return installmentStatusConfig.atrasado
+    if (list.some(s => s === 'pendente')) return installmentStatusConfig.pendente
     return installmentStatusConfig.pago
   }
 
@@ -527,19 +527,22 @@ export default function ClientePage({ params }: { params: { id: string } }) {
 
             {hostings.length > 0 && (
               <SectionCard icon={Server} title="Hospedagem" count={hostings.length}>
-                {hostings.map(h => (
-                  <div key={h.id} className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 dark:hover:bg-[#181819] transition-colors">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 dark:text-[#F8FBF9] text-[13px] truncate">{h.domain}</p>
-                      <p className="text-[11px] text-gray-400 dark:text-[#00a02a]">
-                        {formatCurrency(h.monthly_value)}/mês{h.renewal_date ? ` · Renova em ${formatDate(h.renewal_date)}` : ''}
-                      </p>
+                {hostings.map(h => {
+                  const effStatus = effectiveHostingStatus(h)
+                  return (
+                    <div key={h.id} className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 dark:hover:bg-[#181819] transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 dark:text-[#F8FBF9] text-[13px] truncate">{h.domain}</p>
+                        <p className="text-[11px] text-gray-400 dark:text-[#00a02a]">
+                          {formatCurrency(h.monthly_value)}/mês{h.renewal_date ? ` · Renova em ${formatDate(h.renewal_date)}` : ''}
+                        </p>
+                      </div>
+                      <Badge color={(hostingStatusConfig[effStatus]?.color ?? 'gray') as never} className="text-[10px] flex-shrink-0">
+                        {hostingStatusConfig[effStatus]?.label ?? effStatus}
+                      </Badge>
                     </div>
-                    <Badge color={(hostingStatusConfig[h.status]?.color ?? 'gray') as never} className="text-[10px] flex-shrink-0">
-                      {hostingStatusConfig[h.status]?.label ?? h.status}
-                    </Badge>
-                  </div>
-                ))}
+                  )
+                })}
               </SectionCard>
             )}
 
