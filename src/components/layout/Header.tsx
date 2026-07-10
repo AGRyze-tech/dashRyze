@@ -1,7 +1,7 @@
 'use client'
 import { Search, Bell, Menu, CalendarDays, ChevronDown, X } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
-import { useMobileNav } from './DashboardShell'
+import { useMobileNav, useCurrentUser } from './DashboardShell'
 import { useDateFilter, type DatePreset } from '@/contexts/DateFilterContext'
 
 interface HeaderProps {
@@ -21,6 +21,7 @@ export function Header({ title, subtitle }: HeaderProps) {
   const [search, setSearch] = useState('')
   const [open, setOpen]     = useState(false)
   const { toggle } = useMobileNav()
+  const { name, initial } = useCurrentUser()
   const { preset, label, custom, setPreset, setCustomRange } = useDateFilter()
   const [customFrom, setFrom] = useState(custom.from)
   const [customTo, setTo]     = useState(custom.to)
@@ -164,8 +165,12 @@ export function Header({ title, subtitle }: HeaderProps) {
             <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#00FF41]" />
           </button>
 
-          <div className="w-7 h-7 rounded-full bg-[#00FF41] flex items-center justify-center text-black text-xs font-bold cursor-pointer">
-            I
+          <div
+            className="w-7 h-7 rounded-full bg-[#00FF41] flex items-center justify-center text-black text-xs font-bold cursor-pointer"
+            title={name}
+            aria-label={name ? `Conta: ${name}` : 'Conta'}
+          >
+            {initial || '·'}
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@ import { DashboardShell } from '@/components/layout/DashboardShell'
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
-      <DashboardShell userRole="admin">
+      <DashboardShell>
         {children}
       </DashboardShell>
     </ThemeProvider>

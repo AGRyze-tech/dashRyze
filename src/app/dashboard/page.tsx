@@ -1,6 +1,7 @@
 ﻿'use client'
 import { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { Header } from '@/components/layout/Header'
+import { useCurrentUser } from '@/components/layout/DashboardShell'
 import { Badge } from '@/components/ui/Badge'
 import {
   Users, FolderKanban, TrendingUp, TrendingDown, Wallet,
@@ -361,13 +362,15 @@ function KpiCard({ label, value, sub, icon: Icon, iconCls, accent = 'from-gray-5
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
-  const [greeting] = useState(() => {
+  const { name } = useCurrentUser()
+  const greeting = useMemo(() => {
     const now = new Date()
     const h = now.getHours()
     const period = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'
     const date = now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
-    return `${period}, Isaac · ${date}`
-  })
+    const first = name ? name.split(' ')[0] : ''
+    return first ? `${period}, ${first} · ${date}` : `${period} · ${date}`
+  }, [name])
   const [loading, setLoading] = useState(true)
   const [clients, setClients] = useState<DashClient[]>([])
   const [projects, setProjects] = useState<DashProject[]>([])

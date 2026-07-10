@@ -10,6 +10,13 @@ import {
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
 import { useTheme } from './ThemeProvider'
+import { useCurrentUser } from './DashboardShell'
+
+const ROLE_LABELS: Record<string, string> = {
+  admin: 'Admin',
+  gerente: 'Gerente',
+  visualizador: 'Visualizador',
+}
 
 type NavItem = { href: string; icon: React.ElementType; label: string; exact?: boolean }
 type NavGroup = { label: string; items: NavItem[] }
@@ -56,14 +63,14 @@ const navGroups: NavGroup[] = [
 ]
 
 interface SidebarProps {
-  userRole?: 'admin' | 'editor'
   mobileOpen?: boolean
 }
 
-export function Sidebar({ userRole = 'admin', mobileOpen = false }: SidebarProps) {
+export function Sidebar({ mobileOpen = false }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { theme, toggleTheme } = useTheme()
+  const { name, role, initial, loading } = useCurrentUser()
 
   async function handleSignOut() {
     const supabase = createClient()
@@ -121,7 +128,7 @@ export function Sidebar({ userRole = 'admin', mobileOpen = false }: SidebarProps
           </div>
         ))}
 
-        {userRole === 'admin' && (
+        {role === 'admin' && (
           <div>
             <p className="px-3 pb-1 text-[10px] font-semibold text-[#28282d] uppercase tracking-[0.15em]">Administração</p>
             <div className="space-y-0.5">
@@ -137,14 +144,14 @@ export function Sidebar({ userRole = 'admin', mobileOpen = false }: SidebarProps
       {/* Footer */}
       <div className="px-3 py-4 border-t border-[#181819]">
         <div className="flex items-center gap-3 px-3 py-2.5 mb-1">
-          <div className="w-7 h-7 rounded-full bg-[#00FF41] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-            {userRole === 'admin' ? 'I' : 'V'}
+          <div className="w-7 h-7 rounded-full bg-[#00FF41] flex items-center justify-center text-black text-xs font-bold flex-shrink-0">
+            {initial || '·'}
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-[13px] font-medium text-[#F8FBF9] truncate">
-              {userRole === 'admin' ? 'Isaac' : 'Vinícius'}
+              {loading ? 'Carregando…' : name}
             </div>
-            <div className="text-[11px] text-[#006620] capitalize">{userRole}</div>
+            <div className="text-[11px] text-[#006620]">{ROLE_LABELS[role] ?? role}</div>
           </div>
           <button
             type="button"
