@@ -16,11 +16,13 @@ export type HabitInput = {
 
 export function habitRepository(db: Db) {
   return {
-    // RLS já restringe ao usuário logado; não precisa filtrar por user_id aqui.
-    async findAll(): Promise<Habit[]> {
+    // A leitura de hábitos é liberada entre a equipe, então filtramos pelo
+    // usuário cuja rotina está sendo vista (o próprio ou um colega).
+    async findAll(userId: string): Promise<Habit[]> {
       const { data, error } = await db
         .from('habits')
         .select('*')
+        .eq('user_id', userId)
         .eq('active', true)
         .order('sort_order')
         .order('created_at')
@@ -28,14 +30,35 @@ export function habitRepository(db: Db) {
       return (data ?? []) as Habit[]
     },
 
-    async logsInRange(from: string, to: string): Promise<HabitLog[]> {
+    async logsInRange(userId: string, from: string, to: string): Promise<HabitLog[]> {
       const { data, error } = await db
         .from('habit_logs')
         .select('*')
+        .eq('user_id', userId)
         .gte('date', from)
         .lte('date', to)
       if (error) throw error
       return (data ?? []) as HabitLog[]
+    },
+
+    // Leituras de equipe (todos os membros) para o comparativo.
+    async teamHabits(): Promise<Pick<Habit, 'id' | 'user_id' | 'type' | 'target'>[]> {
+      const { data, error } = await db
+        .from('habits')
+        .select('id, user_id, type, target')
+        .eq('active', true)
+      if (error) throw error
+      return (data ?? []) as Pick<Habit, 'id' | 'user_id' | 'type' | 'target'>[]
+    },
+
+    async teamLogsInRange(from: string, to: string): Promise<Pick<HabitLog, 'habit_id' | 'user_id' | 'date' | 'value'>[]> {
+      const { data, error } = await db
+        .from('habit_logs')
+        .select('habit_id, user_id, date, value')
+        .gte('date', from)
+        .lte('date', to)
+      if (error) throw error
+      return (data ?? []) as Pick<HabitLog, 'habit_id' | 'user_id' | 'date' | 'value'>[]
     },
 
     async create(userId: string, input: HabitInput): Promise<Habit> {

@@ -4,16 +4,16 @@ import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts'
 import {
   Plus, Flame, Check, Minus, Trash2, Pencil, CheckCircle2, Trophy,
   Target, Phone, PenLine, Users, Video, Mail, Briefcase, TrendingUp,
-  BookOpen, Megaphone, Search, Sparkles,
+  BookOpen, Megaphone, Search, Sparkles, Eye,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { habitRepository, HabitInput } from '@/lib/repositories'
-import { parseLocalDate } from '@/lib/utils'
+import { parseLocalDate, firstOfMonthISO } from '@/lib/utils'
 import { useTheme } from '@/components/layout/ThemeProvider'
 import { useToast } from '@/hooks/useToast'
 import { Habit, HabitLog, HabitType } from '@/types'
@@ -62,16 +62,23 @@ const HEAT_RANGES: { key: string; label: string; days: number }[] = [
   { key: 'mes', label: 'Mês', days: 31 },
 ]
 const LEVEL_COLORS = ['', '#003810', '#006620', '#00a02a', '#00FF41']
+const CMP_OTHER_COLORS = ['#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899']
 
 const emptyForm = {
   name: '', category: '', type: 'boolean' as HabitType,
   target: '', unit: '', color: 'green', icon: 'target',
 }
 
+type TeamMember = { id: string; name: string }
+
 export default function RotinaPage() {
-  const [userId, setUserId] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)      // dono logado
+  const [viewUserId, setViewUserId] = useState<string | null>(null) // rotina exibida
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
   const [habits, setHabits] = useState<Habit[]>([])
   const [logs, setLogs] = useState<HabitLog[]>([])
+  const [cmpHabits, setCmpHabits] = useState<Pick<Habit, 'id' | 'user_id' | 'type' | 'target'>[]>([])
+  const [cmpLogs, setCmpLogs] = useState<Pick<HabitLog, 'habit_id' | 'user_id' | 'date' | 'value'>[]>([])
   const [rangeStart, setRangeStart] = useState(addDaysISO(TODAY, -371))
   const [loading, setLoading] = useState(true)
   const [heatRange, setHeatRange] = useState('ano')
@@ -88,20 +95,75 @@ export default function RotinaPage() {
   const db = useMemo(() => createClient(), [])
   const repo = useMemo(() => habitRepository(db), [db])
 
+  const isOwnView = !!userId && viewUserId === userId
+  const monthStart = useMemo(() => firstOfMonthISO(0), [])
+
+  // Comparativo da equipe (mês corrente) — recarregado após escrita própria.
+  const loadComparison = useCallback(async () => {
+    try {
+      const [th, tl] = await Promise.all([
+        repo.teamHabits(),
+        repo.teamLogsInRange(monthStart, TODAY),
+      ])
+      setCmpHabits(th)
+      setCmpLogs(tl)
+      return th
+    } catch (err) {
+      console.error('Erro ao carregar comparativo:', err)
+      return []
+    }
+  }, [repo, monthStart])
+
+  // Carrega a rotina (hábitos + logs do ano) da pessoa selecionada.
+  const loadViewed = useCallback(async (uid: string) => {
+    const from = addDaysISO(TODAY, -371)
+    setRangeStart(from)
+    const [habitsData, logsData] = await Promise.all([
+      repo.findAll(uid),
+      repo.logsInRange(uid, from, TODAY),
+    ])
+    setHabits(habitsData)
+    setLogs(logsData)
+  }, [repo])
+
   const load = useCallback(async () => {
     setLoading(true)
     try {
       const { data: auth } = await db.auth.getUser()
       const uid = auth.user?.id ?? null
       setUserId(uid)
-      const from = addDaysISO(TODAY, -371)
-      setRangeStart(from)
-      const [habitsData, logsData] = await Promise.all([
-        repo.findAll(),
-        repo.logsInRange(from, TODAY),
+      setViewUserId(uid)
+
+      // Roster: usuário atual ("Você") + colegas, deduplicados por nome
+      // (quando o nome repete, prefere quem tem hábitos; ignora homônimos
+      // do próprio usuário — resolve a conta "Isaac" duplicada).
+      const [{ data: profs }, th] = await Promise.all([
+        db.from('profiles').select('id, name'),
+        loadComparison(),
       ])
-      setHabits(habitsData)
-      setLogs(logsData)
+      const owners = new Set((th ?? []).map(h => h.user_id))
+      const profList = (profs ?? []) as { id: string; name: string | null }[]
+      const meName = (profList.find(p => p.id === uid)?.name || 'Você').toLowerCase()
+      const members: TeamMember[] = uid ? [{ id: uid, name: 'Você' }] : []
+      const seen = new Set<string>([meName])
+      for (const p of profList) {
+        if (p.id === uid) continue
+        const nm = p.name || 'Usuário'
+        const key = nm.toLowerCase()
+        if (key === meName) continue
+        if (seen.has(key)) {
+          if (owners.has(p.id)) {
+            const idx = members.findIndex(m => m.name.toLowerCase() === key)
+            if (idx >= 0) members[idx] = { id: p.id, name: nm }
+          }
+          continue
+        }
+        seen.add(key)
+        members.push({ id: p.id, name: nm })
+      }
+      setTeamMembers(members)
+
+      if (uid) await loadViewed(uid)
     } catch (err) {
       console.error('Erro ao carregar rotina:', err)
       showToast('Erro ao carregar a rotina. Tente recarregar a página.')
@@ -109,9 +171,19 @@ export default function RotinaPage() {
       setLoading(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [db, repo])
+  }, [db, repo, loadComparison, loadViewed])
 
   useEffect(() => { load() }, [load])
+
+  // Ao trocar de pessoa no seletor, recarrega a rotina dela.
+  const selectMember = useCallback(async (uid: string) => {
+    if (uid === viewUserId) return
+    setViewUserId(uid)
+    setLoading(true)
+    try { await loadViewed(uid) } finally { setLoading(false) }
+  }, [viewUserId, loadViewed])
+
+  const viewedName = teamMembers.find(m => m.id === viewUserId)?.name ?? ''
 
   const habitById = useMemo(() => {
     const m = new Map<string, Habit>()
@@ -217,9 +289,46 @@ export default function RotinaPage() {
     [habits, isDone]
   )
 
+  function memberColor(id: string, idx: number): string {
+    if (id === userId) return '#00FF41'
+    return CMP_OTHER_COLORS[idx % CMP_OTHER_COLORS.length]
+  }
+
+  // ── Comparativo da equipe (mês corrente) ───────────────────────────────────
+  const comparison = useMemo(() => {
+    const habitsByUser = new Map<string, Pick<Habit, 'id' | 'type' | 'target'>[]>()
+    for (const h of cmpHabits) {
+      const arr = habitsByUser.get(h.user_id) ?? []
+      arr.push(h)
+      habitsByUser.set(h.user_id, arr)
+    }
+    const logVal = new Map<string, number>()
+    for (const l of cmpLogs) logVal.set(`${l.habit_id}|${l.date}`, l.value)
+    const doneOf = (h: Pick<Habit, 'id' | 'type' | 'target'>, date: string) => {
+      const v = logVal.get(`${h.id}|${date}`) ?? 0
+      return h.type === 'numeric' ? v >= (h.target ?? 1) : v >= 1
+    }
+    // só membros com hábitos entram no comparativo
+    const members = teamMembers.filter(m => (habitsByUser.get(m.id)?.length ?? 0) > 0)
+    const monthDates = monthInfo.dates.filter(d => d <= TODAY)
+    const data = monthDates.map(d => {
+      const row: Record<string, number> = { dia: parseLocalDate(d).getDate() }
+      for (const m of members) {
+        const hs = habitsByUser.get(m.id) ?? []
+        row[m.id] = hs.length ? Math.round((hs.filter(h => doneOf(h, d)).length / hs.length) * 100) : 0
+      }
+      return row
+    })
+    const today = members.map(m => {
+      const hs = habitsByUser.get(m.id) ?? []
+      return { id: m.id, name: m.name, done: hs.filter(h => doneOf(h, TODAY)).length, total: hs.length }
+    })
+    return { members, data, today }
+  }, [cmpHabits, cmpLogs, teamMembers, monthInfo])
+
   // ── Escrita de log (otimista) ──────────────────────────────────────────────
   const writeLog = useCallback(async (habit: Habit, dateISO: string, value: number) => {
-    if (!userId) return
+    if (!userId || !isOwnView) return
     const key = `${habit.id}|${dateISO}`
     const prev = logMap.get(key)
     const optimistic: HabitLog = {
@@ -230,6 +339,7 @@ export default function RotinaPage() {
     try {
       const saved = await repo.setLog(userId, habit.id, dateISO, value)
       setLogs(ls => ls.map(l => (l.habit_id === habit.id && l.date === dateISO) ? saved : l))
+      loadComparison()
     } catch {
       setLogs(ls => {
         const others = ls.filter(l => !(l.habit_id === habit.id && l.date === dateISO))
@@ -237,7 +347,7 @@ export default function RotinaPage() {
       })
       showToast('Não deu pra salvar. Tente de novo.')
     }
-  }, [userId, logMap, repo, showToast])
+  }, [userId, isOwnView, logMap, repo, showToast, loadComparison])
 
   function valueOf(habit: Habit, dateISO: string): number {
     return logMap.get(`${habit.id}|${dateISO}`)?.value ?? 0
@@ -289,6 +399,7 @@ export default function RotinaPage() {
         setHabits(hs => [...hs, created])
         showToast('Hábito criado!')
       }
+      loadComparison()
       setShowModal(false)
     } catch (err: unknown) {
       setSaveError(err instanceof Error ? err.message : 'Erro ao salvar.')
@@ -302,6 +413,7 @@ export default function RotinaPage() {
     try {
       await repo.remove(deleteTarget.id)
       setHabits(hs => hs.filter(h => h.id !== deleteTarget.id))
+      loadComparison()
       showToast('Hábito removido.')
       setDeleteTarget(null)
     } catch {
@@ -318,6 +430,7 @@ export default function RotinaPage() {
         created.push(await repo.create(userId, { ...SUGGESTED_HABITS[i], sort_order: i }))
       }
       setHabits(created)
+      loadComparison()
       showToast('Hábitos sugeridos adicionados!')
     } catch {
       showToast('Não deu pra adicionar os sugeridos.')
@@ -335,6 +448,76 @@ export default function RotinaPage() {
       <Header title="Rotina" subtitle="Seus hábitos de trabalho e progresso" />
 
       <div className="p-4 sm:p-6 space-y-5">
+
+        {/* ── Seletor de equipe ────────────────────────────────────────────── */}
+        {teamMembers.length > 1 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a] mr-1">Rotina de</span>
+            {teamMembers.map(m => {
+              const active = m.id === viewUserId
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => selectMember(m.id)}
+                  className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-all cursor-pointer border ${
+                    active
+                      ? 'border-[#00FF41] bg-[#00FF41]/10 text-gray-900 dark:text-[#F0FDF4]'
+                      : 'border-gray-200 dark:border-[#28282d] text-gray-500 dark:text-[#00a02a] hover:border-gray-300 dark:hover:border-[#3a3a40]'
+                  }`}
+                >
+                  {m.name}
+                </button>
+              )
+            })}
+          </div>
+        )}
+
+        {!isOwnView && !loading && (
+          <div className="flex items-center gap-2 text-[12px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/15 border border-amber-200 dark:border-amber-800/40 rounded-lg px-3 py-2">
+            <Eye size={14} className="flex-shrink-0" />
+            Somente leitura — você está vendo a rotina de <strong>{viewedName}</strong>.
+          </div>
+        )}
+
+        {/* ── Comparativo da equipe ────────────────────────────────────────── */}
+        {comparison.members.length >= 2 && (
+          <div className="card-light overflow-hidden">
+            <div className="flex items-center justify-between px-5 pt-5 pb-1 flex-wrap gap-3">
+              <div>
+                <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a]">Comparativo da equipe</h3>
+                <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5 capitalize">{monthInfo.label} · % de conclusão por dia</p>
+              </div>
+              <div className="flex items-center gap-3 flex-wrap">
+                {comparison.today.map((t, i) => (
+                  <div key={t.id} className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: memberColor(t.id, i) }} />
+                    <span className="text-[12px] text-gray-500 dark:text-[#00a02a]">{t.name}</span>
+                    <span className="text-[12px] font-semibold text-gray-800 dark:text-[#D1FAE5] tabular">{t.done}/{t.total} hoje</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="px-2 pb-4 pt-2">
+              <ResponsiveContainer width="100%" height={200}>
+                <LineChart data={comparison.data} margin={{ top: 8, right: 16, left: -12, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#181819' : '#F3F4F6'} vertical={false} />
+                  <XAxis dataKey="dia" tick={{ fontSize: 11, fill: isDark ? '#006620' : '#9CA3AF' }} axisLine={false} tickLine={false} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: isDark ? '#006620' : '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={v => `${v}%`} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: isDark ? '#111114' : '#fff', border: `1px solid ${isDark ? '#28282d' : '#E8ECEB'}`, borderRadius: 12, fontSize: 12 }}
+                    labelFormatter={d => `Dia ${d}`}
+                    formatter={(v: number, name: string) => [`${v}%`, name]}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  {comparison.members.map((m, i) => (
+                    <Line key={m.id} type="monotone" dataKey={m.id} name={m.name} stroke={memberColor(m.id, i)} strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
 
         {/* ── KPIs ─────────────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
@@ -380,20 +563,26 @@ export default function RotinaPage() {
             <div className="w-14 h-14 rounded-2xl bg-[#00FF41]/10 flex items-center justify-center">
               <Flame size={24} className="text-[#00FF41]" />
             </div>
-            <div>
-              <p className="text-[16px] font-semibold text-gray-800 dark:text-[#F0FDF4] mb-1">Comece sua rotina</p>
-              <p className="text-[13px] text-gray-500 dark:text-[#00a02a] max-w-sm">
-                Crie hábitos de trabalho pra acompanhar todo dia — prospecção, follow-up, conteúdo — e veja sua constância crescer ao longo do ano.
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <Button onClick={quickAddSuggested} loading={saving}>
-                <Sparkles size={15} /> Adicionar hábitos sugeridos
-              </Button>
-              <Button variant="outline" onClick={openCreate}>
-                <Plus size={15} /> Criar do zero
-              </Button>
-            </div>
+            {isOwnView ? (
+              <>
+                <div>
+                  <p className="text-[16px] font-semibold text-gray-800 dark:text-[#F0FDF4] mb-1">Comece sua rotina</p>
+                  <p className="text-[13px] text-gray-500 dark:text-[#00a02a] max-w-sm">
+                    Crie hábitos de trabalho pra acompanhar todo dia — prospecção, follow-up, conteúdo — e veja sua constância crescer ao longo do ano.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                  <Button onClick={quickAddSuggested} loading={saving}>
+                    <Sparkles size={15} /> Adicionar hábitos sugeridos
+                  </Button>
+                  <Button variant="outline" onClick={openCreate}>
+                    <Plus size={15} /> Criar do zero
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <p className="text-[14px] font-medium text-gray-500 dark:text-[#00a02a]">{viewedName} ainda não criou hábitos.</p>
+            )}
           </div>
         ) : (
           <>
@@ -401,7 +590,7 @@ export default function RotinaPage() {
             <div className="card-light overflow-hidden">
               <div className="flex items-center justify-between px-5 pt-5 pb-3 flex-wrap gap-2">
                 <div>
-                  <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a]">Sua atividade</h3>
+                  <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a]">{isOwnView ? 'Sua atividade' : `Atividade de ${viewedName}`}</h3>
                   <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5 tabular">{totalActivities} atividades</p>
                 </div>
                 <div className="flex bg-gray-100 dark:bg-[#111114] rounded-lg p-0.5">
@@ -460,7 +649,7 @@ export default function RotinaPage() {
                     <h3 className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a]">Hoje</h3>
                     <p className="text-[13px] font-semibold text-gray-800 dark:text-[#D1FAE5] mt-0.5">{doneTodayCount}/{habits.length} concluídos</p>
                   </div>
-                  <Button size="sm" onClick={openCreate}><Plus size={13} /> Hábito</Button>
+                  {isOwnView && <Button size="sm" onClick={openCreate}><Plus size={13} /> Hábito</Button>}
                 </div>
                 <div className="divide-y divide-gray-50 dark:divide-[#181819]">
                   {habits.map(h => {
@@ -493,50 +682,63 @@ export default function RotinaPage() {
                           )}
                         </div>
 
-                        {h.type === 'boolean' ? (
-                          <button
-                            type="button"
-                            onClick={() => writeLog(h, TODAY, done ? 0 : 1)}
-                            aria-label={done ? 'Desmarcar' : 'Marcar como feito'}
-                            className="w-7 h-7 rounded-lg border flex items-center justify-center flex-shrink-0 transition-all cursor-pointer"
-                            style={done
-                              ? { backgroundColor: color, borderColor: color }
-                              : { borderColor: isDark ? '#28282d' : '#E8ECEB' }}
+                        {isOwnView ? (
+                          <>
+                            {h.type === 'boolean' ? (
+                              <button
+                                type="button"
+                                onClick={() => writeLog(h, TODAY, done ? 0 : 1)}
+                                aria-label={done ? 'Desmarcar' : 'Marcar como feito'}
+                                className="w-7 h-7 rounded-lg border flex items-center justify-center flex-shrink-0 transition-all cursor-pointer"
+                                style={done
+                                  ? { backgroundColor: color, borderColor: color }
+                                  : { borderColor: isDark ? '#28282d' : '#E8ECEB' }}
+                              >
+                                {done && <Check size={15} className="text-black" strokeWidth={3} />}
+                              </button>
+                            ) : (
+                              <div className="flex items-center gap-1 flex-shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => writeLog(h, TODAY, Math.max(0, val - 1))}
+                                  aria-label="Diminuir"
+                                  className="w-6 h-6 rounded-md border border-gray-200 dark:border-[#28282d] flex items-center justify-center text-gray-500 dark:text-[#00a02a] hover:bg-gray-50 dark:hover:bg-[#181819] transition-colors cursor-pointer"
+                                >
+                                  <Minus size={13} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => writeLog(h, TODAY, val + 1)}
+                                  aria-label="Aumentar"
+                                  className="w-6 h-6 rounded-md border flex items-center justify-center transition-colors cursor-pointer"
+                                  style={done
+                                    ? { backgroundColor: color, borderColor: color, color: '#000' }
+                                    : { borderColor: isDark ? '#28282d' : '#E8ECEB' }}
+                                >
+                                  <Plus size={13} className={done ? '' : 'text-gray-500 dark:text-[#00a02a]'} />
+                                </button>
+                              </div>
+                            )}
+
+                            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity">
+                              <button type="button" onClick={() => openEdit(h)} aria-label="Editar" className="p-1.5 rounded-md text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-[#00FF41] transition-colors">
+                                <Pencil size={13} />
+                              </button>
+                              <button type="button" onClick={() => setDeleteTarget(h)} aria-label="Remover" className="p-1.5 rounded-md text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors">
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </>
+                        ) : (
+                          // Modo leitura: indicador estático, sem controles
+                          <div
+                            className="w-7 h-7 rounded-lg border flex items-center justify-center flex-shrink-0"
+                            style={done ? { backgroundColor: color, borderColor: color } : { borderColor: isDark ? '#28282d' : '#E8ECEB' }}
+                            aria-label={done ? 'Concluído' : 'Não concluído'}
                           >
                             {done && <Check size={15} className="text-black" strokeWidth={3} />}
-                          </button>
-                        ) : (
-                          <div className="flex items-center gap-1 flex-shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => writeLog(h, TODAY, Math.max(0, val - 1))}
-                              aria-label="Diminuir"
-                              className="w-6 h-6 rounded-md border border-gray-200 dark:border-[#28282d] flex items-center justify-center text-gray-500 dark:text-[#00a02a] hover:bg-gray-50 dark:hover:bg-[#181819] transition-colors cursor-pointer"
-                            >
-                              <Minus size={13} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => writeLog(h, TODAY, val + 1)}
-                              aria-label="Aumentar"
-                              className="w-6 h-6 rounded-md border flex items-center justify-center transition-colors cursor-pointer"
-                              style={done
-                                ? { backgroundColor: color, borderColor: color, color: '#000' }
-                                : { borderColor: isDark ? '#28282d' : '#E8ECEB' }}
-                            >
-                              <Plus size={13} className={done ? '' : 'text-gray-500 dark:text-[#00a02a]'} />
-                            </button>
                           </div>
                         )}
-
-                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity">
-                          <button type="button" onClick={() => openEdit(h)} aria-label="Editar" className="p-1.5 rounded-md text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-[#00FF41] transition-colors">
-                            <Pencil size={13} />
-                          </button>
-                          <button type="button" onClick={() => setDeleteTarget(h)} aria-label="Remover" className="p-1.5 rounded-md text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors">
-                            <Trash2 size={13} />
-                          </button>
-                        </div>
                       </div>
                     )
                   })}
