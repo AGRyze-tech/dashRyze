@@ -13,7 +13,7 @@ import {
 import { createClient } from '@/lib/supabase'
 import { clientRepository, ClientInput } from '@/lib/repositories'
 import { transactionRepository, projectRepository, contractRepository, InstallmentInput } from '@/lib/repositories'
-import { clientStatusConfig, activeClientStatuses, formatDate, formatCurrency, specialties, acquisitionSourceOptions } from '@/lib/utils'
+import { clientStatusConfig, activeClientStatuses, formatDate, formatCurrency, specialties, acquisitionSourceOptions, projectTypeLabels } from '@/lib/utils'
 import { useDateFilter } from '@/contexts/DateFilterContext'
 import { useToast } from '@/hooks/useToast'
 import { Client, ClientStatus, AcquisitionSource } from '@/types'
@@ -58,7 +58,7 @@ const emptyForm = {
   payment_mode: '' as '' | '50%' | '100%',
   custom_paid_value: '',
   domain_included: false,
-  project_type: 'site' as ProjectType,
+  project_types: ['site'] as ProjectType[],
   responsible: 'isaac' as 'isaac' | 'vinicius',
 }
 
@@ -150,14 +150,14 @@ export default function ClientesPage() {
     setEditingClient(client)
     const detectedMode = detectPaymentMode(client)
 
-    // Load project to pre-fill type and responsible
+    // Load all projects to pre-check service types and pre-fill responsible
     const db = createClient()
     const { data: projects } = await db
       .from('projects')
       .select('type, responsible')
       .eq('client_id', client.id)
       .order('created_at')
-      .limit(1)
+    const existingTypes = Array.from(new Set((projects ?? []).map(p => p.type))) as ProjectType[]
     const proj = projects?.[0]
 
     setForm({
@@ -172,7 +172,7 @@ export default function ClientesPage() {
       payment_mode: detectedMode,
       custom_paid_value: detectedMode === '' && client.paid_value ? String(client.paid_value) : '',
       domain_included: client.domain_included ?? false,
-      project_type: (proj?.type as ProjectType) ?? 'site',
+      project_types: existingTypes.length > 0 ? existingTypes : ['site'],
       responsible: (proj?.responsible as 'isaac' | 'vinicius') ?? 'isaac',
     })
     setSaveError('')
@@ -189,6 +189,14 @@ export default function ClientesPage() {
   const set = (field: keyof typeof emptyForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm(f => ({ ...f, [field]: e.target.value }))
 
+  const toggleProjectType = (type: ProjectType) =>
+    setForm(f => ({
+      ...f,
+      project_types: f.project_types.includes(type)
+        ? f.project_types.filter(t => t !== type)
+        : [...f.project_types, type],
+    }))
+
   const { computedPaid, pendingAmount } = useMemo(() => {
     const total = parseFloat(form.total_value) || 0
     const paid = computePaidValue(form.payment_mode, total, form.custom_paid_value) ?? 0
@@ -197,6 +205,10 @@ export default function ClientesPage() {
 
   const handleSave = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
+    if (form.project_types.length === 0) {
+      setSaveError('Selecione pelo menos um serviço.')
+      return
+    }
     setSaving(true)
     setSaveError('')
     try {
@@ -270,35 +282,60 @@ export default function ClientesPage() {
           })
         }
 
-        // ── Projeto (sempre cria ou atualiza) ─────────────────────────────
+        // ── Projetos: um por serviço marcado (aditivo — não apaga desmarcados)
         const projRepo = projectRepository(db)
         const today = new Date().toISOString().split('T')[0]
         const deadline30 = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]
-        const projectBase = {
-          client_id: savedClient!.id,
-          name: form.name,
-          type: form.project_type,
-          responsible: form.responsible,
-          start_date: form.closed_at || today,
-          deadline: form.delivery_date || deadline30,
-          notes: form.notes || null,
-        }
 
         const { data: existingProjs } = await db
           .from('projects')
-          .select('id, status')
+          .select('id, type')
           .eq('client_id', savedClient!.id)
           .order('created_at')
-          .limit(1)
 
-        let projectId: string
-        if (existingProjs && existingProjs.length > 0) {
-          // Update preserving the project status (don't reset to briefing)
-          projectId = existingProjs[0].id
-          await projRepo.update(projectId, projectBase)
-        } else {
-          const createdProject = await projRepo.create({ ...projectBase, status: 'briefing' })
-          projectId = createdProject.id
+        const existing = (existingProjs ?? []) as { id: string; type: ProjectType }[]
+        const projByType = new Map<ProjectType, string>()
+        for (const p of existing) if (!projByType.has(p.type)) projByType.set(p.type, p.id)
+
+        // Cria projeto só para os serviços que ainda não têm um (não mexe nos existentes)
+        for (const type of form.project_types) {
+          if (projByType.has(type)) continue
+          const created = await projRepo.create({
+            client_id: savedClient!.id,
+            name: `${form.name} - ${projectTypeLabels[type] ?? 'Projeto'}`,
+            type,
+            responsible: form.responsible,
+            start_date: form.closed_at || today,
+            deadline: form.delivery_date || deadline30,
+            status: 'briefing',
+            notes: form.notes || null,
+          })
+          projByType.set(type, created.id)
+        }
+
+        // Projeto principal = o do primeiro serviço marcado (vínculo do contrato)
+        const projectId: string | null =
+          projByType.get(form.project_types[0]) ?? existing[0]?.id ?? null
+
+        // ── Auto-cadastro Google Meu Negócio (best-effort, não bloqueia o save)
+        if (form.project_types.includes('gmb')) {
+          try {
+            const { data: existingGmb } = await db
+              .from('gmb_profiles')
+              .select('id')
+              .eq('client_id', savedClient!.id)
+              .limit(1)
+            if (!existingGmb || existingGmb.length === 0) {
+              await db.from('gmb_profiles').insert([{
+                client_id: savedClient!.id,
+                client_name: form.name,
+                business_name: form.name,
+                status: 'pendente',
+              }])
+            }
+          } catch (gmbErr) {
+            console.error('Falha ao criar perfil GMB automático:', gmbErr)
+          }
         }
 
         // ── Contrato — gerado a partir do valor total/pago do cliente ─────
@@ -670,16 +707,36 @@ export default function ClientesPage() {
               <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a] mb-3">Projeto</p>
             </div>
 
-            <div>
-              <label htmlFor="cli-proj-type" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Tipo de projeto *</label>
-              <select id="cli-proj-type" className="input-field cursor-pointer" value={form.project_type} onChange={set('project_type')}>
-                {PROJECT_TYPE_OPTIONS.map(o => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Serviços contratados *</label>
+              <p className="text-[11px] text-gray-400 dark:text-[#00a02a] mb-2">Marque todos os serviços deste cliente — cada um vira um projeto no Kanban.</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {PROJECT_TYPE_OPTIONS.map(o => {
+                  const active = form.project_types.includes(o.value)
+                  return (
+                    <button
+                      key={o.value}
+                      type="button"
+                      onClick={() => toggleProjectType(o.value)}
+                      className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border text-[12px] font-medium text-left transition-all cursor-pointer ${
+                        active
+                          ? 'border-[#00FF41] bg-[#00FF41]/8 text-gray-900 dark:text-[#F0FDF4]'
+                          : 'border-gray-200 dark:border-[#28282d] text-gray-500 dark:text-[#00a02a] hover:border-gray-300 dark:hover:border-[#3a3a40]'
+                      }`}
+                    >
+                      <span className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 border ${
+                        active ? 'bg-[#00FF41] border-[#00FF41]' : 'border-gray-300 dark:border-[#3a3a40]'
+                      }`}>
+                        {active && <CheckCircle2 size={12} className="text-black" strokeWidth={3} />}
+                      </span>
+                      <span className="truncate">{o.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
 
-            <div>
+            <div className="col-span-2">
               <label htmlFor="cli-responsible" className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Responsável *</label>
               <select id="cli-responsible" className="input-field cursor-pointer" value={form.responsible} onChange={set('responsible')}>
                 <option value="isaac">Isaac</option>
