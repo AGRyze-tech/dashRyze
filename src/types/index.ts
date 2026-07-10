@@ -184,6 +184,32 @@ export interface PaymentProof {
   created_at: string
 }
 
+export type HabitType = 'boolean' | 'numeric'
+
+export interface Habit {
+  id: string
+  user_id: string
+  name: string
+  category?: string | null
+  type: HabitType
+  target?: number | null
+  unit?: string | null
+  color: string
+  icon?: string | null
+  active: boolean
+  sort_order: number
+  created_at: string
+}
+
+export interface HabitLog {
+  id: string
+  habit_id: string
+  user_id: string
+  date: string
+  value: number
+  created_at: string
+}
+
 export type GmbStatus = 'ativo' | 'pendente' | 'verificado' | 'suspenso'
 
 export interface GmbProfile {

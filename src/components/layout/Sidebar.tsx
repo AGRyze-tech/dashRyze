@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, Users, FolderKanban,
   TrendingUp, BarChart2, Target, Settings, LogOut, Sun, Moon, CalendarCheck, CalendarDays,
-  Server, Wrench, Receipt, MapPin,
+  Server, Wrench, Receipt, MapPin, Flame,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
@@ -19,6 +19,7 @@ const navGroups: NavGroup[] = [
     label: 'Visão Geral',
     items: [
       { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', exact: true },
+      { href: '/dashboard/rotina', icon: Flame, label: 'Rotina' },
     ],
   },
   {
