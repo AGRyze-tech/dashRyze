@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Card } from '@/components/ui/Card'
 import {
-  Search, Plus, Phone, Instagram, ExternalLink, ChevronRight,
+  Search, Plus, Phone, Instagram, ExternalLink, ChevronRight, ChevronDown,
   CheckCircle2, Pencil, Trash2, Paperclip, X, FileCheck,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
@@ -98,6 +98,7 @@ export default function ClientesPage() {
   const [deleteModal, setDeleteModal] = useState<Client | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [contractFile, setContractFile] = useState<File | null>(null)
+  const [servicesOpen, setServicesOpen] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -115,6 +116,14 @@ export default function ClientesPage() {
     load()
   }, [])
 
+  useEffect(() => {
+    if (!servicesOpen) return
+    function handleClickOutside(e: MouseEvent) {
+      if (!(e.target as Element).closest('[data-services-dropdown]')) setServicesOpen(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [servicesOpen])
 
   const { range } = useDateFilter()
 
@@ -143,6 +152,7 @@ export default function ClientesPage() {
     setForm(emptyForm)
     setSaveError('')
     setContractFile(null)
+    setServicesOpen(false)
     setShowModal(true)
   }
 
@@ -177,6 +187,7 @@ export default function ClientesPage() {
     })
     setSaveError('')
     setContractFile(null)
+    setServicesOpen(false)
     setShowModal(true)
   }
 
@@ -707,33 +718,54 @@ export default function ClientesPage() {
               <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 dark:text-[#00a02a] mb-3">Projeto</p>
             </div>
 
-            <div className="col-span-2">
+            <div className="col-span-2" data-services-dropdown>
               <label className="block text-sm font-medium text-gray-700 dark:text-[#A7C4AF] mb-1.5">Serviços contratados *</label>
-              <p className="text-[11px] text-gray-400 dark:text-[#00a02a] mb-2">Marque todos os serviços deste cliente — cada um vira um projeto no Kanban.</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {PROJECT_TYPE_OPTIONS.map(o => {
-                  const active = form.project_types.includes(o.value)
-                  return (
-                    <button
-                      key={o.value}
-                      type="button"
-                      onClick={() => toggleProjectType(o.value)}
-                      className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border text-[12px] font-medium text-left transition-all cursor-pointer ${
-                        active
-                          ? 'border-[#00FF41] bg-[#00FF41]/8 text-gray-900 dark:text-[#F0FDF4]'
-                          : 'border-gray-200 dark:border-[#28282d] text-gray-500 dark:text-[#00a02a] hover:border-gray-300 dark:hover:border-[#3a3a40]'
-                      }`}
-                    >
-                      <span className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 border ${
-                        active ? 'bg-[#00FF41] border-[#00FF41]' : 'border-gray-300 dark:border-[#3a3a40]'
-                      }`}>
-                        {active && <CheckCircle2 size={12} className="text-black" strokeWidth={3} />}
-                      </span>
-                      <span className="truncate">{o.label}</span>
-                    </button>
-                  )
-                })}
-              </div>
+              <button
+                type="button"
+                onClick={() => setServicesOpen(o => !o)}
+                aria-haspopup="listbox"
+                aria-expanded={servicesOpen}
+                className="input-field cursor-pointer flex items-center justify-between gap-2 text-left"
+              >
+                <span className={`truncate ${form.project_types.length ? 'text-gray-900 dark:text-[#F0FDF4]' : 'text-gray-400 dark:text-[#00a02a]'}`}>
+                  {form.project_types.length
+                    ? PROJECT_TYPE_OPTIONS.filter(o => form.project_types.includes(o.value)).map(o => o.label).join(', ')
+                    : 'Selecione os serviços'}
+                </span>
+                <ChevronDown size={14} className={`flex-shrink-0 text-gray-400 dark:text-[#00a02a] transition-transform ${servicesOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {servicesOpen && (
+                <div className="mt-2 rounded-lg border border-gray-200 dark:border-[#28282d] bg-white dark:bg-[#111114] p-2">
+                  <p className="text-[11px] text-gray-400 dark:text-[#00a02a] px-1 pb-2">Marque todos os serviços deste cliente — cada um vira um projeto no Kanban.</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {PROJECT_TYPE_OPTIONS.map(o => {
+                      const active = form.project_types.includes(o.value)
+                      return (
+                        <button
+                          key={o.value}
+                          type="button"
+                          role="option"
+                          aria-selected={active}
+                          onClick={() => toggleProjectType(o.value)}
+                          className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border text-[12px] font-medium text-left transition-all cursor-pointer ${
+                            active
+                              ? 'border-[#00FF41] bg-[#00FF41]/8 text-gray-900 dark:text-[#F0FDF4]'
+                              : 'border-gray-200 dark:border-[#28282d] text-gray-500 dark:text-[#00a02a] hover:border-gray-300 dark:hover:border-[#3a3a40]'
+                          }`}
+                        >
+                          <span className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 border ${
+                            active ? 'bg-[#00FF41] border-[#00FF41]' : 'border-gray-300 dark:border-[#3a3a40]'
+                          }`}>
+                            {active && <CheckCircle2 size={12} className="text-black" strokeWidth={3} />}
+                          </span>
+                          <span className="truncate">{o.label}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="col-span-2">
